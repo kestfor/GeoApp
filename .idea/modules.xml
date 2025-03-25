@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/GeoApp.iml" filepath="$PROJECT_DIR$/.idea/GeoApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/ms_users.main.iml" filepath="$PROJECT_DIR$/.idea/modules/ms_users.main.iml" />
     </modules>
   </component>
 </project>
