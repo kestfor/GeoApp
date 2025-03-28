@@ -1,60 +1,53 @@
 import 'dart:async';
-import 'dart:convert' show jsonDecode, jsonEncode;
+import 'dart:convert' show jsonEncode;
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:http/http.dart' as http;
+import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/oauth/sign_in_button/mobile.dart';
+import 'package:mobile_app/style/gradient_button.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/user_screens/profile/me_screen.dart';
+import 'package:mobile_app/utils/mocks.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../types/user/user.dart';
 
 /// The scopes required by this application.
 // #docregion Initialize
+
+const String userDataKey = "user_data";
+
 const List<String> scopes = <String>['email', 'https://www.googleapis.com/auth/contacts.readonly'];
 
 GoogleSignIn _googleSignIn = GoogleSignIn(
   scopes: scopes,
   serverClientId: "659561258557-7vnkeva48n8oga6s07bpaoob4pecbdgg.apps.googleusercontent.com",
 );
+
 // #enddocregion Initialize
 
-Future<void> verifyIdToken(GoogleSignInAuthentication auth) async {
+Future<Map<String, dynamic>> verifyIdToken(GoogleSignInAuthentication auth) async {
   String? idToken = auth.idToken;
   if (idToken == null) {
-    log("invalid null idToken");
-    return;
+    throw Exception("idToken is null");
   }
-  print(idToken.length);
-  final uri = Uri(scheme: "http", host: "192.168.28.192", port: 8080, path: "/auth/google");
-  try {
-    Map<String, String> body = {"idToken": idToken};
-    final res = await http.post(
-      Uri.parse('http://192.168.28.192:8080/auth/google'),
-      body: jsonEncode(body),
-      headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
-    );
-    if (res.statusCode != HttpStatus.ok) {
-      log("Error: ${res.body}");
-    } else if (res.statusCode == HttpStatus.ok) {
-      log("Successful token check");
-      final data = jsonDecode(res.body);
-      print(data);
-    }
-  } catch (e) {
-    log(e.toString());
-    return;
-  }
+  final res = await GeoApiInstance.googleAuth(idToken);
+  return res;
 }
 
-class SignInDemo extends StatefulWidget {
-  const SignInDemo({super.key});
+class GoogleSignInScreen extends StatefulWidget {
+  static const String routeName = "/log_in";
+
+  const GoogleSignInScreen({super.key});
 
   @override
-  State createState() => _SignInDemoState();
+  State createState() => _GoogleSignInScreenState();
 }
 
-class _SignInDemoState extends State<SignInDemo> {
+class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   GoogleSignInAccount? _currentUser;
   bool _isAuthorized = false;
 
@@ -73,26 +66,56 @@ class _SignInDemoState extends State<SignInDemo> {
         _isAuthorized = isAuthorized;
       });
     });
+
     _googleSignIn.signInSilently();
   }
 
-  Future<void> _handleSignIn() async {
+  Future<void> _handleSignIn(context) async {
     try {
       await _googleSignIn.signIn();
-    } catch (error) {
-      print(error);
+      if (_currentUser == null) {
+        return;
+      }
+
+      GoogleSignInAuthentication auth = await _currentUser!.authentication;
+
+      // showDialog(
+      //   context: context,
+      //   builder: (context) {
+      //     return Center(child: CircularProgressIndicator(color: orange));
+      //   },
+      // );
+
+      await Future.delayed(Duration(milliseconds: 300));
+      //TODO проверка токена на сервере
+      final data = await verifyIdToken(auth);
+      String refreshToken = data["refresh_token"];
+      String accessToken = data["access_token"];
+      int expiresAt = data["expires_at"];
+
+      //создание экземпляра GeoApiInstance
+      GeoApiInstance.fromTokenData(refreshToken, accessToken, expiresAt);
+
+      //User user = User.fromJson(data);
+      //Navigator.pop(context);
+
+      // User user = User.fromGoogleSignIn(_currentUser!);
+      User user = mockUser;
+      user.onLogOut = _handleSignOut;
+      Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: user);
+
+      //saving user data
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      final json = user.toJson();
+      prefs.setString(userDataKey, jsonEncode(json));
+
+      return;
+    } on Exception catch (e) {
+      log("Error: $e");
+      showError(context, "something went wrong, try again later");
     }
   }
 
-  // #enddocregion SignIn
-
-  // Prompts the user to authorize `scopes`.
-  //
-  // This action is **required** in platforms that don't perform Authentication
-  // and Authorization at the same time (like the web).
-  //
-  // On the web, this must be called from an user interaction (button click).
-  // #docregion RequestScopes
   Future<void> _handleAuthorizeScopes() async {
     final bool isAuthorized = await _googleSignIn.requestScopes(scopes);
     setState(() {
@@ -101,33 +124,42 @@ class _SignInDemoState extends State<SignInDemo> {
   }
 
   Widget _buildBody() {
-    final GoogleSignInAccount? user = _currentUser;
-    if (user != null) {
-      user.authentication.then((value) {
-        verifyIdToken(value);
-      });
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          Padding(padding: EdgeInsets.all(16), child: GoogleProfileCard(user: user)),
-          _signOutButton(),
-        ],
-      );
-    } else {
-      // The user is NOT Authenticated
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text("Log in", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 8,),
-          Center(child: buildSignInButton(onPressed: _handleSignIn))],
-      );
-    }
+    return buildUnauthorizedBody();
+  }
+
+  Widget buildUnauthorizedBody() {
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(fit: BoxFit.cover, image: Image.asset("assets/log_in_background.jpg").image),
+      ),
+      child: Center(
+        child: SizedBox(
+          height: 300,
+          width: 300,
+          child: GlassCardWidget(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(Icons.account_circle_rounded, color: Colors.black, size: 100),
+                SizedBox(height: 32),
+                Center(
+                  child: buildSignInButton(
+                    onPressed: () async {
+                      await _handleSignIn(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.white, body: _buildBody());
+    return Scaffold(body: _buildBody());
   }
 
   Future<void> _handleSignOut() => _googleSignIn.disconnect();
