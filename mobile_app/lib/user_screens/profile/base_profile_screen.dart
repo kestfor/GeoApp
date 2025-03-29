@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/user_screens/friends/friend_list.dart';
 import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/events_grid.dart';
@@ -32,6 +34,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class ProfileScreenState extends State<ProfileScreen> {
+  List<PureEvent>? _events;
   List<User>? _friends;
   final GeoApiInstance _geoApi = GeoApiInstance();
 
@@ -39,9 +42,25 @@ class ProfileScreenState extends State<ProfileScreen> {
     Future.delayed(Duration(milliseconds: 500), () {
       setState(() {
         _friends = null;
+        _events = null;
         _fetchFriends();
+        _fetchEvents();
       });
     });
+  }
+
+  void _fetchEvents() {
+    _geoApi
+        .fetchEventsForUser(EventFilter(userId: widget.user.id))
+        .then((events) {
+          setState(() {
+            this._events = events;
+          });
+        })
+        .onError((error, stackTrace) {
+          showError(context, "Error while fetching events");
+          print("Error fetching events: $error");
+        });
   }
 
   void _fetchFriends() {
@@ -62,6 +81,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _fetchFriends();
+    _fetchEvents();
   }
 
   Widget _buildImage(double radius, url) {
@@ -115,10 +135,24 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildEventsBlock() {
+  Widget _buildEventsBlock(context) {
+    final height = MediaQuery.of(context).size.width / 3 * 2;
+    if (_events == null) {
+      return SizedBox(
+        width: double.infinity,
+        height: height,
+        child: Card(
+          color: Colors.white,
+          child: Padding(padding: EdgeInsets.all(10), child: Center(child: CircularProgressIndicator(color: purple))),
+        ),
+      );
+    }
+
+    final eventsImg = _events!.map((event) => event.coverUrl).toList();
+
     return SizedBox(
       width: double.infinity,
-      child: Card(color: Colors.white, child: EventsGrid(imageUrls: mockEventsGrid)),
+      child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
     );
   }
 
@@ -155,6 +189,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
+      extendBody: true,
       appBar: AppBar(
         forceMaterialTransparency: true,
         backgroundColor: Colors.transparent,
@@ -198,7 +233,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(height: 8),
                       _buildFriendsBlock(),
                       SizedBox(height: 8),
-                      _buildEventsBlock(),
+                      _buildEventsBlock(context),
                     ],
                   ),
                 ),

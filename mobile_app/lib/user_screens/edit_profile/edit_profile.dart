@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/utils/date_picker/date_picker.dart';
 
+import '../../geo_api/geo_api.dart';
 import '../../types/user/user.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -25,6 +27,8 @@ class ProfileEditScreen extends StatefulWidget {
 }
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
+  final GeoApiInstance _geoApi = GeoApiInstance();
+
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
@@ -50,7 +54,24 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
+  void _saveProfile() async {
+
+    final json = widget.user.toJson();
+    User modified = User.fromJson(json);
+    modified.firstName = _firstNameController.text;
+    modified.lastName = _lastNameController.text;
+    modified.username = _usernameController.text;
+    modified.bio = _bioController.text;
+    modified.birthDate = _birthDate;
+
+    try {
+      await _geoApi.modifyUser(modified);
+    } on Exception catch (error) {
+      print("$error");
+      showError(context, error.toString());
+      return;
+    }
+
     setState(() {
       widget.user.firstName = _firstNameController.text;
       widget.user.lastName = _lastNameController.text;
@@ -58,6 +79,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       widget.user.bio = _bioController.text;
       widget.user.birthDate = _birthDate;
     });
+
     Navigator.pop(context, widget.user);
   }
 

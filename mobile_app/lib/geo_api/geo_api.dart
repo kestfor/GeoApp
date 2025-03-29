@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/oauth/token_manager/token_manager.dart';
+import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/utils/mocks.dart';
 
 import '../types/user/user.dart';
@@ -110,5 +112,24 @@ class GeoApiInstance implements Refresher {
   Future<User> getDetailedUser(int userId) async {
     final headers = await getAuthHeaders();
     return Future.delayed(Duration(milliseconds: 300), () => friendsMocks[0]);
+  }
+
+  Future<void> modifyUser(User user) async {
+    if (user.username.isEmpty) {
+      throw Exception("Username cannot be empty");
+    }
+
+    if (user.firstName.isEmpty) {
+      throw Exception("First name cannot be empty");
+    }
+
+    final headers = await getAuthHeaders();
+    return Future.delayed(Duration(milliseconds: 300), () => null);
+  }
+
+  Future<List<PureEvent>> fetchEventsForUser(EventFilter filter) async {
+    Map<String, dynamic> body = {"limit": 20, "offset": 0, "filter": filter};
+    final headers = await getAuthHeaders();
+    return Future.delayed(Duration(milliseconds: 300), () => pureEventsMock);
   }
 }
