@@ -8,8 +8,8 @@ import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/user_screens/friends/friend_list.dart';
 import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/events_grid.dart';
-import 'package:mobile_app/utils/mocks.dart';
 
+import '../../map_screen/map.dart';
 import '../../toast_notifications/notifications.dart';
 import '../../types/user/user.dart';
 import '../../utils/clickable_card/clickable_card.dart';
@@ -152,7 +152,10 @@ class ProfileScreenState extends State<ProfileScreen> {
 
     return SizedBox(
       width: double.infinity,
-      child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, MapScreen.routeName, arguments: widget.user),
+        child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
+      ),
     );
   }
 

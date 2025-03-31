@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import 'package:mobile_app/map_screen/map.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/user_screens/edit_profile/edit_profile.dart';
@@ -15,6 +17,10 @@ import 'geo_api/geo_api.dart';
 import 'oauth/auth_screen.dart';
 
 void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await FMTCObjectBoxBackend().initialise();
+  await FMTCStore('mapStore').manage.create();
   var initialScreen = await getInitScreen();
   runApp(MyApp(initialScreen: initialScreen));
 }
@@ -76,6 +82,10 @@ class MyApp extends StatelessWidget {
 
         if (settings.name == FriendsScreen.routeName) {
           return FriendsScreen.getFriendsRoute(settings);
+        }
+
+        if (settings.name == MapScreen.routeName) {
+          return MapScreen.getMapRoute(settings);
         }
 
         return null;
