@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PureUser {
   int id;
@@ -38,6 +41,8 @@ class PureUser {
 
 
 class User extends PureUser {
+  static const String userDataKey = "user_data";
+
   String? bio;
   DateTime? birthDate;
 
@@ -66,6 +71,7 @@ class User extends PureUser {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -76,6 +82,23 @@ class User extends PureUser {
       'bio': bio,
       'birth_date': birthDate,
     };
+  }
+
+  Future<void> saveToSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userData = jsonEncode(toJson());
+    await prefs.setString(userDataKey, userData);
+  }
+
+  static Future<User?> loadFromSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userData = prefs.getString(userDataKey);
+    if (userData != null) {
+      Map<String, dynamic> json = jsonDecode(userData);
+      return User.fromJson(json);
+    } else {
+      return null;
+    }
   }
 
   factory User.fromGoogleSignIn(GoogleSignInAccount account) {

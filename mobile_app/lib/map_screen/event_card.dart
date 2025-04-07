@@ -9,8 +9,7 @@ class EventCard extends StatelessWidget {
 
   const EventCard({super.key, required this.event, this.size = 30});
 
-  @override
-  Widget build(context) {
+  Widget imgWithName() {
     final imgSize = size * 0.8;
     final textSize = size - imgSize;
     return SizedBox(
@@ -43,7 +42,7 @@ class EventCard extends StatelessWidget {
                 placeholder: (context, url) => Icon(Icons.pin_drop_rounded, color: purple),
                 imageUrl: event.coverUrl,
                 fit: BoxFit.cover,
-                height: imgSize - 8,
+                height: imgSize - 9,
                 width: size,
               ),
             ),
@@ -51,5 +50,28 @@ class EventCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget img() {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: CachedNetworkImage(
+          width: size,
+          height: size,
+          errorWidget: (context, _, __) => Icon(Icons.pin_drop_rounded, color: purple),
+          placeholder: (context, url) => Icon(Icons.pin_drop_rounded, color: purple),
+          imageUrl: event.coverUrl,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(context) {
+    return img();
   }
 }

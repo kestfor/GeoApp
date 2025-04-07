@@ -1,8 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import 'package:mobile_app/events_screen/event_creation.dart';
+import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/map_screen/map.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/user/user.dart';
@@ -11,32 +13,26 @@ import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/user_screens/profile/me_screen.dart';
 import 'package:mobile_app/user_screens/profile/user_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'geo_api/geo_api.dart';
+import 'map_screen/map_position_picker.dart';
 import 'oauth/auth_screen.dart';
 
 void main() async {
-
   WidgetsFlutterBinding.ensureInitialized();
   await FMTCObjectBoxBackend().initialise();
   await FMTCStore('mapStore').manage.create();
+
+  await dotenv.load(fileName: ".env");
   var initialScreen = await getInitScreen();
   runApp(MyApp(initialScreen: initialScreen));
 }
 
 Future<Widget> getInitScreen() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  var user = prefs.getString(userDataKey);
-  User? userObj;
+  User? user = await User.loadFromSharedPreferences();
+  Widget initialScreen = user != null ? MyProfileScreen(user: user) : GoogleSignInScreen();
 
-  if (user != null) {
-    final json = jsonDecode(user);
-    userObj = User.fromJson(json);
-  }
-
-  Widget initialScreen = userObj != null ? MyProfileScreen(user: userObj) : GoogleSignInScreen();
   try {
     await GeoApiInstance.loadTokenData();
     print("Token data loaded");
@@ -86,6 +82,18 @@ class MyApp extends StatelessWidget {
 
         if (settings.name == MapScreen.routeName) {
           return MapScreen.getMapRoute(settings);
+        }
+
+        if (settings.name == MapPositionPicker.routeName) {
+          return MapPositionPicker.getMapRoute(settings);
+        }
+
+        if (settings.name == EventCreationScreen.routeName) {
+          return EventCreationScreen.getEventCreationRoute(settings);
+        }
+
+        if (settings.name == EventsScreen.routeName) {
+          return EventsScreen.getEventsRoute(settings);
         }
 
         return null;

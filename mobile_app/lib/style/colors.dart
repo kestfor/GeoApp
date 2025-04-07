@@ -6,7 +6,7 @@ const yellowGradient = [Color(0xfff3cf0b), Color(0xfff3b000)];
 const redGradient = [Color(0xffd64f23), Color(0xffc93d4e)];
 
 
-const lightGrayWithPurple = Color(0xffD6D2DC);
+const lightGrayWithPurple = Color(0xffeae0fd);
 const gray = Color.fromRGBO(142, 142, 147, 1);
 const brown = Color.fromRGBO(162, 132, 94, 1);
 const pink = Color.fromRGBO(255, 45, 85, 1);

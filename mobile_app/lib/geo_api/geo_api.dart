@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/oauth/token_manager/token_manager.dart';
@@ -9,7 +10,7 @@ import 'package:mobile_app/utils/mocks.dart';
 import '../types/user/user.dart';
 
 class GeoApiInstance implements Refresher {
-  static const String _baseUrl = 'https://geo_api.com';
+  static final String _baseUrl = dotenv.get("GEO_API_BASE_URL");
   static Encoding? defaultEncoding = Encoding.getByName('utf-8');
   static final Map<String, String> defaultHeaders = <String, String>{'Content-Type': 'application/json; charset=UTF-8'};
   static GeoApiInstance? _instance;

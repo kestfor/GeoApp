@@ -45,6 +45,6 @@ class GoogleSignInButton extends StatelessWidget {
 }
 
 /// Renders a SIGN IN button that calls `handleSignIn` onclick.
-Widget buildSignInButton({HandleSignInFn? onPressed}) {
+Widget buildGoogleSignInButton({HandleSignInFn? onPressed}) {
   return GoogleSignInButton(onTap: onPressed);
 }

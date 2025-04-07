@@ -68,7 +68,7 @@ class WindowClassRegistrar {
     return instance_;
   }
 
-  // Returns the name of the window class, registering the class if it hasn't
+  // Returns the name of the window class, registering the class if it hasn'demo
   // previously been registered.
   const wchar_t* GetWindowClass();
 

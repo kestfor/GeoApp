@@ -42,8 +42,21 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   flutter_map: ^8.1.1
   url_launcher: ^6.3.1
+  crypto: ^3.0.6
   flutter_map_animations: ^0.9.0
   flutter_map_tile_caching: ^10.1.1
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.4.0
+  path_provider: ^2.1.5
+  video_player: ^2.9.5
+  flutter_dotenv: ^5.2.1
+  hl_image_picker: ^1.2.16
+  latlong2: ^0.9.1
+  flutter_map_dragmarker: ^8.0.2
+  flutter_map_location_marker: ^10.0.0
+  carousel_slider: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_popup: ^3.3.4
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +68,15 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+
+flutter_launcher_icons:
+  ios: true
+  android: true
+  image_path_ios: "assets/launcher/android.png"
+  image_path_android: "assets/launcher/ios.png"
+  adaptive_icon_background: "assets/launcher/background.png"
+  adaptive_icon_foreground: "assets/launcher/foreground.png"
+  remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -69,8 +91,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-     - assets/google_logo.png
-     - assets/log_in_background.jpg
+    - assets/google_logo.png
+    - assets/log_in_background.jpg
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

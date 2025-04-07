@@ -67,7 +67,6 @@ class TokenManager {
       _expiresAt = data["expires_at"];
       _refresher = refresher;
       _instance = TokenManager._internal(refresher, _accessToken, _refreshToken, _expiresAt);
-      _ready = true;
       print(
           "TokenManager: read token data: $_accessToken, $_refreshToken, $_expiresAt"
       );
@@ -90,10 +89,6 @@ class TokenManager {
   }
 
   Future<String> get accessToken async {
-    while (!_ready) {
-      await Future.delayed(Duration(milliseconds: 50));
-    }
-
     if (isExpired || isExpiring) {
       await _refresh(_refresher);
     }

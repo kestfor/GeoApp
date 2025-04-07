@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/style/colors.dart';
@@ -8,8 +9,8 @@ import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/user_screens/friends/friend_list.dart';
 import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/events_grid.dart';
+import 'package:mobile_app/utils/mocks.dart';
 
-import '../../map_screen/map.dart';
 import '../../toast_notifications/notifications.dart';
 import '../../types/user/user.dart';
 import '../../utils/clickable_card/clickable_card.dart';
@@ -153,7 +154,13 @@ class ProfileScreenState extends State<ProfileScreen> {
     return SizedBox(
       width: double.infinity,
       child: InkWell(
-        onTap: () => Navigator.pushNamed(context, MapScreen.routeName, arguments: widget.user),
+        onTap: () {
+          Navigator.pushNamed(
+            context,
+            EventsScreen.routeName,
+            arguments: {"events": pureEventsMock, "user": widget.user},
+          );
+        },
         child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
       ),
     );

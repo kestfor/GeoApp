@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mobile_app/types/events/events.dart';
 
 import '../types/user/user.dart';
@@ -199,6 +201,7 @@ final mockEventsGrid = [
   "https://res.cloudinary.com/worldpackers/image/upload/c_fill,f_jpg,h_600,q_auto,w_900/v1/guides/article_cover/ejgcq0acumqaosd7kl26?_a=BACADKGT",
   "https://assets.simpleviewinc.com/simpleview/image/upload/c_fill,h_474,q_75,w_640/v1/clients/newyorkstate/GreenLkSP_109_1__4b4e7ebb-9d7d-455b-87f3-f3cad1396381.jpg",
   "https://www.youthadventuretrust.org.uk/wp-content/uploads/2019/10/FR-2-1024x624.jpg",
+  "https://burst.shopifycdn.com/photos/man-hiking-in-mountains.jpg?width=1000&format=pjpg&exif=0&iptc=0"
 ];
 
 final pureEventsMock = [
@@ -218,6 +221,15 @@ final pureEventsMock = [
     point: Point(lat: 45.7128, lon: -70.0060),
     coverUrl:
         "https://media.istockphoto.com/id/1096035138/photo/beautiful-young-couple-relaxing-after-hiking-and-taking-a-break.jpg?s=612x612&w=0&k=20&c=iwNan7K7gbiIl2unv-9EuE5Yej-h_l1OrLNMel0husU=",
+    authorId: 2,
+  ),
+
+  PureEvent(
+    membersId: [1, 2],
+    id: 6,
+    name: "Mountain biking trails",
+    point: Point(lat: 47.7128, lon: -74.0060),
+    coverUrl: "https://burst.shopifycdn.com/photos/man-hiking-in-mountains.jpg?width=1000&format=pjpg&exif=0&iptc=0",
     authorId: 2,
   ),
 
@@ -248,14 +260,35 @@ final pureEventsMock = [
     coverUrl: "https://www.youthadventuretrust.org.uk/wp-content/uploads/2019/10/FR-2-1024x624.jpg",
     authorId: 2,
   ),
-
-  PureEvent(
-    membersId: [1, 2],
-    id: 6,
-    name: "Mountain biking trails",
-    point: Point(lat: 47.7128, lon: -74.0060),
-    coverUrl:
-        "https://assets.simpleviewinc.com/simpleview/image/upload/c_fill,h_474,q_75,w_640/v1/clients/newyorkstate/GreenLkSP_109_1__4b4e7ebb-9d7d-455b-87f3-f3cad1396381.jpg",
-    authorId: 2,
-  ),
 ];
+
+extension RX on Random {
+  double randomDouble(double min, double max) {
+    return (nextDouble() * (max - min) + min);
+  }
+
+  int randomInt(int min, int max) {
+    return (nextInt(max - min + 1) + min);
+  }
+}
+
+List<PureEvent> generatePureEvents({limit = 100}) {
+  List<PureEvent> res = [];
+  final random = Random();
+  for (int i = 0; i < limit; i++) {
+
+
+    final event = PureEvent(
+      id: i,
+      coverUrl: mockEventsGrid[random.randomInt(0, 6)],
+      name: pureEventsMock[random.randomInt(0, 5)].name,
+      authorId: i,
+      membersId: [i],
+      point: Point(lat: random.randomDouble(54, 56), lon: random.randomDouble(82, 84)),
+    );
+    res.add(event);
+  }
+  return res;
+}
+
+List<PureEvent> generatedMocks = generatePureEvents();
