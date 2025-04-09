@@ -5,6 +5,7 @@ import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/user_screens/friends/friend_list.dart';
 import 'package:mobile_app/user_screens/friends/friends_screen.dart';
@@ -216,12 +217,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       ),
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            stops: [0.1, 0.5],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xff7F4ABF), Color(0xffD6D2DC)],
-          ),
+          gradient: mainGradientLight
         ),
         child: RefreshIndicator(
           onRefresh: _refresh,
