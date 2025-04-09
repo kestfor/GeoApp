@@ -32,7 +32,7 @@ void main() async {
 
 Future<Widget> getInitScreen() async {
   WidgetsFlutterBinding.ensureInitialized();
-  User? user;
+  User? user = await User.loadFromSharedPreferences();
   Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
 
   try {

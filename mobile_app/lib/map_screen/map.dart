@@ -214,7 +214,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               padding: EdgeInsets.all(5),
               child: InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: widget.user);
+                  Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: widget.user.id);
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(35),
