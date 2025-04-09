@@ -89,11 +89,13 @@ class EventsScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
       backgroundColor: lightGrayWithPurple,
       body: SafeArea(
-        child: SingleChildScrollEventsParallax(
-          events: events,
-          onTap: (event) {
-            _openMap(context, LatLng(event.point.lat, event.point.lon));
-          },
+        child: CupertinoScrollbar(
+          child: SingleChildScrollEventsParallax(
+            events: events,
+            onTap: (event) {
+              _openMap(context, LatLng(event.point.lat, event.point.lon));
+            },
+          ),
         ),
       ),
     );

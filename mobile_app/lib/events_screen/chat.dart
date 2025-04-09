@@ -7,6 +7,7 @@ import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/user/user.dart';
+import 'package:mobile_app/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/utils/mocks.dart';
 import 'package:uuid/uuid.dart';
 

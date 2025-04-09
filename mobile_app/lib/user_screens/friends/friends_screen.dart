@@ -91,7 +91,12 @@ class FriendsScreenState extends State<FriendsScreen> {
     setState(() {
       _isLoading = true;
     });
-    List<User> newItems = await widget.dataProvider.fetchItems(userId: widget.user.id, offset: _offset, limit: _limit, query: _query);
+    List<User> newItems = await widget.dataProvider.fetchItems(
+      userId: widget.user.id,
+      offset: _offset,
+      limit: _limit,
+      query: _query,
+    );
     setState(() {
       _offset += newItems.length;
       _isLoading = false;
@@ -125,59 +130,64 @@ class FriendsScreenState extends State<FriendsScreen> {
     final size = MediaQuery.of(context).size;
     final avatarSize = (size.width / 8).ceilToDouble();
     final paddingSize = avatarSize;
-    return ListView.separated(
+    return CupertinoScrollbar(
       controller: _scrollController,
-      itemCount: _items.length + (_hasMore ? 1 : 0),
-      separatorBuilder:
-          (context, index) => Padding(
-            padding: EdgeInsets.only(left: paddingSize * 2 + avatarSize * 2 / 3),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 4))],
+      child: ListView.separated(
+        controller: _scrollController,
+        itemCount: _items.length + (_hasMore ? 1 : 0),
+        separatorBuilder:
+            (context, index) => Padding(
+              padding: EdgeInsets.only(left: paddingSize * 2 + avatarSize * 2 / 3),
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Divider(color: gray.withOpacity(0.2), height: 1),
               ),
-              child: Divider(color: gray.withOpacity(0.2), height: 1),
             ),
-          ),
-      itemBuilder: (context, index) {
-        if (index >= _items.length) {
-          return const Center(
-            child: Padding(padding: EdgeInsets.all(16.0), child: Center(child: CircularProgressIndicator())),
-          );
-        }
-
-        final user = _items[index];
-        return ListTile(
-          tileColor: lightGrayWithPurple,
-          //subtitle: Padding(padding: EdgeInsets.only(left: paddingSize), child: Text("@${user.username}", style: TextStyle(fontSize: 12, color: Colors.grey))),
-          contentPadding: EdgeInsets.symmetric(horizontal: paddingSize / 2),
-          leading: Container(
-            width: avatarSize,
-            height: avatarSize,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 7))],
-            ),
-            child: CachedNetworkImage(
-              imageUrl: _items[index].pictureUrl,
-              errorWidget: (context, url, error) => CircleAvatar(child: Icon(Icons.error)),
-              placeholder: (context, url) => CircularProgressIndicator(color: purpleGradient[1]),
-              fit: BoxFit.cover,
-              imageBuilder: (context, imageProvider) => CircleAvatar(backgroundImage: imageProvider),
-            ),
-          ),
-          title: Padding(padding: EdgeInsets.only(left: paddingSize), child: Text(user.firstName)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            Random random = Random();
-            Navigator.pushNamed(
-              context,
-              UserScreen.routeName,
-              arguments: {"user": user, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
+        itemBuilder: (context, index) {
+          if (index >= _items.length) {
+            return const Center(
+              child: Padding(padding: EdgeInsets.all(16.0), child: Center(child: CircularProgressIndicator())),
             );
-          },
-        );
-      },
+          }
+
+          final user = _items[index];
+          return ListTile(
+            tileColor: lightGrayWithPurple,
+            //subtitle: Padding(padding: EdgeInsets.only(left: paddingSize), child: Text("@${user.username}", style: TextStyle(fontSize: 12, color: Colors.grey))),
+            contentPadding: EdgeInsets.symmetric(horizontal: paddingSize / 2),
+            leading: Container(
+              width: avatarSize,
+              height: avatarSize,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 7))],
+              ),
+              child: CachedNetworkImage(
+                imageUrl: _items[index].pictureUrl,
+                errorWidget: (context, url, error) => CircleAvatar(child: Icon(Icons.error)),
+                placeholder: (context, url) => CircularProgressIndicator(color: purpleGradient[1]),
+                fit: BoxFit.cover,
+                imageBuilder: (context, imageProvider) => CircleAvatar(backgroundImage: imageProvider),
+              ),
+            ),
+            title: Padding(padding: EdgeInsets.only(left: paddingSize), child: Text(user.firstName)),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Random random = Random();
+              Navigator.pushNamed(
+                context,
+                UserScreen.routeName,
+                arguments: {"user": user, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
