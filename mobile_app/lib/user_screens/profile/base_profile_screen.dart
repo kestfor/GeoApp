@@ -81,7 +81,6 @@ class ProfileScreenState extends State<ProfileScreen> {
         .getDetailedUser(widget.userId)
         .then((u) {
           setState(() {
-            print("got user");
             _user = u;
           });
         })
@@ -207,6 +206,8 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildBioBlock() {
+
+
     if (_user == null) {
       return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 150));
     }

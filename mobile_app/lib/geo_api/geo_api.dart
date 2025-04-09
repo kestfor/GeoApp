@@ -113,7 +113,15 @@ class GeoApiInstance implements Refresher {
 
   Future<User> getDetailedUser(int userId) async {
     final headers = await getAuthHeaders();
-    return Future.delayed(Duration(milliseconds: 300), () => friendsMocks[0]);
+
+
+    for (var u in allUsers) {
+      if (u.id == userId) {
+        return Future.delayed(Duration(milliseconds: 300), () => u);
+      }
+    }
+
+    return Future.delayed(Duration(milliseconds: 300), () => mockUser);
   }
 
   Future<void> modifyUser(User user) async {
@@ -147,17 +155,22 @@ class GeoApiInstance implements Refresher {
 
   Future<List<PureUser>> getUsersFromIds(List<int> ids) async {
     final headers = await getAuthHeaders();
-    List<PureUser> users = [mockUser];
-    users.addAll(friendsMocks);
+
+    //TODO replace with real API call
+    List<PureUser> users = [];
+    for (var id in ids) {
+      for (var u in allUsers) {
+        print("User id: ${u.id}, searching for $id");
+        if (u.id == id) {
+          users.add(u);
+          break;
+        }
+      }
+    }
     return Future.delayed(Duration(milliseconds: 300), () => users);
   }
 
   Future<PureUser> getUserFromId(int id) async {
-    return getUsersFromIds([id]).then((value) {
-      if (value.isNotEmpty) {
-        return value[0];
-      }
-      throw Exception("User not found");
-    });
+    return mockUser;
   }
 }

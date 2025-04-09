@@ -8,7 +8,7 @@ import '../types/user/user.dart';
 
 final mockUser = User(
   username: "alice",
-  id: 2,
+  id: 1,
   lastName: "Brown",
   firstName: "Alice",
   bio:
@@ -297,7 +297,7 @@ final detailedEventMock = Event(
   id: 1,
   coverUrl: "https://www.mensjournal.com/.image/t_share/MTk2MTM3MzIwNzEwMjg0ODA1/alex-honnold-jimmy-chin.jpg",
   name: "Hiking in the mountains",
-  authorId: 2,
+  authorId: 1,
   membersId: [1, 2],
   files: mediaMock,
   point: Point(lat: 42.7128, lon: -72.0060),
@@ -338,3 +338,6 @@ final mediaMock = [
     ],
   ),
 ];
+
+
+final allUsers = [mockUser] + friendsMocks;
