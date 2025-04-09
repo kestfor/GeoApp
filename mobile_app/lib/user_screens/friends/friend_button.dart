@@ -176,14 +176,14 @@ class FriendRequestDialog extends StatelessWidget {
             Expanded(child: MaterialButton(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               color: Colors.grey,
-              child: const Text('decline', style: TextStyle(color: Colors.white)),
+              child: const Text('decline'),
               onPressed: () => Navigator.pop(context, false),
             )),
             SizedBox(width: 8),
             Expanded(child: MaterialButton(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               color: Theme.of(context).primaryColor,
-              child: const Text('accept', style: TextStyle(color: Colors.white)),
+              child: const Text('accept'),
               onPressed: () => Navigator.pop(context, true),
             )),
           ],
@@ -212,14 +212,14 @@ class FriendRemoveDialog extends StatelessWidget {
             Expanded(child: MaterialButton(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               color: Theme.of(context).primaryColor,
-              child: const Text("cancel", style: TextStyle(color: Colors.white)),
+              child: const Text("cancel"),
               onPressed: () => Navigator.pop(context, false),
             )),
             SizedBox(width: 8),
             Expanded(child: MaterialButton(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
               color: Colors.grey,
-              child: const Text('remove', style: TextStyle(color: Colors.white)),
+              child: const Text('remove'),
               onPressed: () => Navigator.pop(context, true),
             )),
           ],

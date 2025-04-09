@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/demo/widgets/media_preview.dart';
+import 'package:mobile_app/file_processing/hashing.dart';
 import 'package:mobile_app/map_screen/geolocator.dart';
 import 'package:mobile_app/map_screen/map_position_picker.dart';
 import 'package:mobile_app/style/colors.dart';
@@ -65,6 +66,29 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
     return true;
   }
+
+  Future<List<String>> hash() async {
+    List<Future<String>> tasks = [];
+    for (var file in widget.files) {
+      tasks.add(FileHashing.computeHashFromFile(file.path));
+    }
+    List<String> hashes = await Future.wait(tasks);
+    return hashes;
+  }
+
+  // Future<List<openapi.MediaFull>> prepareFiles() async {
+  //   final hashes = await hash();
+  //   List<openapi.MediaFull> media = [];
+  //
+  //   for (int i = 0; i < widget.files.length; i++) {
+  //     final file = widget.files[i];
+  //     final hash = hashes[i];
+  //     final builder = openapi.MediaFullBuilder();
+  //     builder.mediaType = openapi.MediaType.photo;
+  //     final media = builder.build();
+  //     print(media);
+  //   }
+  // }
 
   void handleCreate() {
     if (!verify()) {

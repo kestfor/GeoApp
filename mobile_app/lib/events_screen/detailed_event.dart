@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/style/colors.dart';
@@ -15,6 +16,7 @@ import 'package:mobile_app/utils/placeholders/placeholders.dart';
 import '../geo_api/geo_api.dart';
 import '../style/shimmer.dart';
 import 'chat.dart';
+import 'full_screen_media.dart';
 
 void main() {
   runApp(MaterialApp(home: DetailedEvent(pureEvent: pureEventsMock[0])));
@@ -36,6 +38,7 @@ class DetailedEvent extends StatelessWidget {
   final PureEvent pureEvent;
   late final Future<Event> event = api.getDetailedEvent(pureEvent.id);
   late final Future<PureUser> author = api.getUserFromId(pureEvent.authorId);
+  final CarouselSliderController buttonCarouselController = CarouselSliderController();
 
   DetailedEvent({super.key, required this.pureEvent});
 
@@ -49,12 +52,10 @@ class DetailedEvent extends StatelessWidget {
       appBar: AppBar(backgroundColor: Colors.transparent),
       body: Container(
         height: screenHeight,
-        decoration: BoxDecoration(
-          gradient: mainGradientLight
-        ),
+        decoration: BoxDecoration(gradient: mainGradientLight),
         child: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-        child: SafeArea(
+          physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          child: SafeArea(
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Column(
@@ -63,7 +64,7 @@ class DetailedEvent extends StatelessWidget {
                 children: [
                   TitleBlock(event: event, author: author),
                   SizedBox(height: 16),
-                  MediaBlock(event: event),
+                  MediaBlock(event: event, buttonCarouselController: buttonCarouselController),
                   SizedBox(height: 16),
                   DescriptionBlock(event: event),
                 ],
@@ -150,7 +151,10 @@ class TitleBlock extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(user.firstName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text("@${user.username}")],
+              children: [
+                Text(user.firstName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("@${user.username}"),
+              ],
             ),
           ],
         ),
@@ -216,31 +220,103 @@ class DescriptionBlock extends StatelessWidget {
 
 class MediaBlock extends StatelessWidget {
   final Future<Event> event;
+  final CarouselSliderController buttonCarouselController;
 
-  const MediaBlock({super.key, required this.event});
+  const MediaBlock({super.key, required this.event, required this.buttonCarouselController});
 
   Widget getShimmer() {
     return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 200));
   }
 
-  Widget buildMedia(context, List<MediaContent> media) {
-    final item = media[0] as ImgContent;
 
-    return Container(
-        decoration: BoxDecoration(
-
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.7),
-                blurRadius: 10,
-                offset: Offset(0, 10),
-              ),
-            ]
+  Widget _buildImg(context, url, allMedia, index, controller) {
+    return Hero(
+      transitionOnUserGestures: true,
+      tag: url + index.toString(),
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 30),
+        child: Container(
+          height: 200,
+          decoration: BoxDecoration(
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.7), blurRadius: 10, offset: Offset(0, 10))],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FullScreenMediaViewer(media: allMedia, controller: controller, initialIndex: index),
+                  ),
+                );
+              },
+              child: CachedNetworkImage(imageUrl: url, width: double.infinity, height: 200, fit: BoxFit.cover),
+            ),
+          ),
         ),
-        child: ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: CachedNetworkImage(imageUrl: item.images[0].url, width: double.infinity, height: 200, fit: BoxFit.cover),
-    ));
+      ),
+    );
+  }
+
+  Widget buildMedia(context, List<MediaContent> media) {
+
+    List<Widget> items = [];
+    for (int i = 0; i < media.length; i++) {
+      if (media[i] is ImgContent) {
+        items.add(_buildImg(context, (media[i] as ImgContent).images[0].url, media, i, buttonCarouselController));
+      } else if (media[i] is VideoContent) {
+        items.add(_buildImg(context, (media[i] as VideoContent).thumbnailUrl, media, i, buttonCarouselController));
+      }
+    }
+
+    final carousel = CarouselSlider(
+      carouselController: buttonCarouselController,
+      options: CarouselOptions(
+        height: 250,
+        aspectRatio: 16 / 9,
+        viewportFraction: 0.9,
+        initialPage: 0,
+        enableInfiniteScroll: true,
+        reverse: false,
+        autoPlay: false,
+        autoPlayInterval: Duration(seconds: 3),
+        autoPlayAnimationDuration: Duration(milliseconds: 800),
+        autoPlayCurve: Curves.fastOutSlowIn,
+        enlargeCenterPage: true,
+        enlargeFactor: 0.6,
+        scrollDirection: Axis.horizontal,
+      ),
+      items: items,
+    );
+
+    return carousel;
+
+    // return Hero(
+    //   tag: item.images[0].url,
+    //   child: Container(
+    //     decoration: BoxDecoration(
+    //       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.7), blurRadius: 10, offset: Offset(0, 10))],
+    //     ),
+    //     child: ClipRRect(
+    //       borderRadius: BorderRadius.circular(15),
+    //       child: GestureDetector(
+    //         onTap: () async {
+    //           await Navigator.push(
+    //             context,
+    //             MaterialPageRoute(builder: (_) => FullScreenMediaViewer(media: media, initialIndex: 0)),
+    //           );
+    //         },
+    //         child: CachedNetworkImage(
+    //           imageUrl: item.images[0].url,
+    //           width: double.infinity,
+    //           height: 200,
+    //           fit: BoxFit.cover,
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
   }
 
   @override

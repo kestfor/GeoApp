@@ -48,7 +48,6 @@ dependencies:
   image_picker: ^1.1.2
   flutter_image_compress: ^2.4.0
   path_provider: ^2.1.5
-  video_player: ^2.9.5
   flutter_dotenv: ^5.2.1
   hl_image_picker: ^1.2.16
   latlong2: ^0.9.1
@@ -59,8 +58,13 @@ dependencies:
   flutter_popup: ^3.3.4
   flutter_chat_ui:
   shimmer: ^3.0.0
+  photo_view: ^0.15.0
   uuid:
+  flutter_cache_manager: ^3.4.1
   google_fonts:
+  video_player: ^2.9.5
+  chewie: ^1.11.1
+
 
 dev_dependencies:
   flutter_test:
@@ -72,6 +76,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  openapi_generator: ^6.1.0
+  build_runner:
 
 flutter_launcher_icons:
   ios: true
