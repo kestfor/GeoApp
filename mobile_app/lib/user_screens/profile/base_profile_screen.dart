@@ -5,29 +5,32 @@ import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/user_screens/friends/friend_list.dart';
 import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/events_grid.dart';
 import 'package:mobile_app/utils/mocks.dart';
+import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
+import '../../style/shimmer.dart';
 import '../../toast_notifications/notifications.dart';
 import '../../types/user/user.dart';
 import '../../utils/clickable_card/clickable_card.dart';
 import 'overlapping_images.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final User user;
+  final int userId;
   static const String routeName = "/profile";
 
-  const ProfileScreen({super.key, required this.user});
+  const ProfileScreen({super.key, required this.userId});
 
   static Route getProfileRoute(RouteSettings settings) {
-    User? user = settings.arguments as User?;
+    int? user = settings.arguments as int?;
     if (user == null) {
       throw Exception("User object is required in args");
     }
-    return CupertinoPageRoute(builder: (context) => ProfileScreen(user: user));
+    return CupertinoPageRoute(builder: (context) => ProfileScreen(userId: user));
   }
 
   @override
@@ -35,6 +38,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class ProfileScreenState extends State<ProfileScreen> {
+  User? _user;
   List<PureEvent>? _events;
   List<User>? _friends;
   final GeoApiInstance _geoApi = GeoApiInstance();
@@ -44,15 +48,23 @@ class ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _friends = null;
         _events = null;
+        _user = null;
+        _fetchUserData();
         _fetchFriends();
         _fetchEvents();
       });
     });
   }
 
+  User? get user => _user;
+
+  List<PureEvent>? get events => _events;
+
+  List<User>? get friends => _friends;
+
   void _fetchEvents() {
     _geoApi
-        .fetchEventsForUser(EventFilter(userId: widget.user.id))
+        .fetchEventsForUser(EventFilter(userId: widget.userId))
         .then((events) {
           setState(() {
             this._events = events;
@@ -64,9 +76,23 @@ class ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
+  void _fetchUserData() {
+    _geoApi
+        .getDetailedUser(widget.userId)
+        .then((u) {
+          setState(() {
+            _user = u;
+          });
+        })
+        .onError((error, stackTrace) {
+          showError(context, "Error while fetching events");
+          print("Error fetching user: $error");
+        });
+  }
+
   void _fetchFriends() {
     _geoApi
-        .fetchFriendsForUser(widget.user.id)
+        .fetchFriendsForUser(widget.userId)
         .then((friends) {
           setState(() {
             _friends = friends;
@@ -83,6 +109,19 @@ class ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _fetchFriends();
     _fetchEvents();
+    _fetchUserData();
+  }
+
+  Widget _buildAvatar(double radius) {
+    final shimmer = DefaultShimmer(
+      child: CircleAvatarPlaceholder(size: radius * 2)
+    );
+
+    if (_user == null) {
+      return shimmer;
+    }
+
+    return _buildImage(radius, _user!.pictureUrl);
   }
 
   Widget _buildImage(double radius, url) {
@@ -103,15 +142,16 @@ class ProfileScreenState extends State<ProfileScreen> {
     late Widget textWidget;
     late Widget stackImg;
 
-    if (_friends != null) {
-      textWidget = Text("${_friends!.length} friends", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
+    final shimmer = DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 50));
 
-      final images = _friends!.map((user) => _buildImage(15, user.pictureUrl)).toList();
-      stackImg = SizedBox(height: 30, width: 60, child: OverlappingImages(shift: 15, children: images));
-    } else {
-      textWidget = SizedBox(height: 30, width: 30, child: Center(child: CircularProgressIndicator(color: purple)));
-      stackImg = SizedBox();
+    if (_friends == null) {
+      return shimmer;
     }
+
+    textWidget = Text("${_friends!.length} friends", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
+    final images = _friends!.map((user) => _buildImage(15, user.pictureUrl)).toList();
+    stackImg = SizedBox(height: 30, width: 60, child: OverlappingImages(shift: 15, children: images));
+
     return SizedBox(
       width: double.infinity,
       child: ClickableCard(
@@ -119,7 +159,7 @@ class ProfileScreenState extends State<ProfileScreen> {
           Navigator.pushNamed(
             context,
             FriendsScreen.routeName,
-            arguments: {"dataProvider": UserDataProvider(initData: _friends), "user": widget.user},
+            arguments: {"dataProvider": UserDataProvider(initData: _friends), "user": _user},
           );
         },
         pressedColor: Colors.white.withOpacity(0.8),
@@ -139,14 +179,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   Widget _buildEventsBlock(context) {
     final height = MediaQuery.of(context).size.width / 3 * 2;
     if (_events == null) {
-      return SizedBox(
-        width: double.infinity,
-        height: height,
-        child: Card(
-          color: Colors.white,
-          child: Padding(padding: EdgeInsets.all(10), child: Center(child: CircularProgressIndicator(color: purple))),
-        ),
-      );
+      return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: height));
     }
 
     final eventsImg = _events!.map((event) => event.coverUrl).toList();
@@ -155,18 +188,30 @@ class ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(
-            context,
-            EventsScreen.routeName,
-            arguments: {"events": pureEventsMock, "user": widget.user},
-          );
+          Navigator.pushNamed(context, EventsScreen.routeName, arguments: {"events": pureEventsMock, "user": _user});
         },
         child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
       ),
     );
   }
 
+  Widget get nameInfoShimmer {
+    return DefaultShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [ContainerPlaceHolder(width: 200, height: 40), SizedBox(height: 8), ContainerPlaceHolder(width: 100, height: 20)],
+      ),
+    );
+  }
+
   Widget _buildBioBlock() {
+
+
+    if (_user == null) {
+      return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 150));
+    }
+
     return SizedBox(
       width: double.infinity,
       child: Card(
@@ -181,7 +226,7 @@ class ProfileScreenState extends State<ProfileScreen> {
               Text("Bio", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               Text(
                 maxLines: 5,
-                widget.user.bio == null ? "No bio provided" : widget.user.bio!,
+                _user!.bio == null ? "No bio provided" : _user!.bio!,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
               ),
             ],
@@ -200,29 +245,9 @@ class ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: AppBar(
-        forceMaterialTransparency: true,
-        backgroundColor: Colors.transparent,
-        leading:
-            Navigator.canPop(context)
-                ? IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                )
-                : null,
-        actions: [moreButton],
-      ),
+      appBar: AppBar(forceMaterialTransparency: true, backgroundColor: Colors.transparent, actions: [moreButton]),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            stops: [0.1, 0.5],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xff7F4ABF), Color(0xffD6D2DC)],
-          ),
-        ),
+        decoration: BoxDecoration(gradient: mainGradientLight),
         child: RefreshIndicator(
           onRefresh: _refresh,
           child: SingleChildScrollView(
@@ -235,7 +260,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildImage(75, widget.user.pictureUrl),
+                      _buildAvatar(75),
                       SizedBox(height: 32),
                       nameInfo,
                       SizedBox(height: 32),

@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
+import 'package:mobile_app/events_screen/chat.dart';
+import 'package:mobile_app/events_screen/detailed_event.dart';
 import 'package:mobile_app/events_screen/event_creation.dart';
 import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/map_screen/map.dart';
@@ -25,14 +27,13 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
   var initialScreen = await getInitScreen();
-  runApp(MyApp(
-      initialScreen: initialScreen));
+  runApp(MyApp(initialScreen: initialScreen));
 }
 
 Future<Widget> getInitScreen() async {
   WidgetsFlutterBinding.ensureInitialized();
-  User? user = await User.loadFromSharedPreferences();
-  Widget initialScreen = user != null ? MyProfileScreen(user: user) : GoogleSignInScreen();
+  User? user;
+  Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
 
   try {
     await GeoApiInstance.loadTokenData();
@@ -94,6 +95,14 @@ class MyApp extends StatelessWidget {
 
         if (settings.name == EventsScreen.routeName) {
           return EventsScreen.getEventsRoute(settings);
+        }
+
+        if (settings.name == DetailedEvent.routeName) {
+          return DetailedEvent.getEventRoute(settings);
+        }
+
+        if (settings.name == ChatScreen.routeName) {
+          return ChatScreen.getChatRoute(settings);
         }
 
         return null;

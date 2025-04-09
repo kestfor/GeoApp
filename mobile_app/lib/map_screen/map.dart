@@ -10,6 +10,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile_app/events_screen/detailed_event.dart';
 import 'package:mobile_app/map_screen/cluster/marker_cluster_layer_options.dart';
 import 'package:mobile_app/map_screen/cluster/marker_cluster_layer_widget.dart';
 import 'package:mobile_app/map_screen/event_card.dart';
@@ -90,6 +91,27 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     await _animatedMapController.animatedZoomTo(17, duration: Duration(milliseconds: 1000));
   }
 
+  Widget eventPopUp(context, PureEvent event) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(event.name),
+        MaterialButton(
+          color: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          child: Icon(CupertinoIcons.right_chevron, color: Theme.of(context).primaryColor),
+          onPressed: () {
+            openEvent(context, event);
+          },
+        ),
+      ],
+    );
+  }
+
+  void openEvent(context, PureEvent event) {
+    Navigator.pushNamed(context, DetailedEvent.routeName, arguments: {"user": widget.user, "event": event});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -123,8 +145,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           height: _markerSize,
           point: LatLng(l.point.lat, l.point.lon),
           child: CustomPopup(
+            backgroundColor: lightGrayWithPurple,
             isLongPress: true,
-            content: Text(l.name),
+            content: eventPopUp(context, l),
             child: EventCard(key: Key(l.id.toString()), event: l),
           ),
         ),
@@ -184,6 +207,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
       child: SizedBox(
         height: 50,
         child: SearchBar(
+          backgroundColor: WidgetStatePropertyAll(Colors.white),
           leading: IconButton(icon: Icon(Icons.pin_drop_rounded, color: black), onPressed: () {}),
           trailing: [
             Padding(
@@ -259,12 +283,12 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             Align(
               alignment: Alignment.bottomCenter,
               child: MaterialButton(
-                color: lightGrayWithPurple,
+                color: Colors.white,
                 onPressed: () async {
                   handleCreateNewEvent(context);
                 },
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                child: Icon(Icons.add),
+                child: Icon(Icons.add, color: Theme.of(context).primaryColor),
               ),
             ),
             CurrentLocationLayer(),

@@ -41,7 +41,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
       log("got user data: $user");
 
       GeoApiInstance.fromTokenData(token.refreshToken, token.accessToken, token.expiresIn);
-      await Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: user);
+      await Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: user.id);
 
       //saving user data
       await user.saveToSharedPreferences();

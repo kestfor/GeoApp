@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/media/media.dart';
@@ -11,6 +12,7 @@ import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
+import '../geo_api/geo_api.dart';
 import '../style/shimmer.dart';
 import 'chat.dart';
 
@@ -30,43 +32,42 @@ class DetailedEvent extends StatelessWidget {
     return CupertinoPageRoute(builder: (context) => DetailedEvent(pureEvent: event));
   }
 
-  // final GeoApiInstance api = GeoApiInstance();
+  final GeoApiInstance api = GeoApiInstance();
   final PureEvent pureEvent;
-  late final Future<Event> event;
-  late final Future<PureUser> author;
+  late final Future<Event> event = api.getDetailedEvent(pureEvent.id);
+  late final Future<PureUser> author = api.getUserFromId(pureEvent.authorId);
 
-  DetailedEvent({super.key, required this.pureEvent}) {
-    loadData();
-  }
-
-  void loadData() {
-    // event = api.getDetailedEvent(pureEvent.id);
-    // author = api.getUserFromId(pureEvent.authorId);
-
-    event = Future.delayed(Duration(milliseconds: 3000), () => detailedEventMock);
-    author = Future.delayed(Duration(milliseconds: 3000), () => mockUser);
-  }
+  DetailedEvent({super.key, required this.pureEvent});
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
       backgroundColor: lightGrayWithPurple,
       appBar: AppBar(backgroundColor: Colors.transparent),
-      body: SingleChildScrollView(
+      body: Container(
+        height: screenHeight,
+        decoration: BoxDecoration(
+          gradient: mainGradientLight
+        ),
+        child: SingleChildScrollView(
         physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TitleBlock(event: event, author: author),
-                SizedBox(height: 16),
-                MediaBlock(event: event),
-                SizedBox(height: 16),
-                DescriptionBlock(event: event),
-              ],
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TitleBlock(event: event, author: author),
+                  SizedBox(height: 16),
+                  MediaBlock(event: event),
+                  SizedBox(height: 16),
+                  DescriptionBlock(event: event),
+                ],
+              ),
             ),
           ),
         ),
@@ -85,12 +86,12 @@ class DetailedEvent extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(left: 32, right: 32, bottom: 16),
       child: MaterialButton(
-        color: Colors.white12,
+        color: Colors.white,
         onPressed: () async {
           openChat(context);
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Icon(CupertinoIcons.chat_bubble_2_fill),
+        child: Icon(CupertinoIcons.chat_bubble_2_fill, color: Theme.of(context).primaryColor),
       ),
     );
   }
@@ -126,7 +127,7 @@ class TitleBlock extends StatelessWidget {
             ],
           ),
           SizedBox(height: 32),
-          ContainerPlaceHolder(width: double.infinity, height: 60),
+          ContainerPlaceHolder(width: double.infinity, height: 40),
         ],
       ),
     );
@@ -149,12 +150,12 @@ class TitleBlock extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(user.firstName, style: TextStyle(fontSize: 16)), Text("@${user.username}")],
+              children: [Text(user.firstName, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), Text("@${user.username}")],
             ),
           ],
         ),
         SizedBox(height: 32),
-        Text(event.name, style: Theme.of(context).textTheme.headlineMedium),
+        Text(event.name, style: Theme.of(context).textTheme.headlineLarge),
       ],
     );
   }
@@ -166,9 +167,10 @@ class TitleBlock extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return buildShimmer(context);
-        } else if (snapshot.hasError || !snapshot.hasData) {
+        } else if (snapshot.hasError) {
           log(snapshot.toString());
           showError(context, "something went wrong");
+          return SizedBox();
         }
 
         final event = snapshot.data![0] as Event;
@@ -200,9 +202,10 @@ class DescriptionBlock extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return buildShimmer(context);
-        } else if (snapshot.hasError || !snapshot.hasData) {
+        } else if (snapshot.hasError) {
           showError(context, "something went wrong");
           log(snapshot.toString());
+          return SizedBox();
         }
         final event = snapshot.data as Event;
         return buildDescription(context, event);
@@ -223,10 +226,21 @@ class MediaBlock extends StatelessWidget {
   Widget buildMedia(context, List<MediaContent> media) {
     final item = media[0] as ImgContent;
 
-    return ClipRRect(
+    return Container(
+        decoration: BoxDecoration(
+
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.7),
+                blurRadius: 10,
+                offset: Offset(0, 10),
+              ),
+            ]
+        ),
+        child: ClipRRect(
       borderRadius: BorderRadius.circular(15),
       child: CachedNetworkImage(imageUrl: item.images[0].url, width: double.infinity, height: 200, fit: BoxFit.cover),
-    );
+    ));
   }
 
   @override
@@ -237,9 +251,9 @@ class MediaBlock extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return getShimmer();
         } else if (snapshot.hasError) {
-          return const Center(child: Text('Error loading data'));
-        } else if (!snapshot.hasData) {
-          return const Center(child: Text('No data available'));
+          showError(context, "something went wrong");
+          log(snapshot.toString());
+          return SizedBox();
         }
         final event = snapshot.data as Event;
         return buildMedia(context, event.files);

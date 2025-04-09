@@ -159,7 +159,7 @@ class FriendsScreenState extends State<FriendsScreen> {
           return ListTile(
             tileColor: lightGrayWithPurple,
             //subtitle: Padding(padding: EdgeInsets.only(left: paddingSize), child: Text("@${user.username}", style: TextStyle(fontSize: 12, color: Colors.grey))),
-            contentPadding: EdgeInsets.symmetric(horizontal: paddingSize / 2),
+            contentPadding: EdgeInsets.only(left: paddingSize / 2, right: paddingSize / 2, top: 4, bottom: 4),
             leading: Container(
               width: avatarSize,
               height: avatarSize,
@@ -182,7 +182,7 @@ class FriendsScreenState extends State<FriendsScreen> {
               Navigator.pushNamed(
                 context,
                 UserScreen.routeName,
-                arguments: {"user": user, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
+                arguments: {"user": user.id, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
               );
             },
           );

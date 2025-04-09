@@ -113,6 +113,7 @@ class User extends PureUser {
 
   void logOut() {
     if (onLogOut != null) {
+      print("Logging out user");
       onLogOut!();
     }
   }

@@ -15,20 +15,21 @@ class MyProfileScreen extends ProfileScreen {
   static const String routeName = "/me";
 
   static Route getMyProfileRoute(RouteSettings settings) {
-    User? user = settings.arguments as User?;
+    int? user = settings.arguments as int?;
     if (user == null) {
       throw Exception("User object is required in args");
     }
-    return CupertinoPageRoute(builder: (context) => MyProfileScreen(user: user));
+    return CupertinoPageRoute(builder: (context) => MyProfileScreen(userId: user));
   }
 
-  const MyProfileScreen({super.key, required super.user});
+  const MyProfileScreen({super.key, required super.userId});
 
   @override
   State createState() => MyProfileScreenState();
 }
 
 class MyProfileScreenState extends ProfileScreenState {
+
   Widget _buildMoreButton() {
     Map<Actions, Widget> mapping = {
       Actions.edit: Row(
@@ -49,11 +50,11 @@ class MyProfileScreenState extends ProfileScreenState {
       onSelected: (Actions value) async {
         switch (value) {
           case Actions.edit:
-            await Navigator.pushNamed(context, ProfileEditScreen.routeName, arguments: widget.user);
+            await Navigator.pushNamed(context, ProfileEditScreen.routeName, arguments: user!);
             setState(() {});
             break;
           case Actions.logOut:
-            widget.user.logOut();
+            user!.logOut();
             Navigator.pushReplacementNamed(context, GoogleSignInScreen.routeName);
             break;
         }
@@ -62,6 +63,7 @@ class MyProfileScreenState extends ProfileScreenState {
     );
   }
 
+
   Widget _buildNameInfo() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,11 +71,11 @@ class MyProfileScreenState extends ProfileScreenState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "${widget.user.firstName} ${widget.user.lastName}",
+          "${user!.firstName} ${user!.lastName}",
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
         ),
         Text(
-          "@${widget.user.username}",
+          "@${user!.username}",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
         ),
       ],
@@ -81,10 +83,19 @@ class MyProfileScreenState extends ProfileScreenState {
   }
 
   @override
-  Widget get moreButton => _buildMoreButton();
-
-  @override
-  Widget get nameInfo {
-    return _buildNameInfo();
+  Widget get moreButton {
+    if (user == null) {
+      return SizedBox();
+    }
+    return _buildMoreButton();
   }
-}
+
+    @override
+    Widget get nameInfo {
+      if (user == null) {
+        return nameInfoShimmer;
+      } else {
+        return _buildNameInfo();
+      }
+    }
+  }
