@@ -57,6 +57,10 @@ dependencies:
   carousel_slider: ^5.0.0
   flutter_launcher_icons: ^0.14.3
   flutter_popup: ^3.3.4
+  flutter_chat_ui:
+  shimmer: ^3.0.0
+  uuid:
+  google_fonts:
 
 dev_dependencies:
   flutter_test:

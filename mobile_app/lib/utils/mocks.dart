@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/events/events.dart';
+import 'package:mobile_app/types/media/media.dart';
 
 import '../types/user/user.dart';
 
@@ -201,7 +203,7 @@ final mockEventsGrid = [
   "https://res.cloudinary.com/worldpackers/image/upload/c_fill,f_jpg,h_600,q_auto,w_900/v1/guides/article_cover/ejgcq0acumqaosd7kl26?_a=BACADKGT",
   "https://assets.simpleviewinc.com/simpleview/image/upload/c_fill,h_474,q_75,w_640/v1/clients/newyorkstate/GreenLkSP_109_1__4b4e7ebb-9d7d-455b-87f3-f3cad1396381.jpg",
   "https://www.youthadventuretrust.org.uk/wp-content/uploads/2019/10/FR-2-1024x624.jpg",
-  "https://burst.shopifycdn.com/photos/man-hiking-in-mountains.jpg?width=1000&format=pjpg&exif=0&iptc=0"
+  "https://burst.shopifycdn.com/photos/man-hiking-in-mountains.jpg?width=1000&format=pjpg&exif=0&iptc=0",
 ];
 
 final pureEventsMock = [
@@ -276,8 +278,6 @@ List<PureEvent> generatePureEvents({limit = 100}) {
   List<PureEvent> res = [];
   final random = Random();
   for (int i = 0; i < limit; i++) {
-
-
     final event = PureEvent(
       id: i,
       coverUrl: mockEventsGrid[random.randomInt(0, 6)],
@@ -292,3 +292,49 @@ List<PureEvent> generatePureEvents({limit = 100}) {
 }
 
 List<PureEvent> generatedMocks = generatePureEvents();
+
+final detailedEventMock = Event(
+  id: 1,
+  coverUrl: "https://www.mensjournal.com/.image/t_share/MTk2MTM3MzIwNzEwMjg0ODA1/alex-honnold-jimmy-chin.jpg",
+  name: "Hiking in the mountains",
+  authorId: 2,
+  membersId: [1, 2],
+  files: mediaMock,
+  point: Point(lat: 42.7128, lon: -72.0060),
+  description:
+      "Join us for an unforgettable hiking adventure in the breathtaking mountains! Experience stunning views, fresh air, and the thrill of exploring nature's beauty. Whether you're a seasoned hiker or a beginner, this event is perfect for everyone. Don't miss out on this opportunity to connect with fellow outdoor enthusiasts and create lasting memories!",
+);
+
+final commentsMock = [
+  PureComment(
+    id: 1,
+    authorId: 4,
+    text:
+        "This event was amazing! The views were breathtaking and the company was fantastic. Can't wait for the next one!",
+    createdAt: (DateTime.now().subtract(Duration(days: 1)).millisecondsSinceEpoch / 1000).toInt(),
+    updatedAt: (DateTime.now().subtract(Duration(days: 1)).millisecondsSinceEpoch / 1000).toInt(),
+  ),
+  PureComment(
+    id: 2,
+    authorId: 5,
+    text:
+        "I had a great time hiking with everyone! The trail was challenging but worth it. Looking forward to more adventures together!",
+    createdAt: (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch / 1000).toInt(),
+    updatedAt: (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch / 1000).toInt(),
+  ),
+];
+
+final mediaMock = [
+  ImgContent(
+    fileId: "1",
+    authorId: "1",
+    images: [
+      ImgData(
+        type: "original",
+        size: 1,
+        metadata: {},
+        url: "https://www.mensjournal.com/.image/t_share/MTk2MTM3MzIwNzEwMjg0ODA1/alex-honnold-jimmy-chin.jpg",
+      ),
+    ],
+  ),
+];

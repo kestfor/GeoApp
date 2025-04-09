@@ -25,7 +25,8 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
   var initialScreen = await getInitScreen();
-  runApp(MyApp(initialScreen: initialScreen));
+  runApp(MyApp(
+      initialScreen: initialScreen));
 }
 
 Future<Widget> getInitScreen() async {
@@ -53,8 +54,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'App Title',
-      theme: lightTheme,
-      darkTheme: ThemeData(brightness: Brightness.dark),
+      theme: buildAppTheme(),
       themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
       initialRoute: "/",

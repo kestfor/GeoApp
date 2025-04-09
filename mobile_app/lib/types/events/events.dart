@@ -1,4 +1,7 @@
 import 'package:mobile_app/types/user/user.dart';
+import 'package:mobile_app/types/media/media.dart';
+
+import '../media/media.dart';
 
 class Point {
   double lat;
@@ -68,6 +71,7 @@ class PureEvent {
 class Event extends PureEvent {
   String? description;
   List<PureUser> members;
+  List<MediaContent> files = [];
 
   Event({
     required super.point,
@@ -78,11 +82,13 @@ class Event extends PureEvent {
     required super.membersId,
     this.description,
     this.members = const [],
+    required this.files
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
       point: json["point"],
+      files: (json['files'] as List).map((e) => resolveFromJson(e)).toList(),
       id: json['id'],
       coverUrl: json['cover_url'],
       name: json['name'],

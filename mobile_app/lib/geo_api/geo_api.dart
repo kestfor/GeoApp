@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile_app/geo_api/filters.dart';
 import 'package:mobile_app/oauth/token_manager/token_manager.dart';
+import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/utils/mocks.dart';
 
@@ -132,5 +133,31 @@ class GeoApiInstance implements Refresher {
     Map<String, dynamic> body = {"limit": 20, "offset": 0, "filter": filter};
     final headers = await getAuthHeaders();
     return Future.delayed(Duration(milliseconds: 300), () => pureEventsMock);
+  }
+
+  Future<Event> getDetailedEvent(int eventId) async {
+    final headers = await getAuthHeaders();
+    return Future.delayed(Duration(milliseconds: 300), () => detailedEventMock);
+  }
+
+  Future<List<PureComment>> getCommentsForEvent(int eventId) async {
+    final headers = await getAuthHeaders();
+    return Future.delayed(Duration(milliseconds: 300), () => commentsMock);
+  }
+
+  Future<List<PureUser>> getUsersFromIds(List<int> ids) async {
+    final headers = await getAuthHeaders();
+    List<PureUser> users = [mockUser];
+    users.addAll(friendsMocks);
+    return Future.delayed(Duration(milliseconds: 300), () => users);
+  }
+
+  Future<PureUser> getUserFromId(int id) async {
+    return getUsersFromIds([id]).then((value) {
+      if (value.isNotEmpty) {
+        return value[0];
+      }
+      throw Exception("User not found");
+    });
   }
 }
