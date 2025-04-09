@@ -68,16 +68,7 @@ class _FriendButtonState extends State<FriendButton> {
           barrierDismissible: true,
           barrierLabel: "Dismiss",
           pageBuilder:
-              (context, animation, secondaryAnimation) => AlertDialog(
-                title: const Text('remove friend?'),
-                actions: [
-                  TextButton(child: const Text('cancel'), onPressed: () => Navigator.pop(context, false)),
-                  TextButton(
-                    child: const Text('remove', style: TextStyle(color: red)),
-                    onPressed: () => Navigator.pop(context, true),
-                  ),
-                ],
-              ),
+              (context, animation, secondaryAnimation) => FriendRemoveDialog()
         );
         if (remove == true) {
           notifier.value = FriendStatus.none;
@@ -90,16 +81,7 @@ class _FriendButtonState extends State<FriendButton> {
           barrierDismissible: true,
           barrierLabel: "Dismiss",
           pageBuilder: (context, animation, secondaryAnimation) {
-            return AlertDialog(
-              title: const Text('Accept request?'),
-              actions: [
-                TextButton(
-                  child: const Text('decline', style: TextStyle(color: red)),
-                  onPressed: () => Navigator.pop(context, false),
-                ),
-                TextButton(child: const Text('accept'), onPressed: () => Navigator.pop(context, true)),
-              ],
-            );
+            return FriendRequestDialog();
           },
         );
         if (accept != null) {
@@ -172,6 +154,77 @@ class _FriendButtonState extends State<FriendButton> {
       onPressed: () {
         _onPressed();
       },
+    );
+  }
+}
+
+class FriendRequestDialog extends StatelessWidget {
+  const FriendRequestDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Accept request?', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineLarge),
+      content: Text(
+        "After accepting the request, you will be able to see each other's map events",
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(child: MaterialButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              color: Colors.grey,
+              child: const Text('decline', style: TextStyle(color: Colors.white)),
+              onPressed: () => Navigator.pop(context, false),
+            )),
+            SizedBox(width: 8),
+            Expanded(child: MaterialButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              color: Theme.of(context).primaryColor,
+              child: const Text('accept', style: TextStyle(color: Colors.white)),
+              onPressed: () => Navigator.pop(context, true),
+            )),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+
+class FriendRemoveDialog extends StatelessWidget {
+  const FriendRemoveDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Remove friend?', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineLarge),
+      content: Text(
+        "After deleting the friend, you will not be able to see each other's map events anymore",
+        textAlign: TextAlign.center,
+      ),
+      actions: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Expanded(child: MaterialButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              color: Theme.of(context).primaryColor,
+              child: const Text("cancel", style: TextStyle(color: Colors.white)),
+              onPressed: () => Navigator.pop(context, false),
+            )),
+            SizedBox(width: 8),
+            Expanded(child: MaterialButton(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              color: Colors.grey,
+              child: const Text('remove', style: TextStyle(color: Colors.white)),
+              onPressed: () => Navigator.pop(context, true),
+            )),
+          ],
+        ),
+      ],
     );
   }
 }
