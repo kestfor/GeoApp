@@ -33,7 +33,7 @@ void main() async {
 Future<Widget> getInitScreen() async {
   WidgetsFlutterBinding.ensureInitialized();
   User? user = await User.loadFromSharedPreferences();
-  Widget initialScreen = user != null ? MyProfileScreen(user: user) : GoogleSignInScreen();
+  Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
 
   try {
     await GeoApiInstance.loadTokenData();

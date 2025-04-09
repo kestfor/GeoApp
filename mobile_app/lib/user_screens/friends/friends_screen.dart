@@ -182,7 +182,7 @@ class FriendsScreenState extends State<FriendsScreen> {
               Navigator.pushNamed(
                 context,
                 UserScreen.routeName,
-                arguments: {"user": user, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
+                arguments: {"user": user.id, "status": FriendStatus.values[random.nextInt(FriendStatus.values.length)]},
               );
             },
           );

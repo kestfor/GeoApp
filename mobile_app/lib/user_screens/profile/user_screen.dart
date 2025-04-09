@@ -12,7 +12,7 @@ class UserScreen extends ProfileScreen {
 
   static Route getUserRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
-    User? user = args["user"] as User?;
+    int? user = args["user"] as int?;
     FriendStatus? status = args["status"] as FriendStatus?;
     if (user == null) {
       throw Exception("User object is required in args");
@@ -22,10 +22,10 @@ class UserScreen extends ProfileScreen {
       throw Exception("FriendStatus object is required in args");
     }
 
-    return CupertinoPageRoute(builder: (context) => UserScreen(user: user, status: status));
+    return CupertinoPageRoute(builder: (context) => UserScreen(userId: user, status: status));
   }
 
-  const UserScreen({super.key, required super.user, required this.status});
+  const UserScreen({super.key, required super.userId, required this.status});
 
   @override
   State createState() => UserScreenState();
@@ -37,7 +37,7 @@ class UserScreenState extends ProfileScreenState {
 
   Widget _buildNameInfo() {
     final name = Text(
-      "${widget.user.firstName} ${widget.user.lastName}",
+      "${user!.firstName} ${user!.lastName}",
       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
     );
     final iconSize = name.style!.fontSize!;
@@ -74,7 +74,7 @@ class UserScreenState extends ProfileScreenState {
           ],
         ),
         Text(
-          "@${widget.user.username}",
+          "@${user!.username}",
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
         ),
       ],
@@ -83,6 +83,10 @@ class UserScreenState extends ProfileScreenState {
 
   @override
   Widget get nameInfo {
-    return _buildNameInfo();
+    if (user == null) {
+      return nameInfoShimmer;
+    } else {
+      return _buildNameInfo();
+    }
   }
 }
