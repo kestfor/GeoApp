@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:mobile_app/file_processing/image_processing.dart';
 import 'package:mobile_app/file_processing/video_processing.dart';
@@ -59,6 +61,7 @@ class Converter {
         final task = ImageProcessor.processImage(file.path);
         tasks.add(task);
         task.then((res) {
+          log("img file processed: $res");
           tr.MediaFull media = tr.MediaFull(
             mediaType: tr.MediaType.photo,
             exifMetadata: res.exifMetadata,
@@ -70,6 +73,7 @@ class Converter {
         final task = VideoProcessor.processVideo(file.path, file.thumbnail!);
         tasks.add(task);
         task.then((res) {
+          log("video file processed: $res");
           tr.MediaFull media = tr.MediaFull(
             mediaType: tr.MediaType.video,
             exifMetadata: res.exifMetadata,

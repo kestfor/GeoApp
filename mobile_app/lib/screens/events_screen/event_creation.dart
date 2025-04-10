@@ -43,9 +43,19 @@ class EventCreationScreen extends StatefulWidget {
 class _EventCreationScreenState extends State<EventCreationScreen> {
   final TextEditingController _eventNameController = TextEditingController();
   final TextEditingController _eventDescriptionController = TextEditingController();
+  List<MediaFull> readyMedia = [];
+  List<Future<void>> preprocessTasks = [];
   LatLng? location;
   bool _isTitleValid = true;
   bool _isLocationValid = true;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 1000), () {
+      preprocessFiles();
+    });
+  }
 
   bool verify() {
     if (_eventNameController.text.isEmpty) {
@@ -69,52 +79,33 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     return true;
   }
 
-  Future<void> test() async {
-    List<Future<void>> tasks = [];
-    List<MediaFull> media = [];
+  Future<void> uploadFiles(context) async {
+    showDialog(context: context, builder: (context) => Center(child: CircularProgressIndicator()));
 
+    await Future.wait(preprocessTasks);
+    Navigator.pop(context);
+
+    MediaStorageService mediaService = MediaStorageService();
+    mediaService.uploadFiles(readyMedia);
+  }
+
+  Future<void> preprocessFiles() async {
     for (var file in widget.files) {
       task() async {
-        media.addAll(await Converter.toTransport([file]));
+        readyMedia.addAll(await Converter.toTransport([file]));
         return null;
       }
 
-      tasks.add(task());
+      preprocessTasks.add(task());
     }
-    await Future.wait(tasks);
-
-    MediaStorageService mediaService = MediaStorageService();
-
-    await mediaService.uploadFiles(media);
   }
-
-  // Future<List<String>> hash() async {
-  //   List<Future<String>> tasks = [];
-  //   for (var file in widget.files) {
-  //     tasks.add(FileHashing.computeHashFromFile(file.path));
-  //   }
-  //   List<String> hashes = await Future.wait(tasks);
-  //   return hashes;
-  // }
-
-  // Future<List<openapi.MediaFull>> prepareFiles() async {
-  //   final hashes = await hash();
-  //   List<openapi.MediaFull> media = [];
-  //
-  //   for (int i = 0; i < widget.files.length; i++) {
-  //     final file = widget.files[i];
-  //     final hash = hashes[i];
-  //     final builder = openapi.MediaFullBuilder();
-  //     builder.mediaType = openapi.MediaType.photo;
-  //     final media = builder.build();
-  //     print(media);
-  //   }
-  // }
 
   void handleCreate() {
     if (!verify()) {
       return;
     }
+
+    uploadFiles(context);
 
     //TODO: Add event creation logic here
     final newEvent = PureEvent(
@@ -242,12 +233,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 10, left: 30, right: 30, top: 10),
         child: MaterialButton(
-          color: purple,
-          // Задайте нужный цвет
+          color: Theme.of(context).primaryColor,
           textColor: black,
-          //onPressed: handleCreate,
-          onPressed: () {
-            test();
+          onPressed: () async {
+            handleCreate();
           },
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Text("Post", style: TextStyle(fontSize: 16)),
