@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile_app/geo_api/auth.dart';
-import 'package:mobile_app/oauth/token_manager/token_manager.dart';
+import 'package:mobile_app/geo_api/token_manager/token_manager.dart';
 
 enum AuthType { google }
 

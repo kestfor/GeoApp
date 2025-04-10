@@ -1,0 +1,283 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:mobile_app/geo_api/services/events/filters.dart';
+import 'package:mobile_app/geo_api/services/events/events_services.dart';
+import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/style/theme/theme.dart';
+import 'package:mobile_app/types/events/events.dart';
+import 'package:mobile_app/types/user/user.dart';
+import 'package:mobile_app/utils/mocks.dart';
+import 'package:mobile_app/utils/placeholders/placeholders.dart';
+import '../../../style/shimmer.dart';
+import '../../../toast_notifications/notifications.dart';
+import '../../../utils/clickable_card/clickable_card.dart';
+import '../../events_screen/events_screen.dart';
+import '../friends/friend_list.dart';
+import '../friends/friends_screen.dart';
+import 'events_grid.dart';
+import 'overlapping_images.dart';
+
+class ProfileScreen extends StatefulWidget {
+  final int userId;
+  static const String routeName = "/profile";
+
+  const ProfileScreen({super.key, required this.userId});
+
+  static Route getProfileRoute(RouteSettings settings) {
+    int? user = settings.arguments as int?;
+    if (user == null) {
+      throw Exception("User object is required in args");
+    }
+    return CupertinoPageRoute(builder: (context) => ProfileScreen(userId: user));
+  }
+
+  @override
+  State createState() => ProfileScreenState();
+}
+
+class ProfileScreenState extends State<ProfileScreen> {
+  User? _user;
+  List<PureEvent>? _events;
+  List<User>? _friends;
+  final UsersService _usersService = UsersService();
+  final EventsService _eventsService = EventsService();
+
+  Future<void> _refresh() async {
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        _friends = null;
+        _events = null;
+        _user = null;
+        _fetchUserData();
+        _fetchFriends();
+        _fetchEvents();
+      });
+    });
+  }
+
+  User? get user => _user;
+
+  List<PureEvent>? get events => _events;
+
+  List<User>? get friends => _friends;
+
+  void _fetchEvents() {
+    _eventsService
+        .fetchEventsForUser(EventFilter(userId: widget.userId))
+        .then((events) {
+          setState(() {
+            this._events = events;
+          });
+        })
+        .onError((error, stackTrace) {
+          showError(context, "Error while fetching events");
+          print("Error fetching events: $error");
+        });
+  }
+
+  void _fetchUserData() {
+    _usersService
+        .getDetailedUser(widget.userId)
+        .then((u) {
+          setState(() {
+            _user = u;
+          });
+        })
+        .onError((error, stackTrace) {
+          showError(context, "Error while fetching events");
+          print("Error fetching user: $error");
+        });
+  }
+
+  void _fetchFriends() {
+    _usersService
+        .fetchFriendsForUser(widget.userId)
+        .then((friends) {
+          setState(() {
+            _friends = friends;
+          });
+        })
+        .onError((error, stackTrace) {
+          showError(context, "Error while fetching friends");
+          print("Error fetching friends: $error");
+        });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFriends();
+    _fetchEvents();
+    _fetchUserData();
+  }
+
+  Widget _buildAvatar(double radius) {
+    final shimmer = DefaultShimmer(child: CircleAvatarPlaceholder(size: radius * 2));
+
+    if (_user == null) {
+      return shimmer;
+    }
+
+    return _buildImage(radius, _user!.pictureUrl);
+  }
+
+  Widget _buildImage(double radius, url) {
+    return ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(radius)),
+      child: CachedNetworkImage(
+        placeholder: (context, url) => CircularProgressIndicator(color: purpleGradient[1]),
+        errorWidget: (context, _, _) => Icon(Icons.account_circle_rounded, color: black, size: radius * 2),
+        imageUrl: url,
+        fit: BoxFit.cover,
+        width: radius * 2,
+        height: radius * 2,
+      ),
+    );
+  }
+
+  Widget _buildFriendsBlock() {
+    late Widget textWidget;
+    late Widget stackImg;
+
+    final shimmer = DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 50));
+
+    if (_friends == null) {
+      return shimmer;
+    }
+
+    textWidget = Text("${_friends!.length} friends", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
+    final images = _friends!.map((user) => _buildImage(15, user.pictureUrl)).toList();
+    stackImg = SizedBox(height: 30, width: 60, child: OverlappingImages(shift: 15, children: images));
+
+    return SizedBox(
+      width: double.infinity,
+      child: ClickableCard(
+        onPressed: () {
+          Navigator.pushNamed(
+            context,
+            FriendsScreen.routeName,
+            arguments: {"dataProvider": UserDataProvider(initData: _friends), "user": _user},
+          );
+        },
+        pressedColor: Colors.white.withOpacity(0.8),
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [textWidget, stackImg],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventsBlock(context) {
+    final height = MediaQuery.of(context).size.width / 3 * 2;
+    if (_events == null) {
+      return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: height));
+    }
+
+    final eventsImg = _events!.map((event) => event.coverUrl).toList();
+
+    return SizedBox(
+      width: double.infinity,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(context, EventsScreen.routeName, arguments: {"events": pureEventsMock, "user": _user});
+        },
+        child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
+      ),
+    );
+  }
+
+  Widget get nameInfoShimmer {
+    return DefaultShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          ContainerPlaceHolder(width: 200, height: 40),
+          SizedBox(height: 8),
+          ContainerPlaceHolder(width: 100, height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBioBlock() {
+    if (_user == null) {
+      return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 150));
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        color: Colors.white,
+        child: Padding(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Bio", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                maxLines: 5,
+                _user!.bio == null ? "No bio provided" : _user!.bio!,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget get moreButton => SizedBox();
+
+  Widget get nameInfo => SizedBox();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: AppBar(forceMaterialTransparency: true, backgroundColor: Colors.transparent, actions: [moreButton]),
+      body: Container(
+        decoration: BoxDecoration(gradient: mainGradientLight),
+        child: RefreshIndicator(
+          onRefresh: _refresh,
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(20),
+                child: Align(
+                  alignment: Alignment.topLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAvatar(75),
+                      SizedBox(height: 32),
+                      nameInfo,
+                      SizedBox(height: 32),
+                      _buildBioBlock(),
+                      SizedBox(height: 8),
+                      _buildFriendsBlock(),
+                      SizedBox(height: 8),
+                      _buildEventsBlock(context),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

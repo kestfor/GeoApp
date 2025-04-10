@@ -1,7 +1,6 @@
 // Пример использования
 import 'package:flutter/material.dart';
-import 'package:mobile_app/oauth/sign_in_button/mobile.dart';
-
+import '../screens/oauth/sign_in_button/mobile.dart';
 import 'colors.dart';
 import 'gradient_button.dart';
 
