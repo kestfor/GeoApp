@@ -4,32 +4,8 @@ import 'dart:io';
 import 'package:exif/exif.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:mobile_app/file_processing/hashing.dart';
+import 'package:mobile_app/file_processing/types.dart';
 import 'package:path_provider/path_provider.dart';
-
-enum SizeType { thumb, medium, original }
-
-class Size {
-  final double width;
-  final double height;
-
-  Size(this.width, this.height);
-}
-
-class FileInfo {
-  final String filePath;
-  final String hash;
-  final int size;
-  final SizeType sizeType;
-
-  FileInfo({required this.filePath, required this.hash, required this.size, required this.sizeType});
-}
-
-class ProcessedResult {
-  final Map<SizeType, FileInfo> files;
-  final Map<String, dynamic> exifMetadata;
-
-  ProcessedResult({required this.files, required this.exifMetadata});
-}
 
 class ImageProcessor {
   static final Map<SizeType, Size> sizeMapping = {SizeType.thumb: Size(300, 150), SizeType.medium: Size(1280, 720)};
@@ -44,6 +20,10 @@ class ImageProcessor {
 
     final Directory tempDir = await getTemporaryDirectory();
     final metaData = await readExifFromFile(File(filePath));
+    final Map<String, String> convertedMap = {};
+    metaData.forEach((key, value) {
+      convertedMap[key] = value.toString();
+    });
 
     // create tasks for processing images
     List<Future<void>> tasks = [];
@@ -84,7 +64,7 @@ class ImageProcessor {
     await Future.wait(tasks);
 
     return ProcessedResult(
-      exifMetadata: metaData,
+      exifMetadata: convertedMap,
       files: sizes.map(
         (key, value) => MapEntry(
           key,

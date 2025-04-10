@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
-import '../../../types/media/models_for_transport/models.dart';
 import '../../base_api.dart';
+import 'models/models.dart';
 
 class MediaStorageService {
   static final BaseApi baseApi = BaseApi();
@@ -13,14 +13,12 @@ class MediaStorageService {
 
   // get presigned urls for uploading files to S3
   Future<Map<String, dynamic>> _getPresUrls(List<MediaFull> media) async {
-    for (var entry in media) {
-      entry.exifMetadata.clear();
-    }
-
     Map<String, dynamic> body = {"medias": media.map((e) => e.toJson()).toList()};
+    print("body: $body");
     final uri = Uri.parse('$baseUrl/upload_urls/');
     var res = await baseApi.post(uri, body: body);
     if (res.statusCode != 200) {
+      log(res.body);
       throw Exception('Failed to get presigned URL');
     } else {
       return jsonDecode(res.body);
@@ -44,6 +42,7 @@ class MediaStorageService {
 
     try {
       await Future.wait(tasks, eagerError: true);
+      log("All files uploaded successfully");
     } catch (e) {
       log("Error uploading file: $e, one of the tasks failed");
       throw Exception("Error uploading file: $e");
@@ -68,10 +67,9 @@ class MediaStorageService {
 
     final res = await request.send();
     if (res.statusCode == 204) {
-      log("file loaded successfully");
+      log("file $filePath loaded successfully");
     } else {
       String err = 'error uploading file ${res.statusCode}';
-      log(err);
       throw err;
     }
   }
@@ -79,7 +77,6 @@ class MediaStorageService {
   // method for uploading files to S3
   Future<void> uploadFiles(List<MediaFull> media) async {
     final presRes = await _getPresUrls(media);
-
     for (var med in media) {
       await _uploadVariants(med, presRes);
     }

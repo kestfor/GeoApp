@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/demo/widgets/media_preview.dart';
+import 'package:mobile_app/geo_api/services/media_storage/converter.dart';
 import 'package:mobile_app/geo_api/services/media_storage/media_storage_service.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/types/events/events.dart';
-import 'package:mobile_app/types/media/converter.dart';
-import 'package:mobile_app/types/media/models_for_transport/models.dart';
 
+import '../../geo_api/services/media_storage/models/models.dart';
 import '../../types/user/user.dart';
 import '../map_screen/geolocator.dart';
 import '../map_screen/map_position_picker.dart';

@@ -1,7 +1,8 @@
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:mobile_app/file_processing/image_processing.dart';
 import 'package:mobile_app/file_processing/video_processing.dart';
-import 'package:mobile_app/types/media/models_for_transport/models.dart' as tr;
+import '../../../file_processing/types.dart';
+import 'models/models.dart' as tr;
 
 class Converter {
   static tr.MediaVariant _toMediaVariant(SizeType sizeType) {
@@ -66,6 +67,18 @@ class Converter {
           medias.add(media);
         });
       } else if (file.type == "video") {
+        final task = VideoProcessor.processVideo(file.path, file.thumbnail!);
+        tasks.add(task);
+        task.then((res) {
+          tr.MediaFull media = tr.MediaFull(
+            mediaType: tr.MediaType.video,
+            exifMetadata: res.exifMetadata,
+            representations: _toMediaRepr(res, _toTransportMimeType(file.mimeType)),
+          );
+          medias.add(media);
+        });
+      } else {
+        throw Exception("Unknown file type");
       }
     }
     await Future.wait(tasks);
