@@ -4,6 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/geo_api/services/events_services.dart';
+import 'package:mobile_app/geo_api/services/users_service.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
@@ -13,14 +15,9 @@ import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
-import '../geo_api/geo_api.dart';
 import '../style/shimmer.dart';
 import 'chat.dart';
 import 'full_screen_media.dart';
-
-void main() {
-  runApp(MaterialApp(home: DetailedEvent(pureEvent: pureEventsMock[0])));
-}
 
 class DetailedEvent extends StatelessWidget {
   static const String routeName = "/event";
@@ -34,10 +31,12 @@ class DetailedEvent extends StatelessWidget {
     return CupertinoPageRoute(builder: (context) => DetailedEvent(pureEvent: event));
   }
 
-  final GeoApiInstance api = GeoApiInstance();
+  final UsersService usersApi = UsersService();
+  final EventsService eventsApi = EventsService();
+
   final PureEvent pureEvent;
-  late final Future<Event> event = api.getDetailedEvent(pureEvent.id);
-  late final Future<PureUser> author = api.getUserFromId(pureEvent.authorId);
+  late final Future<Event> event = eventsApi.getDetailedEvent(pureEvent.id);
+  late final Future<PureUser> author = usersApi.getUserFromId(pureEvent.authorId);
   final CarouselSliderController buttonCarouselController = CarouselSliderController();
 
   DetailedEvent({super.key, required this.pureEvent});
@@ -228,7 +227,6 @@ class MediaBlock extends StatelessWidget {
     return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 200));
   }
 
-
   Widget _buildImg(context, url, allMedia, index, controller) {
     return Hero(
       transitionOnUserGestures: true,
@@ -260,7 +258,6 @@ class MediaBlock extends StatelessWidget {
   }
 
   Widget buildMedia(context, List<MediaContent> media) {
-
     List<Widget> items = [];
     for (int i = 0; i < media.length; i++) {
       if (media[i] is ImgContent) {

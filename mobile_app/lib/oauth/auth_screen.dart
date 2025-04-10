@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:mobile_app/geo_api/geo_api.dart';
 import 'package:mobile_app/oauth/google_authenticator.dart';
 import 'package:mobile_app/oauth/sign_in_button/mobile.dart';
 import 'package:mobile_app/style/gradient_button.dart';
@@ -35,12 +33,9 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   Future<void> _handleSignIn() async {
     try {
       await googleAuth.signIn(); // sign in with google
-      final token = await googleAuth.authenticate(); // authorize with backend
+      await googleAuth.authenticate(); // authenticate
       User user = await googleAuth.getUser(); // get user data
-      log("got token: $token");
-      log("got user data: $user");
 
-      GeoApiInstance.fromTokenData(token.refreshToken, token.accessToken, token.expiresIn);
       await Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: user.id);
 
       //saving user data

@@ -72,4 +72,5 @@ MediaContent resolveFromJson(Map<String, dynamic> json) {
     default:
       throw Exception("Unknown media type: $type");
   }
+
 }

@@ -64,6 +64,7 @@ dependencies:
   google_fonts:
   video_player: ^2.9.5
   chewie: ^1.11.1
+  exif: ^3.3.0
 
 
 dev_dependencies:
@@ -76,7 +77,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
-  openapi_generator: ^6.1.0
+  json_serializable: ^6.6.0
+  json_annotation: ^4.9.0
   build_runner:
 
 flutter_launcher_icons:

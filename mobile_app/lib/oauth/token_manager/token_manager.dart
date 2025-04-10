@@ -3,7 +3,12 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 abstract class Refresher {
-  Future<Map<String, dynamic>> refresh(String token);
+  Future<Map<String, dynamic>> refresh(String refreshToken);
+}
+
+abstract class Authenticator {
+  void setAdditionalData(Map<String, dynamic> data);
+  Future<Map<String, dynamic>> authenticate();
 }
 
 class TokenManager {
@@ -67,9 +72,7 @@ class TokenManager {
       _expiresAt = data["expires_at"];
       _refresher = refresher;
       _instance = TokenManager._internal(refresher, _accessToken, _refreshToken, _expiresAt);
-      print(
-          "TokenManager: read token data: $_accessToken, $_refreshToken, $_expiresAt"
-      );
+      print("TokenManager: read token data: $_accessToken, $_refreshToken, $_expiresAt");
     } else {
       throw Exception("No token data found");
     }

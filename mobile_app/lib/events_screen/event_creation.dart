@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/demo/widgets/media_preview.dart';
-import 'package:mobile_app/file_processing/hashing.dart';
+import 'package:mobile_app/geo_api/services/media_storage_service.dart';
 import 'package:mobile_app/map_screen/geolocator.dart';
 import 'package:mobile_app/map_screen/map_position_picker.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/types/events/events.dart';
+import 'package:mobile_app/types/media/converter.dart';
+import 'package:mobile_app/types/media/models_for_transport/models.dart';
 
 import '../types/user/user.dart';
 
@@ -67,14 +69,33 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     return true;
   }
 
-  Future<List<String>> hash() async {
-    List<Future<String>> tasks = [];
+  Future<void> test() async {
+    List<Future<void>> tasks = [];
+    List<MediaFull> media = [];
+
     for (var file in widget.files) {
-      tasks.add(FileHashing.computeHashFromFile(file.path));
+      task() async {
+        media.addAll(await Converter.toTransport([file]));
+        return null;
+      }
+
+      tasks.add(task());
     }
-    List<String> hashes = await Future.wait(tasks);
-    return hashes;
+    await Future.wait(tasks);
+
+    MediaStorageService mediaService = MediaStorageService();
+
+    await mediaService.uploadFiles(media);
   }
+
+  // Future<List<String>> hash() async {
+  //   List<Future<String>> tasks = [];
+  //   for (var file in widget.files) {
+  //     tasks.add(FileHashing.computeHashFromFile(file.path));
+  //   }
+  //   List<String> hashes = await Future.wait(tasks);
+  //   return hashes;
+  // }
 
   // Future<List<openapi.MediaFull>> prepareFiles() async {
   //   final hashes = await hash();
@@ -224,7 +245,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
           color: purple,
           // Задайте нужный цвет
           textColor: black,
-          onPressed: handleCreate,
+          //onPressed: handleCreate,
+          onPressed: () {
+            test();
+          },
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Text("Post", style: TextStyle(fontSize: 16)),
         ),

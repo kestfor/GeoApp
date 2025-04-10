@@ -3,7 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/events_screen/events_screen.dart';
 import 'package:mobile_app/geo_api/filters.dart';
-import 'package:mobile_app/geo_api/geo_api.dart';
+import 'package:mobile_app/geo_api/services/events_services.dart';
+import 'package:mobile_app/geo_api/services/users_service.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/events/events.dart';
@@ -41,7 +42,8 @@ class ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   List<PureEvent>? _events;
   List<User>? _friends;
-  final GeoApiInstance _geoApi = GeoApiInstance();
+  final UsersService _usersService = UsersService();
+  final EventsService _eventsService = EventsService();
 
   Future<void> _refresh() async {
     Future.delayed(Duration(milliseconds: 500), () {
@@ -63,7 +65,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   List<User>? get friends => _friends;
 
   void _fetchEvents() {
-    _geoApi
+    _eventsService
         .fetchEventsForUser(EventFilter(userId: widget.userId))
         .then((events) {
           setState(() {
@@ -77,7 +79,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _fetchUserData() {
-    _geoApi
+    _usersService
         .getDetailedUser(widget.userId)
         .then((u) {
           setState(() {
@@ -91,7 +93,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _fetchFriends() {
-    _geoApi
+    _usersService
         .fetchFriendsForUser(widget.userId)
         .then((friends) {
           setState(() {
@@ -113,9 +115,7 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAvatar(double radius) {
-    final shimmer = DefaultShimmer(
-      child: CircleAvatarPlaceholder(size: radius * 2)
-    );
+    final shimmer = DefaultShimmer(child: CircleAvatarPlaceholder(size: radius * 2));
 
     if (_user == null) {
       return shimmer;
@@ -200,14 +200,16 @@ class ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [ContainerPlaceHolder(width: 200, height: 40), SizedBox(height: 8), ContainerPlaceHolder(width: 100, height: 20)],
+        children: [
+          ContainerPlaceHolder(width: 200, height: 40),
+          SizedBox(height: 8),
+          ContainerPlaceHolder(width: 100, height: 20),
+        ],
       ),
     );
   }
 
   Widget _buildBioBlock() {
-
-
     if (_user == null) {
       return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: 150));
     }

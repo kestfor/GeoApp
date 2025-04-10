@@ -7,6 +7,7 @@ import 'package:mobile_app/events_screen/chat.dart';
 import 'package:mobile_app/events_screen/detailed_event.dart';
 import 'package:mobile_app/events_screen/event_creation.dart';
 import 'package:mobile_app/events_screen/events_screen.dart';
+import 'package:mobile_app/geo_api/base_api.dart';
 import 'package:mobile_app/map_screen/map.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/user/user.dart';
@@ -15,8 +16,6 @@ import 'package:mobile_app/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/user_screens/profile/me_screen.dart';
 import 'package:mobile_app/user_screens/profile/user_screen.dart';
-
-import 'geo_api/geo_api.dart';
 import 'map_screen/map_position_picker.dart';
 import 'oauth/auth_screen.dart';
 
@@ -36,7 +35,7 @@ Future<Widget> getInitScreen() async {
   Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
 
   try {
-    await GeoApiInstance.loadTokenData();
+    await BaseApi.loadTokenData();
     print("Token data loaded");
   } on Exception catch (e) {
     log(e.toString());

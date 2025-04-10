@@ -333,7 +333,7 @@ final mediaMock = [
         type: "original",
         size: 1,
         metadata: {},
-        url: "https://www.mensjournal.com/.image/t_share/MTk2MTM3MzIwNzEwMjg0ODA1/alex-honnold-jimmy-chin.jpg",
+        url: "https://storage.yandexcloud.net/user-content/test_key?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=YCAJEIRbfQAbQ9bnQvUNgYf1k%2F20250410%2Fru-central1%2Fs3%2Faws4_request&X-Amz-Date=20250410T124320Z&X-Amz-Expires=2592000&X-Amz-Signature=5522c557c7f44db7ece0735c954acf8bf78b5d649ff87dc6cf87c5bc5cff3240&X-Amz-SignedHeaders=host",
       ),
     ],
   ),

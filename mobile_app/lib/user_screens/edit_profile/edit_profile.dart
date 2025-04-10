@@ -1,10 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_app/geo_api/services/users_service.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/utils/date_picker/date_picker.dart';
-
-import '../../geo_api/geo_api.dart';
 import '../../types/user/user.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -27,8 +26,7 @@ class ProfileEditScreen extends StatefulWidget {
 }
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  final GeoApiInstance _geoApi = GeoApiInstance();
-
+  final UsersService _usersService = UsersService();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;
@@ -65,7 +63,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     modified.birthDate = _birthDate;
 
     try {
-      await _geoApi.modifyUser(modified);
+      await _usersService.modifyUser(modified);
     } on Exception catch (error) {
       print("$error");
       showError(context, error.toString());

@@ -1,7 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/geo_api.dart';
-import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/geo_api/services/users_service.dart';
 import 'package:mobile_app/types/user/user.dart';
 
 import '../../utils/mocks.dart';
@@ -17,7 +14,7 @@ class LazyDataProvider<T> {
 }
 
 class UserDataProvider extends LazyDataProvider<User> {
-  final GeoApiInstance _apiInstance = GeoApiInstance();
+  final UsersService _apiInstance = UsersService();
 
   UserDataProvider({super.initData});
 
@@ -43,4 +40,3 @@ class MockedDataProvider extends LazyDataProvider<User> {
     return friendsMocks;
   }
 }
-
