@@ -1,0 +1,26 @@
+POST http://127.0.0.1/api/content_processor/upload_urls/
+Content-Type: application/json
+accept: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0IiwiZXhwIjoxNzQ0NDAzODQ2fQ.Aega3zUtslNRPssexkCMWdie6q9apMTDJGAXB9As4CeiwH7-XrGp2Skzi3eqBignjs7ubkTNLRrF_EUiZbX-FjRQwLj1QhPN8c_IE-RXyTiD3wE940Di6fJi9177QaUw93tROCotq-7SO5AX_u75YUDjNAC-wqqPHWII62DkUkh6cC_EtRT67qMcIausXh2sHZY0GOA5ahuQhb7Nuilha_0fpGVXciHEQAZSLq5fRjens05_SyhgOLNb8o2MCapdtxUzjyIt-b-dYsb0kSRTbbila4R-9_Z8tYTB0hn3xvGIdGrSVQ1eMHl3no2in-m2d43ooHdSHDdRiQBnuCRb0w
+
+{
+  "medias": [
+    {
+      "media_type": "photo",
+      "exif_metadata": {
+        "additionalProp1": {}
+      },
+      "representations": [
+        {
+          "variant": "thumbnail",
+          "hash": "string",
+          "hash_type": "md5",
+          "mime_type": "image/jpeg",
+          "file_size_bytes": 0
+        }
+      ]
+    }
+  ]
+}
+
+###

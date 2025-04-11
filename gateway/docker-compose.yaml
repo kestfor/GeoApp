@@ -1,0 +1,11 @@
+services:
+
+  api-gateway:
+    build: ./
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    env_file: .env
+    volumes:
+      - ./lua:/usr/local/openresty/nginx/lua/
+      - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
