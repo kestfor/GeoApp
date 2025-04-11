@@ -54,7 +54,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   void _saveProfile() async {
-
     final json = widget.user.toJson();
     User modified = User.fromJson(json);
     modified.firstName = _firstNameController.text;
@@ -129,9 +128,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       body: SingleChildScrollView(
         physics: BouncingScrollPhysics(),
         child: SafeArea(
-      
           child: Column(
-      
             children: [
               _buildInputBlock(
                 label: 'Your name',
@@ -149,16 +146,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ),
               ),
               const SizedBox(height: 10),
-      
+
               _buildInputBlock(label: 'Your username', child: _defaultTextField(_usernameController, "@username")),
               const SizedBox(height: 10),
-      
+
               _buildInputBlock(
                 label: 'Your bio',
                 child: _defaultTextField(_bioController, "Write about yourself...", maxLines: 3),
               ),
               const SizedBox(height: 10),
-      
+
               _buildInputBlock(
                 label: 'Your birthday',
                 child: Column(
@@ -189,7 +186,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         ),
                       ),
                     ),
-      
+
                     Divider(thickness: 0.1),
                     GestureDetector(
                       onTap: _removeDate,
@@ -198,7 +195,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 300)
+              SizedBox(height: 300),
             ],
           ),
         ),

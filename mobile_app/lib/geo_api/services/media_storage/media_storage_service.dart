@@ -14,21 +14,20 @@ class MediaStorageService {
   // get presigned urls for uploading files to S3
   Future<Map<String, dynamic>> _getPresUrls(List<MediaFull> media) async {
     Map<String, dynamic> body = {"medias": media.map((e) => e.toJson()).toList()};
-    print("body: $body");
     final uri = Uri.parse('$baseUrl/upload_urls/');
     var res = await baseApi.post(uri, body: body);
     if (res.statusCode != 200) {
-      log(res.body);
       throw Exception('Failed to get presigned URL');
     } else {
       return jsonDecode(res.body);
     }
   }
 
-  // upload different variants of file to S3
-  Future<void> _uploadVariants(MediaFull media, Map<String, dynamic> presData) async {
+  // upload different variants of file to S3, returns file uuid
+  Future<String> _uploadVariants(MediaFull media, Map<String, dynamic> presData) async {
     final List<MediaRepresentation> reprs = media.representations;
     final List<Future<void>> tasks = [];
+    String uuid = "";
 
     for (int i = 0; i < reprs.length; i++) {
       final hash = reprs[i].hash;
@@ -36,6 +35,8 @@ class MediaStorageService {
       final fileSize = reprs[i].fileSizeBytes;
       final fields = presData[hash]["fields"];
       final url = presData[hash]["url"];
+      final file_url = presData[hash]["file_url"];
+      uuid = presData[hash]["file_id"];
       final task = _uploadFileToS3(fields, url, filePath, fileSize);
       tasks.add(task);
     }
@@ -47,6 +48,7 @@ class MediaStorageService {
       log("Error uploading file: $e, one of the tasks failed");
       throw Exception("Error uploading file: $e");
     }
+    return uuid;
   }
 
   // assemble fields and url for uploading file directly to S3
@@ -74,11 +76,15 @@ class MediaStorageService {
     }
   }
 
-  // method for uploading files to S3
-  Future<void> uploadFiles(List<MediaFull> media) async {
+  // method for uploading files to S3, if succeed returns uuid of uploaded file
+  Future<List<String>> uploadFiles(List<MediaFull> media) async {
     final presRes = await _getPresUrls(media);
+    List<String> uuids = [];
+    log("presigned data: $presRes");
     for (var med in media) {
-      await _uploadVariants(med, presRes);
+      final uuid = await _uploadVariants(med, presRes);
+      uuids.add(uuid);
     }
+    return uuids;
   }
 }

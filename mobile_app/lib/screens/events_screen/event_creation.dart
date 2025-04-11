@@ -86,7 +86,9 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     Navigator.pop(context);
 
     MediaStorageService mediaService = MediaStorageService();
-    mediaService.uploadFiles(readyMedia);
+    mediaService.uploadFiles(readyMedia).then((value) {}, onError: (error, stackStrace) {
+
+    });
   }
 
   Future<void> preprocessFiles() async {
@@ -107,17 +109,17 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
     uploadFiles(context);
 
-    //TODO: Add event creation logic here
-    final newEvent = PureEvent(
-      id: 123,
-      coverUrl: "",
-      name: _eventNameController.text,
-      authorId: widget.user.id,
-      membersId: [],
-      point: Point(lat: location!.latitude, lon: location!.longitude),
-    );
+    // //TODO: Add event creation logic here
+    // final newEvent = PureEvent(
+    //   id: 123,
+    //   coverUrl: "",
+    //   name: _eventNameController.text,
+    //   authorId: widget.user.id,
+    //   membersId: [],
+    //   point: Point(lat: location!.latitude, lon: location!.longitude),
+    // );
 
-    Navigator.pop(context, newEvent);
+    Navigator.pop(context);
   }
 
   void pickLocation() async {
