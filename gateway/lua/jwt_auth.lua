@@ -70,6 +70,7 @@ local function verify_jwt()
 
     -- Прокидываем полученные данные в заголовки для дальнейшей обработки микросервисами
     ngx.req.set_header("X-User-Id", user_id)
+    ngx.req.set_header("X-Auth-Token", token)
 end
 
 -- Выполняем проверку
