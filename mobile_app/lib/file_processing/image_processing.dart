@@ -51,12 +51,14 @@ class ImageProcessor {
       }
       return;
     }
+
     // process each size type
     for (SizeType sizeType in sizeTypes) {
       if (sizeType == SizeType.original) {
         continue;
       }
       tasks.add(process(sizeType));
+      print("created task for size $sizeType");
     }
 
     await Future.wait(tasks);
