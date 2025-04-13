@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
@@ -5,13 +7,15 @@ import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/demo/widgets/media_preview.dart';
 import 'package:mobile_app/geo_api/services/media_storage/converter.dart';
 import 'package:mobile_app/geo_api/services/media_storage/media_storage_service.dart';
+import 'package:mobile_app/screens/events_screen/creation/friends_picker.dart';
 import 'package:mobile_app/style/colors.dart';
-import 'package:mobile_app/types/events/events.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/utils/mocks.dart';
 
-import '../../geo_api/services/media_storage/models/models.dart';
-import '../../types/user/user.dart';
-import '../map_screen/geolocator.dart';
-import '../map_screen/map_position_picker.dart';
+import '../../../geo_api/services/media_storage/models/models.dart';
+import '../../../types/user/user.dart';
+import '../../map_screen/geolocator.dart';
+import 'map_position_picker.dart';
 
 class EventCreationScreen extends StatefulWidget {
   static const String routeName = "/event_creation";
@@ -19,6 +23,7 @@ class EventCreationScreen extends StatefulWidget {
   static Route getEventCreationRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
     User? user = args["user"];
+
     if (user == null) {
       throw Exception("User object is required in args");
     }
@@ -48,6 +53,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   LatLng? location;
   bool _isTitleValid = true;
   bool _isLocationValid = true;
+  List<int> friends = [];
 
   @override
   void initState() {
@@ -86,9 +92,17 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     Navigator.pop(context);
 
     MediaStorageService mediaService = MediaStorageService();
-    mediaService.uploadFiles(readyMedia).then((value) {}, onError: (error, stackStrace) {
-
-    });
+    mediaService
+        .uploadFiles(readyMedia)
+        .then(
+          (value) {
+            showSuccess(context, "Your new event is created!");
+          },
+          onError: (error, stackStrace) {
+            showError(context, "Error while creating event, please try later");
+            log("Error uploading files: ${error.toString()}");
+          },
+        );
   }
 
   Future<void> preprocessFiles() async {
@@ -167,10 +181,23 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   Widget buildSelectFrindsButton() {
     return CupertinoListTile(
-      onTap: () {},
+      onTap: () async {
+        List<PureUser>? res = await Navigator.push(
+          context,
+          CupertinoPageRoute(builder: (context) => FriendsSelectionScreen(friends: friendsMocks)),
+        );
+        if (res != null) {
+          setState(() {
+            friends = res.map((e) => e.id).toList();
+          });
+        }
+      },
       padding: const EdgeInsets.all(0),
       leading: Icon(Icons.person, color: black),
-      title: Text("Choose who can see", style: TextStyle(fontSize: 16)),
+      title:
+          friends.isEmpty
+              ? Text("Choose who can see", style: TextStyle(fontSize: 16))
+              : Text("${friends.length} friends selected", style: TextStyle(fontSize: 16)),
       trailing: Icon(Icons.arrow_forward_ios, color: gray),
     );
   }
@@ -212,6 +239,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               TextField(
                 onTapOutside: (tr) => FocusScope.of(context).unfocus(),
                 controller: _eventDescriptionController,
+                maxLines: 10,
+                minLines: 1,
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   focusedBorder: InputBorder.none,

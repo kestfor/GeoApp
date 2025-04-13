@@ -7,7 +7,7 @@ import 'package:mobile_app/types/events/events.dart';
 
 import '../../types/user/user.dart';
 import '../map_screen/map.dart';
-import 'event_creation.dart';
+import 'creation/event_creation.dart';
 import 'events_paralax_list.dart';
 
 class EventsScreen extends StatelessWidget {

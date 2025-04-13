@@ -6,9 +6,9 @@ import 'package:flutter_map_dragmarker/flutter_map_dragmarker.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
-import '../../style/colors.dart';
-import 'maps_physics/fling_physics.dart';
-import 'maps_physics/zoom_physics.dart';
+import '../../../style/colors.dart';
+import '../../map_screen/maps_physics/fling_physics.dart';
+import '../../map_screen/maps_physics/zoom_physics.dart';
 
 class MapPositionPicker extends StatefulWidget {
   static const String routeName = "/map_position_picker";

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/services/events/filters.dart';
 import 'package:mobile_app/geo_api/services/events/events_services.dart';
+import 'package:mobile_app/geo_api/services/events/filters.dart';
 import 'package:mobile_app/geo_api/services/users_service.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
@@ -10,6 +10,7 @@ import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
+
 import '../../../style/shimmer.dart';
 import '../../../toast_notifications/notifications.dart';
 import '../../../utils/clickable_card/clickable_card.dart';
@@ -239,7 +240,31 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   Widget get moreButton => SizedBox();
 
-  Widget get nameInfo => SizedBox();
+  Widget get nameInfo {
+    if (_user == null) {
+      return nameInfoShimmer;
+    } else {
+      return _buildNameInfo();
+    }
+  }
+
+  Widget _buildNameInfo() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "${user!.firstName} ${user!.lastName}",
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
+        ),
+        Text(
+          "@${user!.username}",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -208,7 +208,7 @@ final mockEventsGrid = [
 
 final pureEventsMock = [
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 1,
     name: "Hiking in the mountains",
     point: Point(lat: 42.7128, lon: -72.0060),
@@ -217,7 +217,7 @@ final pureEventsMock = [
   ),
 
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 2,
     name: "Camping under the stars",
     point: Point(lat: 45.7128, lon: -70.0060),
@@ -227,7 +227,7 @@ final pureEventsMock = [
   ),
 
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 6,
     name: "Mountain biking trails",
     point: Point(lat: 47.7128, lon: -74.0060),
@@ -236,7 +236,7 @@ final pureEventsMock = [
   ),
 
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 3,
     name: "Ziplining through the trees",
     point: Point(lat: 41.7128, lon: -78.0060),
@@ -245,7 +245,7 @@ final pureEventsMock = [
   ),
 
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 4,
     name: "Rock climbing adventure",
     point: Point(lat: 39.7128, lon: -74.0060),
@@ -255,7 +255,7 @@ final pureEventsMock = [
   ),
 
   PureEvent(
-    membersId: [1, 2],
+    membersId: [1, 4, 5, 6],
     id: 5,
     name: "Kayaking in the lake",
     point: Point(lat: 47.7128, lon: -74.0060),
@@ -298,7 +298,7 @@ final detailedEventMock = Event(
   coverUrl: "https://www.mensjournal.com/.image/t_share/MTk2MTM3MzIwNzEwMjg0ODA1/alex-honnold-jimmy-chin.jpg",
   name: "Hiking in the mountains",
   authorId: 1,
-  membersId: [1, 2],
+  membersId: [1, 4, 5, 6],
   files: mediaMock,
   point: Point(lat: 42.7128, lon: -72.0060),
   description:

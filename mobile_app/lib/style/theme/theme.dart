@@ -13,6 +13,7 @@ ThemeData buildAppTheme() {
   // Базовая схема цветов, здесь можно использовать вашу seed-цветовую палитру.
   final ColorScheme colorScheme = ColorScheme.fromSeed(
     seedColor: Color(0xff9575CD),
+    primary: Color(0xff9575CD),
     brightness: Brightness.light, // или Brightness.dark для тёмного режима
   );
 

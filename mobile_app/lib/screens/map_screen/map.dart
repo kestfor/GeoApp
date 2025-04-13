@@ -15,7 +15,7 @@ import 'package:mobile_app/utils/mocks.dart';
 import '../../style/colors.dart';
 import '../../types/user/user.dart';
 import '../events_screen/detailed_event.dart';
-import '../events_screen/event_creation.dart';
+import '../events_screen/creation/event_creation.dart';
 import '../user_screens/profile/me_screen.dart';
 import 'cluster/marker_cluster_layer_options.dart';
 import 'cluster/marker_cluster_layer_widget.dart';

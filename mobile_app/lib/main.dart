@@ -6,10 +6,10 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:mobile_app/geo_api/base_api.dart';
 import 'package:mobile_app/screens/events_screen/chat.dart';
 import 'package:mobile_app/screens/events_screen/detailed_event.dart';
-import 'package:mobile_app/screens/events_screen/event_creation.dart';
+import 'package:mobile_app/screens/events_screen/creation/event_creation.dart';
 import 'package:mobile_app/screens/events_screen/events_screen.dart';
 import 'package:mobile_app/screens/map_screen/map.dart';
-import 'package:mobile_app/screens/map_screen/map_position_picker.dart';
+import 'package:mobile_app/screens/events_screen/creation/map_position_picker.dart';
 import 'package:mobile_app/screens/oauth/auth_screen.dart';
 import 'package:mobile_app/screens/user_screens/edit_profile/edit_profile.dart';
 import 'package:mobile_app/screens/user_screens/friends/friends_screen.dart';
@@ -18,6 +18,7 @@ import 'package:mobile_app/screens/user_screens/profile/me_screen.dart';
 import 'package:mobile_app/screens/user_screens/profile/user_screen.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/user/user.dart';
+import 'package:toastification/toastification.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +27,7 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
   var initialScreen = await getInitScreen();
-  runApp(MyApp(initialScreen: initialScreen));
+  runApp(ToastificationWrapper(child: MyApp(initialScreen: initialScreen)));
 }
 
 Future<Widget> getInitScreen() async {

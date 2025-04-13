@@ -32,7 +32,7 @@ void showSuccess(context, message) {
     context: context,
     style: ToastificationStyle.fillColored,
     type: ToastificationType.success,
-    title: message,
+    title: Text(message),
     autoCloseDuration: const Duration(seconds: 3),
     showProgressBar: false,
   );

@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -7,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/geo_api/services/events/events_services.dart';
 import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/screens/events_screen/creation/event_editing.dart';
+import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
@@ -17,10 +18,11 @@ import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
 import '../../style/shimmer.dart';
+import '../../utils/user_colors.dart';
 import 'chat.dart';
 import 'full_screen_media.dart';
 
-class DetailedEvent extends StatelessWidget {
+class DetailedEvent extends StatefulWidget {
   static const String routeName = "/event";
 
   static Route getEventRoute(RouteSettings settings) {
@@ -32,16 +34,24 @@ class DetailedEvent extends StatelessWidget {
     return CupertinoPageRoute(builder: (context) => DetailedEvent(pureEvent: event));
   }
 
+  final PureEvent pureEvent;
+
+  DetailedEvent({super.key, required this.pureEvent});
+
+  @override
+  State<DetailedEvent> createState() => DetailedEventState();
+}
+
+class DetailedEventState extends State<DetailedEvent> {
   final UsersService usersApi = UsersService();
   final EventsService eventsApi = EventsService();
 
-  final PureEvent pureEvent;
-  late final Future<Event> event = eventsApi.getDetailedEvent(pureEvent.id);
-  late final Future<PureUser> author = usersApi.getUserFromId(pureEvent.authorId);
-  late final Future<List<PureUser>> users = usersApi.getUsersFromIds(pureEvent.membersId);
-  final CarouselSliderController buttonCarouselController = CarouselSliderController();
+  get pureEvent => (widget).pureEvent;
 
-  DetailedEvent({super.key, required this.pureEvent});
+  late Future<Event> event = eventsApi.getDetailedEvent(pureEvent.id);
+  late Future<PureUser> author = usersApi.getUserFromId(pureEvent.authorId);
+  late Future<List<PureUser>> users = usersApi.getUsersFromIds(pureEvent.membersId);
+  final CarouselSliderController buttonCarouselController = CarouselSliderController();
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +60,34 @@ class DetailedEvent extends StatelessWidget {
       extendBodyBehindAppBar: true,
       extendBody: true,
       backgroundColor: lightGrayWithPurple,
-      appBar: AppBar(backgroundColor: Colors.transparent),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        actions: [
+          FutureBuilder(
+            future: event,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Container();
+              } else if (snapshot.hasError) {
+                log(snapshot.error.toString());
+                return SizedBox();
+              }
+              final event = snapshot.data as Event;
+              return IconButton(
+                icon: Icon(Icons.edit),
+                onPressed: () async {
+                  await Navigator.push(context, CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)));
+                  setState(() {
+                    print(event);
+                    this.event = Future.value(event);
+                    this.users = Future.value(event.members);
+                  });
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Container(
         height: screenHeight,
         decoration: BoxDecoration(gradient: mainGradientLight),
@@ -69,7 +106,7 @@ class DetailedEvent extends StatelessWidget {
                   SizedBox(height: 16),
                   DescriptionBlock(event: event),
                   SizedBox(height: 16),
-                  //ListOfConnectedUsers(users: users),
+                  ListOfConnectedUsers(users: users),
                 ],
               ),
             ),
@@ -346,24 +383,47 @@ class ListOfConnectedUsers extends StatelessWidget {
 
   Widget buildShimmer(context) {
     return DefaultShimmer(
-      child: ListView(
-        padding: EdgeInsets.all(8),
+      child: Column(
         children: [
-          ContainerPlaceHolder(width: double.infinity, height: 40),
-          ContainerPlaceHolder(width: double.infinity, height: 40),
-          ContainerPlaceHolder(width: double.infinity, height: 40),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: ContainerPlaceHolder(width: double.infinity, height: 60, borderRadius: 60),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: ContainerPlaceHolder(width: double.infinity, height: 60, borderRadius: 60),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: ContainerPlaceHolder(width: double.infinity, height: 60, borderRadius: 60),
+          ),
         ],
       ),
     );
   }
 
   Widget buildList(context, List<PureUser> data) {
-    return ListView.builder(
-      itemCount: data.length,
-      itemBuilder: (context, index) {
-        final user = data[index];
-        return UserTile(userName: user.username, name: user.firstName, avatarUrl: user.pictureUrl, onTap: () {});
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children:
+          data
+              .map(
+                (user) => Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: UserTile(
+                    id: user.id.toString(),
+                    userName: user.username,
+                    name: user.firstName,
+                    avatarUrl: user.pictureUrl,
+                    onTap: () {
+                      //TODO handle your own card or maybe not all friends in event
+                      Navigator.pushNamed(context, ProfileScreen.routeName, arguments: user.id);
+                    },
+                  ),
+                ),
+              )
+              .toList(),
     );
   }
 
@@ -388,18 +448,31 @@ class ListOfConnectedUsers extends StatelessWidget {
 class UserTile extends StatelessWidget {
   final String avatarUrl;
   final String name;
+  final String? id;
   final String userName;
   final Function? onTap;
 
-  const UserTile({super.key, required this.avatarUrl, required this.name, this.userName = "", this.onTap});
+  const UserTile({super.key, required this.avatarUrl, required this.name, this.userName = "", this.onTap, this.id});
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(15),
+    final avatarSize = MediaQuery.of(context).size.width * 0.1;
+    final containerSize = MediaQuery.of(context).size.width / 2;
+
+    return Container(
+      width: containerSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(50),
+        gradient: getUserGradient(id ?? ""),
+        // color: getUserColor(id ?? ""),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: Offset(0, 5))],
+      ),
       child: ListTile(
-        tileColor: Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(0.5),
-        leading: CachedNetworkImage(imageUrl: avatarUrl),
+        tileColor: Colors.grey,
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(avatarSize / 2),
+          child: CachedNetworkImage(fit: BoxFit.cover, width: avatarSize, height: avatarSize, imageUrl: avatarUrl),
+        ),
         title: Text(name),
         subtitle: Text("@$userName"),
         onTap: () {
