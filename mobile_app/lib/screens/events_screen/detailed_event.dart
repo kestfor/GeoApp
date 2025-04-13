@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -37,6 +38,7 @@ class DetailedEvent extends StatelessWidget {
   final PureEvent pureEvent;
   late final Future<Event> event = eventsApi.getDetailedEvent(pureEvent.id);
   late final Future<PureUser> author = usersApi.getUserFromId(pureEvent.authorId);
+  late final Future<List<PureUser>> users = usersApi.getUsersFromIds(pureEvent.membersId);
   final CarouselSliderController buttonCarouselController = CarouselSliderController();
 
   DetailedEvent({super.key, required this.pureEvent});
@@ -66,6 +68,8 @@ class DetailedEvent extends StatelessWidget {
                   MediaBlock(event: event, buttonCarouselController: buttonCarouselController),
                   SizedBox(height: 16),
                   DescriptionBlock(event: event),
+                  SizedBox(height: 16),
+                  //ListOfConnectedUsers(users: users),
                 ],
               ),
             ),
@@ -331,6 +335,79 @@ class MediaBlock extends StatelessWidget {
         final event = snapshot.data as Event;
         return buildMedia(context, event.files);
       },
+    );
+  }
+}
+
+class ListOfConnectedUsers extends StatelessWidget {
+  final Future<List<PureUser>> users;
+
+  ListOfConnectedUsers({required this.users});
+
+  Widget buildShimmer(context) {
+    return DefaultShimmer(
+      child: ListView(
+        padding: EdgeInsets.all(8),
+        children: [
+          ContainerPlaceHolder(width: double.infinity, height: 40),
+          ContainerPlaceHolder(width: double.infinity, height: 40),
+          ContainerPlaceHolder(width: double.infinity, height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget buildList(context, List<PureUser> data) {
+    return ListView.builder(
+      itemCount: data.length,
+      itemBuilder: (context, index) {
+        final user = data[index];
+        return UserTile(userName: user.username, name: user.firstName, avatarUrl: user.pictureUrl, onTap: () {});
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: users,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return buildShimmer(context);
+        } else if (snapshot.hasError || snapshot.data == null) {
+          showError(context, "error while fetching participants");
+          return SizedBox();
+        } else {
+          return buildList(context, snapshot.data!);
+        }
+      },
+    );
+  }
+}
+
+class UserTile extends StatelessWidget {
+  final String avatarUrl;
+  final String name;
+  final String userName;
+  final Function? onTap;
+
+  const UserTile({super.key, required this.avatarUrl, required this.name, this.userName = "", this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(15),
+      child: ListTile(
+        tileColor: Color((math.Random().nextDouble() * 0xFFFFFF).toInt()).withOpacity(0.5),
+        leading: CachedNetworkImage(imageUrl: avatarUrl),
+        title: Text(name),
+        subtitle: Text("@$userName"),
+        onTap: () {
+          if (onTap != null) {
+            onTap!();
+          }
+        },
+      ),
     );
   }
 }
