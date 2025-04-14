@@ -13,13 +13,13 @@ class LazyDataProvider<T> {
   }
 }
 
-class UserDataProvider extends LazyDataProvider<User> {
+class UserDataProvider extends LazyDataProvider<PureUser> {
   final UsersService _apiInstance = UsersService();
 
   UserDataProvider({super.initData});
 
   @override
-  Future<List<User>> fetchItems({required int userId, int offset = 0, int limit = 20, String query = ""}) async {
+  Future<List<PureUser>> fetchItems({required int userId, int offset = 0, int limit = 20, String query = ""}) async {
     if (offset == 0 && initData != null && initData!.length >= limit && query == "") {
       return initData!;
     }

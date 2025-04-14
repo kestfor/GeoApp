@@ -41,7 +41,7 @@ class FriendsScreen extends StatefulWidget {
 
 class FriendsScreenState extends State<FriendsScreen> {
   final ScrollController _scrollController = ScrollController();
-  final List<User> _items = [];
+  final List<PureUser> _items = [];
   bool _isLoading = false;
   bool _hasMore = true;
   int _offset = 0;
@@ -90,7 +90,7 @@ class FriendsScreenState extends State<FriendsScreen> {
     setState(() {
       _isLoading = true;
     });
-    List<User> newItems = await widget.dataProvider.fetchItems(
+    List<PureUser> newItems = await widget.dataProvider.fetchItems(
       userId: widget.user.id,
       offset: _offset,
       limit: _limit,
@@ -206,7 +206,7 @@ class FriendsScreenState extends State<FriendsScreen> {
         icon: const Icon(Icons.arrow_back, color: Colors.black),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text('My Friends', style: TextStyle(color: Colors.black)),
+      title: const Text('Friends', style: TextStyle(color: Colors.black)),
       centerTitle: false,
       actions: [IconButton(icon: const Icon(Icons.search, color: Colors.black), onPressed: _toggleSearch)],
     );

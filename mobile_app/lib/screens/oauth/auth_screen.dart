@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mobile_app/screens/oauth/sign_in_button/mobile.dart';
 import 'package:mobile_app/style/gradient_button.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
+import 'package:provider/provider.dart';
+
 import '../../types/user/user.dart';
 import '../user_screens/profile/me_screen.dart';
 import 'google_authenticator.dart';
@@ -29,11 +33,12 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
     googleAuth.signInSilently();
   }
 
-  Future<void> _handleSignIn() async {
+  Future<void> _handleSignIn(context) async {
     try {
       await googleAuth.signIn(); // sign in with google
       await googleAuth.authenticate(); // authenticate
       User user = await googleAuth.getUser(); // get user data
+      Provider.of<MainUserController>(context, listen: false).user = user; // set user in provider
 
       await Navigator.pushReplacementNamed(context, MyProfileScreen.routeName, arguments: user.id);
 
@@ -46,11 +51,11 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
     }
   }
 
-  Widget _buildBody() {
-    return buildUnauthorizedBody();
+  Widget _buildBody(context) {
+    return buildUnauthorizedBody(context);
   }
 
-  Widget buildUnauthorizedBody() {
+  Widget buildUnauthorizedBody(context) {
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(fit: BoxFit.cover, image: Image.asset("assets/log_in_background.jpg").image),
@@ -65,7 +70,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
               children: <Widget>[
                 Icon(Icons.account_circle_rounded, color: Colors.black, size: 100),
                 SizedBox(height: 32),
-                Center(child: buildGoogleSignInButton(onPressed: _handleSignIn)),
+                Center(child: buildGoogleSignInButton(onPressed: () => _handleSignIn(context))),
               ],
             ),
           ),
@@ -76,6 +81,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _buildBody());
+    return Scaffold(body: _buildBody(context));
   }
 }

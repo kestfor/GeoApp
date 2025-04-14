@@ -65,6 +65,7 @@ dependencies:
   video_player: ^2.9.5
   chewie: ^1.11.1
   exif: ^3.3.0
+  provider:
 
 
 dev_dependencies:

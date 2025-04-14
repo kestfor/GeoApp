@@ -9,13 +9,14 @@ import 'package:mobile_app/geo_api/services/media_storage/converter.dart';
 import 'package:mobile_app/geo_api/services/media_storage/media_storage_service.dart';
 import 'package:mobile_app/screens/events_screen/creation/friends_picker.dart';
 import 'package:mobile_app/style/colors.dart';
-import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/utils/mocks.dart';
+import 'package:provider/provider.dart';
 
 import '../../../geo_api/services/media_storage/models/models.dart';
 import '../../../types/user/user.dart';
 import '../../map_screen/geolocator.dart';
 import 'map_position_picker.dart';
+import 'upload_status.dart';
 
 class EventCreationScreen extends StatefulWidget {
   static const String routeName = "/event_creation";
@@ -92,17 +93,27 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     Navigator.pop(context);
 
     MediaStorageService mediaService = MediaStorageService();
+    final key = Provider.of<GlobalKey<ScaffoldMessengerState>>(context, listen: false);
+    final successColor = Theme.of(context).primaryColor;
     mediaService
         .uploadFiles(readyMedia)
         .then(
           (value) {
-            showSuccess(context, "Your new event is created!");
+            StatusBannerOverlay().hideOverlay();
+            key.currentState?.showSnackBar(
+              SnackBar(backgroundColor: successColor, content: Text("New event created!")),
+            );
           },
           onError: (error, stackStrace) {
-            showError(context, "Error while creating event, please try later");
+            StatusBannerOverlay().hideOverlay();
+            // showError(context, "Error while creating event, please try later");
+            key.currentState?.showSnackBar(
+              const SnackBar(backgroundColor: red, content: Text("Error while creating event, please try later")),
+            );
             log("Error uploading files: ${error.toString()}");
           },
         );
+    StatusBannerOverlay().showOverlay(context, message: "uploading files...");
   }
 
   Future<void> preprocessFiles() async {

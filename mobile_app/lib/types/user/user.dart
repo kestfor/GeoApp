@@ -42,10 +42,8 @@ class PureUser {
 
 class User extends PureUser {
   static const String userDataKey = "user_data";
-
   String? bio;
   DateTime? birthDate;
-
   Function? onLogOut;
 
   User({

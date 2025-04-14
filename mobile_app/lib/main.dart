@@ -5,11 +5,11 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:mobile_app/geo_api/base_api.dart';
 import 'package:mobile_app/screens/events_screen/chat.dart';
-import 'package:mobile_app/screens/events_screen/detailed_event.dart';
 import 'package:mobile_app/screens/events_screen/creation/event_creation.dart';
+import 'package:mobile_app/screens/events_screen/creation/map_position_picker.dart';
+import 'package:mobile_app/screens/events_screen/detailed_event.dart';
 import 'package:mobile_app/screens/events_screen/events_screen.dart';
 import 'package:mobile_app/screens/map_screen/map.dart';
-import 'package:mobile_app/screens/events_screen/creation/map_position_picker.dart';
 import 'package:mobile_app/screens/oauth/auth_screen.dart';
 import 'package:mobile_app/screens/user_screens/edit_profile/edit_profile.dart';
 import 'package:mobile_app/screens/user_screens/friends/friends_screen.dart';
@@ -17,7 +17,11 @@ import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart
 import 'package:mobile_app/screens/user_screens/profile/me_screen.dart';
 import 'package:mobile_app/screens/user_screens/profile/user_screen.dart';
 import 'package:mobile_app/style/theme/theme.dart';
+import 'package:mobile_app/types/controllers/events_controller.dart';
+import 'package:mobile_app/types/controllers/friends_controller.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/user/user.dart';
+import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
 
 void main() async {
@@ -27,7 +31,17 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
   var initialScreen = await getInitScreen();
-  runApp(ToastificationWrapper(child: MyApp(initialScreen: initialScreen)));
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MainUserController()),
+        ChangeNotifierProvider(create: (context) => FriendsController()),
+        ChangeNotifierProvider(create: (context) => EventsController()),
+        Provider(create: (context) => GlobalKey<ScaffoldMessengerState>()),
+      ],
+      child: ToastificationWrapper(child: MyApp(initialScreen: initialScreen)),
+    ),
+  );
 }
 
 Future<Widget> getInitScreen() async {
@@ -57,6 +71,7 @@ class MyApp extends StatelessWidget {
       title: 'App Title',
       theme: buildAppTheme(),
       themeMode: ThemeMode.light,
+      scaffoldMessengerKey: Provider.of<GlobalKey<ScaffoldMessengerState>>(context, listen: false),
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
       routes: {"/": (context) => initialScreen, GoogleSignInScreen.routeName: (context) => GoogleSignInScreen()},
