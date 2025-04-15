@@ -38,7 +38,8 @@ public class Event {
 
     @ElementCollection
     @CollectionTable(name = "event_participants_ids", joinColumns = @JoinColumn(name = "event_id"))
-    private List<UUID> participantsIds;
+    @Column(name = "participant_id")
+    private List<UUID> participantIds;
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
