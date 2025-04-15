@@ -5,11 +5,11 @@ services:
   fastapi:
     build: ./
     container_name: fastapi
+    env_file:
+      - .env
     command: >
       sh -c "alembic upgrade head && python3 init_storages.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     restart: always
-    env_file:
-      - docker.env
     ports:
       - "8001:8000"
     depends_on:
