@@ -6,9 +6,10 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/user/user.dart';
-import 'package:mobile_app/utils/mocks.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 Map<int, types.User> chatUserFromPure(List<PureUser> users) {
@@ -91,8 +92,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //TODO get user from provider
-    final user = mockUser;
+    User? user = Provider.of<MainUserController>(context, listen: false).user;
+
+    if (user == null) {
+      log("user is null, but in chat screen");
+      throw Exception("critical error user is null");
+    }
+
     final chatUser = chatUserFromPure([user])[user.id]!;
 
     return Scaffold(

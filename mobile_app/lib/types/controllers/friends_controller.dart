@@ -1,26 +1,29 @@
 import 'package:flutter/cupertino.dart';
+
 import '../user/user.dart';
 
 class FriendsController extends ChangeNotifier {
-  List<PureUser> friends = [];
+  List<PureUser> _friends = [];
 
   void setFriends(List<PureUser> friends) {
-    this.friends = friends;
+    _friends = friends;
     notifyListeners();
   }
 
   void addFriend(PureUser friend) {
-    friends.add(friend);
+    _friends.add(friend);
     notifyListeners();
   }
 
   void removeFriend(PureUser friend) {
-    friends.remove(friend);
+    _friends.remove(friend);
     notifyListeners();
   }
 
   void clearFriends() {
-    friends.clear();
+    _friends.clear();
     notifyListeners();
   }
+
+  List<PureUser> get friends => _friends;
 }

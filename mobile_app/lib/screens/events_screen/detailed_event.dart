@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/services/events/events_services.dart';
-import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/repositories/event_repository/event_repository.dart';
+import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/screens/events_screen/creation/event_editing.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/style/colors.dart';
@@ -43,8 +43,8 @@ class DetailedEvent extends StatefulWidget {
 }
 
 class DetailedEventState extends State<DetailedEvent> {
-  final UsersService usersApi = UsersService();
-  final EventsService eventsApi = EventsService();
+  final UserRepository usersApi = UserRepository();
+  final EventsRepository eventsApi = EventsRepository();
 
   get pureEvent => (widget).pureEvent;
 
@@ -61,6 +61,7 @@ class DetailedEventState extends State<DetailedEvent> {
       extendBody: true,
       backgroundColor: lightGrayWithPurple,
       appBar: AppBar(
+        forceMaterialTransparency: true,
         backgroundColor: Colors.transparent,
         actions: [
           FutureBuilder(
@@ -106,6 +107,10 @@ class DetailedEventState extends State<DetailedEvent> {
                   SizedBox(height: 16),
                   DescriptionBlock(event: event),
                   SizedBox(height: 16),
+                  Align(
+                      alignment: Alignment.center,
+                      child: buildOpenChatButton(context)),
+                  SizedBox(height: 16),
                   ListOfConnectedUsers(users: users),
                 ],
               ),
@@ -113,7 +118,7 @@ class DetailedEventState extends State<DetailedEvent> {
           ),
         ),
       ),
-      bottomNavigationBar: buildOpenChatButton(context),
+      // bottomNavigationBar: buildOpenChatButton(context),
     );
   }
 
@@ -124,17 +129,15 @@ class DetailedEventState extends State<DetailedEvent> {
   }
 
   Widget buildOpenChatButton(context) {
-    return Padding(
-      padding: EdgeInsets.only(left: 32, right: 32, bottom: 16),
-      child: MaterialButton(
+    return
+      MaterialButton(
         color: Colors.white,
         onPressed: () async {
           openChat(context);
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Icon(CupertinoIcons.chat_bubble_2_fill, color: Theme.of(context).primaryColor),
-      ),
-    );
+      );
   }
 }
 

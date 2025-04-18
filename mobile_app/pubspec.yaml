@@ -66,6 +66,7 @@ dependencies:
   chewie: ^1.11.1
   exif: ^3.3.0
   provider:
+  hive:
 
 
 dev_dependencies:

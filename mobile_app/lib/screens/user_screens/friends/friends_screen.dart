@@ -5,13 +5,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/style/colors.dart';
+
 import '../../../types/user/user.dart';
 import '../profile/user_screen.dart';
 import 'friend_button.dart';
 import 'friend_list.dart';
 
 class FriendsScreen extends StatefulWidget {
-  final LazyDataProvider<User> dataProvider;
+  final LazyDataProvider<PureUser> dataProvider;
   final User user;
 
   static const String routeName = "/friends";
@@ -19,7 +20,7 @@ class FriendsScreen extends StatefulWidget {
   static Route getFriendsRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
 
-    LazyDataProvider<User>? dataProvider = args["dataProvider"];
+    LazyDataProvider<PureUser>? dataProvider = args["dataProvider"];
     User? user = args["user"];
 
     if (dataProvider == null) {

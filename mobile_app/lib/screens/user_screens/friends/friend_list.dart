@@ -1,4 +1,5 @@
-import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/geo_api/services/users/users_service.dart';
+import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/types/user/user.dart';
 
 import '../../../utils/mocks.dart';
@@ -14,7 +15,7 @@ class LazyDataProvider<T> {
 }
 
 class UserDataProvider extends LazyDataProvider<PureUser> {
-  final UsersService _apiInstance = UsersService();
+  final UserRepository _apiInstance = UserRepository();
 
   UserDataProvider({super.initData});
 

@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/services/events/events_services.dart';
 import 'package:mobile_app/geo_api/services/events/filters.dart';
-import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/repositories/event_repository/event_repository.dart';
+import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/events/events.dart';
@@ -42,8 +42,8 @@ class ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   List<PureEvent>? _events;
   List<User>? _friends;
-  final UsersService _usersService = UsersService();
-  final EventsService _eventsService = EventsService();
+  final UserRepository _usersService = UserRepository();
+  final EventsRepository _eventsService = EventsRepository();
 
   Future<void> _refresh() async {
     Future.delayed(Duration(milliseconds: 500), () {

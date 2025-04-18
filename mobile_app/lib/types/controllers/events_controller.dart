@@ -3,26 +3,28 @@ import 'package:mobile_app/types/events/events.dart';
 
 class EventsController extends ChangeNotifier {
 
-  List<PureEvent> events = [];
+  List<PureEvent> _events = [];
 
   void setEvents(List<PureEvent> events) {
-    this.events = events;
+    _events = events;
     notifyListeners();
   }
 
   void addEvent(PureEvent event) {
-    events.add(event);
+    _events.add(event);
     notifyListeners();
   }
 
   void removeEvent(PureEvent event) {
-    events.remove(event);
+    _events.remove(event);
     notifyListeners();
   }
 
   void clearEvents() {
-    events.clear();
+    _events.clear();
     notifyListeners();
   }
+
+  List<PureEvent> get events => _events;
 
 }

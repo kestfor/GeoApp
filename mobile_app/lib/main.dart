@@ -17,8 +17,6 @@ import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart
 import 'package:mobile_app/screens/user_screens/profile/me_screen.dart';
 import 'package:mobile_app/screens/user_screens/profile/user_screen.dart';
 import 'package:mobile_app/style/theme/theme.dart';
-import 'package:mobile_app/types/controllers/events_controller.dart';
-import 'package:mobile_app/types/controllers/friends_controller.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:provider/provider.dart';
@@ -30,13 +28,12 @@ void main() async {
   await FMTCStore('mapStore').manage.create();
 
   await dotenv.load(fileName: ".env");
-  var initialScreen = await getInitScreen();
+  MainUserController controller = MainUserController();
+  var initialScreen = await getInitScreen(controller);
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => MainUserController()),
-        ChangeNotifierProvider(create: (context) => FriendsController()),
-        ChangeNotifierProvider(create: (context) => EventsController()),
+        ChangeNotifierProvider(create: (context) => controller),
         Provider(create: (context) => GlobalKey<ScaffoldMessengerState>()),
       ],
       child: ToastificationWrapper(child: MyApp(initialScreen: initialScreen)),
@@ -44,7 +41,7 @@ void main() async {
   );
 }
 
-Future<Widget> getInitScreen() async {
+Future<Widget> getInitScreen(MainUserController controller) async {
   WidgetsFlutterBinding.ensureInitialized();
   User? user = await User.loadFromSharedPreferences();
   Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
@@ -52,6 +49,7 @@ Future<Widget> getInitScreen() async {
   try {
     await BaseApi.loadTokenData();
     print("Token data loaded");
+    controller.user = user;
   } on Exception catch (e) {
     log(e.toString());
     initialScreen = GoogleSignInScreen();

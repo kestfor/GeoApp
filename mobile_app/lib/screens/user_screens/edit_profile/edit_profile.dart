@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/services/users_service.dart';
+import 'package:mobile_app/geo_api/services/users/users_service.dart';
+import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/utils/date_picker/date_picker.dart';
@@ -27,7 +28,7 @@ class ProfileEditScreen extends StatefulWidget {
 }
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  final UsersService _usersService = UsersService();
+  final UserRepository _usersService = UserRepository();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _usernameController;

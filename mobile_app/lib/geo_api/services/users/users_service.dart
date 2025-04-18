@@ -1,7 +1,7 @@
 import 'package:mobile_app/geo_api/base_api.dart';
 
-import '../../types/user/user.dart';
-import '../../utils/mocks.dart';
+import '../../../types/user/user.dart';
+import '../../../utils/mocks.dart';
 
 class UsersService {
   static final BaseApi baseApi = BaseApi();
