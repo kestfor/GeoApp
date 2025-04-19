@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ReactionService {
-
-    private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
     private final ReactionRepository reactionRepository;
     private final EmojiRepository emojiRepository;

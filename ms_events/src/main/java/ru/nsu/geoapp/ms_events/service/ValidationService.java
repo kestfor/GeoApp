@@ -3,16 +3,12 @@ package ru.nsu.geoapp.ms_events.service;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.nsu.geoapp.ms_events.exception.ForbiddenException;
 import ru.nsu.geoapp.ms_events.exception.ObjectNotFoundException;
 import ru.nsu.geoapp.ms_events.model.Comment;
-import ru.nsu.geoapp.ms_events.model.Event;
 import ru.nsu.geoapp.ms_events.model.Reaction;
 import ru.nsu.geoapp.ms_events.repository.CommentRepository;
-import ru.nsu.geoapp.ms_events.repository.EventRepository;
 import ru.nsu.geoapp.ms_events.repository.ReactionRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
