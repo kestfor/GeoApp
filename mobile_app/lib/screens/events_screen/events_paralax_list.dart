@@ -12,19 +12,16 @@ class SingleChildScrollEventsParallax extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
+    return Column(
         children: [
           for (final event in events)
             InkWell(
               onTap: () {
-                print("here");
                 onTap(event);
               },
               child: EventListItem(imageUrl: event.coverUrl, name: event.name),
             ),
         ],
-      ),
     );
   }
 }
@@ -39,7 +36,7 @@ class EventListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: ClipRRect(

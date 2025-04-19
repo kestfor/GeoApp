@@ -12,10 +12,11 @@ import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/utils/mocks.dart';
+
 import '../../style/colors.dart';
 import '../../types/user/user.dart';
-import '../events_screen/detailed_event.dart';
 import '../events_screen/creation/event_creation.dart';
+import '../events_screen/detailed_event.dart';
 import '../user_screens/profile/me_screen.dart';
 import 'cluster/marker_cluster_layer_options.dart';
 import 'cluster/marker_cluster_layer_widget.dart';
@@ -143,12 +144,18 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           width: _markerSize,
           height: _markerSize,
           point: LatLng(l.point.lat, l.point.lon),
-          child: CustomPopup(
-            arrowColor: lightGrayWithPurple,
-            backgroundColor: lightGrayWithPurple,
-            isLongPress: false,
-            content: eventPopUp(context, l),
-            child: EventCard(key: Key(l.id.toString()), event: l),
+          child: InkWell(
+            onLongPress: () {
+              animateToFromEvent(LatLng(l.point.lat, l.point.lon));
+            },
+
+            child: CustomPopup(
+              arrowColor: lightGrayWithPurple,
+              backgroundColor: lightGrayWithPurple,
+              isLongPress: false,
+              content: eventPopUp(context, l),
+              child: EventCard(key: Key(l.id.toString()), event: l),
+            ),
           ),
         ),
       );
@@ -269,10 +276,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 computeSize: (s) => Size(_markerSize, _markerSize),
                 alignment: Alignment.center,
                 maxZoom: zoomPhysics.maxZoom,
-                onMarkerTap: (Marker marker) {},
-                onMarkerDoubleTap: (Marker marker) {
-                  animateToFromEvent(marker.point);
-                },
                 disableClusteringAtZoom: zoomPhysics.maxZoom.toInt(),
                 markers: getLandmarksMarkers(context),
                 builder: (context, markers) {
