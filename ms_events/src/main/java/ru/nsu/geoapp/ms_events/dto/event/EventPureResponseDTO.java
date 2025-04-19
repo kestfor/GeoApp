@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_events.dto;
+package ru.nsu.geoapp.ms_events.dto.event;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;

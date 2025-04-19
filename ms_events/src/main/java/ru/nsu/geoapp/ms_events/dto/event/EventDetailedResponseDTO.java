@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_events.dto;
+package ru.nsu.geoapp.ms_events.dto.event;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -23,7 +23,7 @@ public class EventDetailedResponseDTO {
     @Schema(description = "Description of the post", example = "Description for my first post")
     private String description;
 
-    @Schema(description = "List of tags to this event", examples = {"paris", "birthday", "18"})
+    @Schema(description = "List of tags to this event", example = "[\"paris\", \"birthday\", \"18\"]")
     private List<String> tags;
 
     @Schema(description = "Latitude of the event location", example = "42.432864")

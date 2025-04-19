@@ -22,7 +22,8 @@ POSTGRES_PASSWORD
 ### 2. Запуск сервисов
 
 ```bash
-docker-compose down -v && docker-compose up --build
+docker-compose down -v
+docker-compose up --build
 ```
 
 ### 3. Использование

@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +41,9 @@ public class Event {
     @CollectionTable(name = "event_participants_ids", joinColumns = @JoinColumn(name = "event_id"))
     @Column(name = "participant_id")
     private List<UUID> participantIds;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp

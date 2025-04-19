@@ -5,6 +5,8 @@ services:
       - "8080:8080"
     env_file:
       - .env
+    environment:
+      DB_HOST: ${DB_HOST_DOCKER}
     depends_on:
       postgres:
         condition: service_healthy
@@ -12,10 +14,8 @@ services:
 
   postgres:
     image: postgres:17
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:

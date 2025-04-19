@@ -2,11 +2,11 @@ package ru.nsu.geoapp.ms_events.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.nsu.geoapp.ms_events.dto.EventDetailedRequestDTO;
-import ru.nsu.geoapp.ms_events.dto.EventDetailedResponseDTO;
-import ru.nsu.geoapp.ms_events.dto.EventPureResponseDTO;
-import ru.nsu.geoapp.ms_events.dto.EventUpdateRequestDTO;
-import ru.nsu.geoapp.ms_events.exception.EventNotFoundException;
+import ru.nsu.geoapp.ms_events.dto.event.EventCreateRequestDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventDetailedResponseDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventPureResponseDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventUpdateRequestDTO;
+import ru.nsu.geoapp.ms_events.exception.ObjectNotFoundException;
 import ru.nsu.geoapp.ms_events.model.Event;
 import ru.nsu.geoapp.ms_events.repository.EventRepository;
 
@@ -25,7 +25,7 @@ public class EventService {
         this.eventRepository = eventRepository;
     }
 
-    public EventDetailedResponseDTO createEvent(EventDetailedRequestDTO requestDTO) {
+    public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO) {
         Event event = new Event();
         event.setOwnerId(requestDTO.getOwnerId());
         event.setName(requestDTO.getName());
@@ -44,7 +44,7 @@ public class EventService {
 
     public EventDetailedResponseDTO updateEvent(UUID eventId, EventUpdateRequestDTO requestDTO) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotFoundException("Couldn't find event by" + eventId));
+                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
         if (requestDTO.getOwnerId() != null) {
             event.setOwnerId(requestDTO.getOwnerId());
@@ -79,7 +79,7 @@ public class EventService {
 
     public EventDetailedResponseDTO getEventDetailed(UUID eventId) {
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EventNotFoundException("Couldn't find event by" + eventId));
+                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
         return mapToDetailedResponseDTO(event);
     }
 

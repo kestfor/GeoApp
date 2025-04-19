@@ -1,6 +1,9 @@
 package ru.nsu.geoapp.ms_events.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -8,10 +11,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.nsu.geoapp.ms_events.dto.EventDetailedRequestDTO;
-import ru.nsu.geoapp.ms_events.dto.EventDetailedResponseDTO;
-import ru.nsu.geoapp.ms_events.dto.EventPureResponseDTO;
-import ru.nsu.geoapp.ms_events.dto.EventUpdateRequestDTO;
+import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
+import ru.nsu.geoapp.ms_events.dto.error.ValidationErrorDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventCreateRequestDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventDetailedResponseDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventPureResponseDTO;
+import ru.nsu.geoapp.ms_events.dto.event.EventUpdateRequestDTO;
 import ru.nsu.geoapp.ms_events.service.EventService;
 
 import java.util.List;
@@ -29,62 +34,142 @@ public class EventController {
         this.eventService = eventService;
     }
 
+
     @PostMapping
-    @Operation(summary = "Create new event",
+    @Operation(
+            summary = "Create new event",
             description = "Creates an event based on the transmitted data"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = EventDetailedResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorDTO.class)
+                    )
+            ),
     })
-    public EventDetailedResponseDTO createEvent(@Valid @RequestBody EventDetailedRequestDTO requestDTO) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventDetailedResponseDTO createEvent(@Valid @RequestBody EventCreateRequestDTO requestDTO) {
         return eventService.createEvent(requestDTO);
     }
 
-    @PutMapping("/{eventId}")
-    @Operation(summary = "Update event",
+
+    @PutMapping("/{event_id}")
+    @Operation(
+            summary = "Update event",
             description = "Updates the transmitted event fields by its UUID"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-            @ApiResponse(responseCode = "404", description = "Event not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = EventDetailedResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NotFoundErrorDTO.class)
+                    )
+            )
     })
-    public EventDetailedResponseDTO updateEvent(@PathVariable("eventId") UUID eventId,
+    public EventDetailedResponseDTO updateEvent(@PathVariable("event_id") UUID eventId,
                                                 @Valid @RequestBody EventUpdateRequestDTO requestDTO
     ) {
         return eventService.updateEvent(eventId, requestDTO);
     }
 
+
     @GetMapping("/{eventId}")
-    @Operation(summary = "Get detailed event",
+    @Operation(
+            summary = "Get detailed event",
             description = "Returns full information about the event by its UUID"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully"),
-            @ApiResponse(responseCode = "404", description = "Event not found")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = EventDetailedResponseDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NotFoundErrorDTO.class)
+                    )
+            )
     })
     public EventDetailedResponseDTO getEventDetailed(@PathVariable("eventId") UUID eventId) {
         return eventService.getEventDetailed(eventId);
     }
 
-    @GetMapping("/{userId}/pure")
-    @Operation(summary = "Get pure user events",
+
+    @GetMapping("/{user_id}/pure")
+    @Operation(
+            summary = "Get pure user events",
             description = "Returns a list of pure events for the specified user by UUID"
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully"),
+            @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = EventPureResponseDTO.class))
+                    )
+            )
     })
-    public List<EventPureResponseDTO> getPureEventsByUserId(@PathVariable("userId") UUID userId) {
+    public List<EventPureResponseDTO> getPureEventsByUserId(@PathVariable("user_id") UUID userId) {
         return eventService.getPureEventsByUserId(userId);
     }
 
-    @DeleteMapping("/{eventId}")
-    @Operation(summary = "Delete event",
+
+    @DeleteMapping("/{event_id}")
+    @Operation(
+            summary = "Delete event",
             description = "Deletes event by it's UUId"
     )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Event successfully deleted"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Event not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NotFoundErrorDTO.class)
+                    )
+            )
+    })
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEvent(@PathVariable("eventId") UUID eventId) {
+    public void deleteEvent(@PathVariable("event_id") UUID eventId) {
         eventService.deleteEvent(eventId);
     }
 }
