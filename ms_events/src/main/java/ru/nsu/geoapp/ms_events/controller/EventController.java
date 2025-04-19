@@ -51,7 +51,7 @@ public class EventController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Invalid request parameters",
+                    description = "Invalid input data",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ValidationErrorDTO.class)

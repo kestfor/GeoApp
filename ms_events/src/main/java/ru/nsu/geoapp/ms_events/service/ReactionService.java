@@ -29,22 +29,15 @@ public class ReactionService {
     private final EventRepository eventRepository;
     private final ReactionRepository reactionRepository;
     private final EmojiRepository emojiRepository;
+    private final ValidationService validationService;
 
     public ReactionResponseDTO createReaction(UUID eventId, UUID commentId, ReactionRequestDTO requestDTO) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find comment by" + commentId));
-
+        Comment comment = validationService.getCommentIfBelongsToEvent(eventId, commentId);
         Emoji emoji = emojiRepository.findById(requestDTO.getEmojiId())
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find emoji by" + requestDTO.getEmojiId()));
-
-        if (!comment.getEvent().getId().equals(eventId)) {
-            throw new ObjectNotFoundException(
-                    "Comment with UUID " + commentId + " does not belong to the event with UUID " + eventId
-            );
-        }
 
         Reaction reaction = new Reaction();
         reaction.setAuthorId(requestDTO.getAuthorId());
@@ -61,15 +54,7 @@ public class ReactionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find comment by" + commentId));
-
-        if (!comment.getEvent().getId().equals(eventId)) {
-            throw new ObjectNotFoundException(
-                    "Comment with UUID " + commentId + " does not belong to the event with UUID " + eventId
-            );
-        }
-
+        validationService.checkCommentBelongsToEvent(eventId, commentId);
         List<Reaction> reactions = reactionRepository.findByCommentId(commentId);
 
         return reactions.stream()
@@ -82,17 +67,9 @@ public class ReactionService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find comment by" + commentId));
+        validationService.checkCommentBelongsToEvent(eventId, commentId);
+        Reaction reaction = validationService.getReactionIfBelongsToComment(commentId, reactionId);
 
-        if (!comment.getEvent().getId().equals(eventId)) {
-            throw new ObjectNotFoundException(
-                    "Comment with UUID " + commentId + " does not belong to the event with UUID " + eventId
-            );
-        }
-
-        Reaction reaction = reactionRepository.findById(reactionId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find reaction by" + reactionId));
         reactionRepository.delete(reaction);
     }
 

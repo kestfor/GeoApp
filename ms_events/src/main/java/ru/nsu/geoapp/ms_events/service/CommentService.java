@@ -25,6 +25,7 @@ public class CommentService {
 
     private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
+    private final ValidationService validationService;
 
     @Transactional
     public CommentResponseDTO createComment(UUID eventId, CommentCreateRequestDTO requestDTO) {
@@ -47,20 +48,11 @@ public class CommentService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find comment by" + commentId));
-
-        if (!comment.getEvent().getId().equals(eventId)) {
-            throw new ObjectNotFoundException(
-                    "Comment with UUID " + commentId + " does not belong to the event with UUID " + eventId
-            );
-        }
-
+        Comment comment = validationService.getCommentIfBelongsToEvent(eventId, commentId);
         comment.setText(requestDTO.getText());
         comment.setUpdatedAt(LocalDateTime.now());
 
         Comment savedComment = commentRepository.save(comment);
-
         return mapToResponseDTO(savedComment);
     }
 
@@ -77,15 +69,7 @@ public class CommentService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find comment by" + commentId));
-
-        if (!comment.getEvent().getId().equals(eventId)) {
-            throw new ObjectNotFoundException(
-                    "Comment with UUID " + commentId + " does not belong to the event with UUID " + eventId
-            );
-        }
-
+        Comment comment = validationService.getCommentIfBelongsToEvent(eventId, commentId);
         commentRepository.delete(comment);
     }
 

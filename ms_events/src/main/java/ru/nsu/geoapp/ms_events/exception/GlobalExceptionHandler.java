@@ -2,9 +2,11 @@ package ru.nsu.geoapp.ms_events.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import ru.nsu.geoapp.ms_events.dto.error.ForbiddenErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.InternalServerErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.ValidationErrorDTO;
@@ -27,7 +29,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorDTO> handleValidation(MethodArgumentNotValidException ex) {
         ValidationErrorDTO error = new ValidationErrorDTO();
-        error.setMessage("Validation failed");
+        error.setMessage(ex.getMessage());
         error.setStatus(HttpStatus.BAD_REQUEST.value());
 
         Map<String, String> errors = new HashMap<>();
@@ -35,16 +37,15 @@ public class GlobalExceptionHandler {
         error.setErrors(errors);
 
         error.setTimestamp(LocalDateTime.now());
-
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<InternalServerErrorDTO> handleAllExceptions(Exception ex) {
-//        InternalServerErrorDTO error = new InternalServerErrorDTO();
-//        error.setMessage("Internal server error");
-//        error.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//        error.setTimestamp(LocalDateTime.now());
-//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-//    }
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ForbiddenErrorDTO> handleForbiddenException(ForbiddenException ex) {
+        ForbiddenErrorDTO error = new ForbiddenErrorDTO();
+        error.setMessage(ex.getMessage());
+        error.setStatus(HttpStatus.FORBIDDEN.value());
+        error.setTimestamp(LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
 }

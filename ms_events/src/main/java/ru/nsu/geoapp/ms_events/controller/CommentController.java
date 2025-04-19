@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.nsu.geoapp.ms_events.dto.comment.CommentCreateRequestDTO;
 import ru.nsu.geoapp.ms_events.dto.comment.CommentResponseDTO;
 import ru.nsu.geoapp.ms_events.dto.comment.CommentUpdateRequestDTO;
+import ru.nsu.geoapp.ms_events.dto.error.ForbiddenErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.ValidationErrorDTO;
 import ru.nsu.geoapp.ms_events.service.CommentService;
@@ -89,6 +90,22 @@ public class CommentController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid input data",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ValidationErrorDTO.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForbiddenErrorDTO.class)
+                    )
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Comment or event not found",
                     content = @Content(
@@ -119,6 +136,14 @@ public class CommentController {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = CommentResponseDTO.class))
                     )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Comment or event not found",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = NotFoundErrorDTO.class)
+                    )
             )
     })
     public List<CommentResponseDTO> getCommentsByEventId(@PathVariable("event_id") UUID eventId) {
@@ -135,6 +160,14 @@ public class CommentController {
             @ApiResponse(
                     responseCode = "204",
                     description = "Comment deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForbiddenErrorDTO.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",

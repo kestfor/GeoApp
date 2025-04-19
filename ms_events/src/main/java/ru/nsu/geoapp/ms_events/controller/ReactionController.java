@@ -8,9 +8,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.nsu.geoapp.ms_events.dto.error.ForbiddenErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.error.ValidationErrorDTO;
 import ru.nsu.geoapp.ms_events.dto.reaction.ReactionRequestDTO;
@@ -55,6 +57,14 @@ public class ReactionController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForbiddenErrorDTO.class)
+                    )
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "Comment or event not found",
                     content = @Content(
@@ -66,7 +76,7 @@ public class ReactionController {
     @ResponseStatus(HttpStatus.CREATED)
     public ReactionResponseDTO createReaction(@PathVariable("event_id") UUID eventId,
                                               @PathVariable("comment_id") UUID commentId,
-                                              @RequestBody ReactionRequestDTO requestDTO) {
+                                              @Valid @RequestBody ReactionRequestDTO requestDTO) {
         return reactionService.createReaction(eventId, commentId, requestDTO);
     }
 
@@ -83,6 +93,14 @@ public class ReactionController {
                     content = @Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = ReactionResponseDTO.class))
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForbiddenErrorDTO.class)
                     )
             ),
             @ApiResponse(
@@ -109,6 +127,14 @@ public class ReactionController {
             @ApiResponse(
                     responseCode = "204",
                     description = "Reaction deleted successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Forbidden request",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ForbiddenErrorDTO.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
