@@ -1,6 +1,7 @@
 package ru.nsu.geoapp.ms_events.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
@@ -19,6 +21,7 @@ import ru.nsu.geoapp.ms_events.dto.event.EventPureResponseDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventUpdateRequestDTO;
 import ru.nsu.geoapp.ms_events.service.EventService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -144,8 +147,25 @@ public class EventController {
                     )
             )
     })
-    public List<EventPureResponseDTO> getPureEventsByUserId(@PathVariable("user_id") UUID userId) {
-        return eventService.getPureEventsByUserId(userId);
+    public List<EventPureResponseDTO> getPureEventsByUserId(
+            @PathVariable("user_id") @Parameter(description = "User UUID")
+            UUID ownerId,
+            @RequestParam(value = "name", required = false)
+            @Parameter(description = "Name filter")
+            String name,
+            @RequestParam(value = "description", required = false)
+            @Parameter(description = "Description filter")
+            String description,
+            @RequestParam(value = "createdAfter", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @Parameter(description = "Minimum creation date", example = "2025-04-01T00:00:00")
+            LocalDateTime createdAfter,
+            @RequestParam(value = "createdBefore", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @Parameter(description = "Maximum creation date", example = "2025-04-30T23:59:59")
+            LocalDateTime createdBefore
+    ) {
+        return eventService.getPureEventsByOwnerId(ownerId, name, description, createdAfter, createdBefore);
     }
 
 

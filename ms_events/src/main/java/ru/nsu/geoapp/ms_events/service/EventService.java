@@ -83,9 +83,16 @@ public class EventService {
         return mapToDetailedResponseDTO(event);
     }
 
-    public List<EventPureResponseDTO> getPureEventsByUserId(UUID userId) {
-        List<Event> events = eventRepository.findByOwnerId(userId);
-
+    public List<EventPureResponseDTO> getPureEventsByOwnerId(
+            UUID ownerId,
+            String name,
+            String description,
+            LocalDateTime createdAfter,
+            LocalDateTime createdBefore
+    ) {
+        List<Event> events = eventRepository.findByOwnerIdWithFilters(
+                ownerId, name, description, createdAfter, createdBefore
+        );
         return events.stream()
                 .map(this::mapToPureResponseDTO)
                 .collect(Collectors.toList());
