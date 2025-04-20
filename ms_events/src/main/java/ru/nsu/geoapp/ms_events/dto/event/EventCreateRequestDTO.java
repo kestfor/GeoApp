@@ -42,7 +42,15 @@ public class EventCreateRequestDTO {
 
     @NotNull
     @Size(min = 1, max = 10, message = "At least one media file is required to create an event")
-    @Schema(description = "List of UUID of media files, associated with this event", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "List of UUID of media files, associated with this event",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            example = """
+                          [
+                            "ef295653-3d7b-4f5c-8ca9-4fcd1b6ee1be",
+                            "04c13e3c-030b-4ec1-b041-b98810bd4b80"
+                          ]
+                    """
+    )
     private List<UUID> mediaIds;
 
     @Schema(description = "List of UUID of participant-users, associated with this event")

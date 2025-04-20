@@ -21,10 +21,10 @@ public class Event {
     @Column(name = "owner_id", nullable = false)
     private UUID ownerId;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, columnDefinition = "text")
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "text")
     private String description;
 
     @ElementCollection

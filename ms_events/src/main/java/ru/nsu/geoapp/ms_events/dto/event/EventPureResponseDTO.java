@@ -21,8 +21,8 @@ public class EventPureResponseDTO {
     @Schema(description = "First 50 chars of description", example = "Description for my first post")
     private String descriptionShort;
 
+    private String displayPhoto;
+
     @Schema(description = "Timestamp when event was created", example = "2024-12-03T10:15:30.")
     private LocalDateTime createdAt;
-
-    //TODO: add display_photo after integration
 }

@@ -2,6 +2,7 @@ package ru.nsu.geoapp.ms_events.dto.event;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +33,7 @@ public class EventDetailedResponseDTO {
     @Schema(description = "Longitude of the event location", example = "57.642354")
     private Double longitude;
 
-    //TODO: add media objects
+    private List<MediaFileDTO> media;
 
     @Schema(description = "List of UUID of participant-users, associated with this event")
     private List<UUID> participantIds;

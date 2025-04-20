@@ -1,11 +1,15 @@
 package ru.nsu.geoapp.ms_events.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import ru.nsu.geoapp.ms_events.client.ContentProcessorClient;
 import ru.nsu.geoapp.ms_events.dto.event.EventCreateRequestDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventDetailedResponseDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventPureResponseDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventUpdateRequestDTO;
+import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 import ru.nsu.geoapp.ms_events.exception.ObjectNotFoundException;
 import ru.nsu.geoapp.ms_events.model.Event;
 import ru.nsu.geoapp.ms_events.repository.EventRepository;
@@ -16,14 +20,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor(onConstructor = @__(@Autowired))
 public class EventService {
 
     private final EventRepository eventRepository;
-
-    @Autowired
-    public EventService(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
-    }
+    private final ContentProcessorClient contentProcessorClient;
 
     public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO) {
         Event event = new Event();
@@ -76,7 +77,6 @@ public class EventService {
         return mapToDetailedResponseDTO(updatedEvent);
     }
 
-
     public EventDetailedResponseDTO getEventDetailed(UUID eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
@@ -114,7 +114,7 @@ public class EventService {
         dto.setParticipantIds(event.getParticipantIds());
         dto.setCreatedAt(event.getCreatedAt());
         dto.setUpdatedAt(event.getUpdatedAt());
-        // TODO: Добавить логику для получения media objects
+        dto.setMedia(getMediaObjects(event.getMediaIds()));
         return dto;
     }
 
@@ -126,7 +126,34 @@ public class EventService {
         dto.setDescriptionShort(event.getDescription() != null ?
                 event.getDescription().substring(0, Math.min(50, event.getDescription().length())) : "");
         dto.setCreatedAt(event.getCreatedAt());
-        // TODO: Добавить логику для получения display_photo
+        dto.setDisplayPhoto(getDisplayPhoto(event));
         return dto;
+    }
+
+    private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds) {
+        if (mediaIds.isEmpty()) {
+            return List.of(); // Возвращаем пустой список, если входной список пуст
+        }
+        ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds);
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+            return response.getBody();
+        }
+        return List.of(); // Возвращаем пустой список в случае ошибки или пустого ответа
+    }
+
+    private String getDisplayPhoto(Event event) {
+        if (event.getMediaIds() == null || event.getMediaIds().isEmpty()) {
+            return null;
+        }
+        List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds());
+        for (MediaFileDTO file : mediaFiles) {
+            if ("photo".equals(file.getType())) {
+                MediaFileDTO.RepresentationDTO medium = file.getRepresentations().get("medium");
+                if (medium != null) {
+                    return medium.getUrl();
+                }
+            }
+        }
+        return null;
     }
 }
