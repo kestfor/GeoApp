@@ -2,6 +2,7 @@ package ru.nsu.geoapp.ms_events.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.nsu.geoapp.ms_events.client.ContentProcessorClient;
@@ -13,6 +14,7 @@ import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 import ru.nsu.geoapp.ms_events.exception.ObjectNotFoundException;
 import ru.nsu.geoapp.ms_events.model.Event;
 import ru.nsu.geoapp.ms_events.repository.EventRepository;
+import ru.nsu.geoapp.ms_events.repository.specification.EventSpecifications;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -90,10 +92,13 @@ public class EventService {
             LocalDateTime createdAfter,
             LocalDateTime createdBefore
     ) {
-        List<Event> events = eventRepository.findByOwnerIdWithFilters(
-                ownerId, name, description, createdAfter, createdBefore
-        );
-        return events.stream()
+        Specification<Event> spec = Specification.where(EventSpecifications.hasOwnerId(ownerId))
+                .and(EventSpecifications.containsName(name))
+                .and(EventSpecifications.containsDescription(description))
+                .and(EventSpecifications.createdAfter(createdAfter))
+                .and(EventSpecifications.createdBefore(createdBefore));
+
+        return eventRepository.findAll(spec).stream()
                 .map(this::mapToPureResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -132,26 +137,23 @@ public class EventService {
 
     private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds) {
         if (mediaIds.isEmpty()) {
-            return List.of(); // Возвращаем пустой список, если входной список пуст
+            return List.of();
         }
         ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds);
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             return response.getBody();
         }
-        return List.of(); // Возвращаем пустой список в случае ошибки или пустого ответа
+        return List.of();
     }
 
-    private String getDisplayPhoto(Event event) {
+    private MediaFileDTO getDisplayPhoto(Event event) {
         if (event.getMediaIds() == null || event.getMediaIds().isEmpty()) {
             return null;
         }
         List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds());
         for (MediaFileDTO file : mediaFiles) {
             if ("photo".equals(file.getType())) {
-                MediaFileDTO.RepresentationDTO medium = file.getRepresentations().get("medium");
-                if (medium != null) {
-                    return medium.getUrl();
-                }
+                return file;
             }
         }
         return null;

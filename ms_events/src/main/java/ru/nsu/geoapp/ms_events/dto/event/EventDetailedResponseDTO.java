@@ -33,6 +33,7 @@ public class EventDetailedResponseDTO {
     @Schema(description = "Longitude of the event location", example = "57.642354")
     private Double longitude;
 
+    @Schema(description = "List of media of the event"/*, implementation = MediaFileDTO.class*/)
     private List<MediaFileDTO> media;
 
     @Schema(description = "List of UUID of participant-users, associated with this event")

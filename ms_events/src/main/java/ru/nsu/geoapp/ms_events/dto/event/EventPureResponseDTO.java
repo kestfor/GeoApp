@@ -2,6 +2,7 @@ package ru.nsu.geoapp.ms_events.dto.event;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -21,7 +22,8 @@ public class EventPureResponseDTO {
     @Schema(description = "First 50 chars of description", example = "Description for my first post")
     private String descriptionShort;
 
-    private String displayPhoto;
+    @Schema(description = "First photo from event", implementation = MediaFileDTO.class)
+    private MediaFileDTO displayPhoto;
 
     @Schema(description = "Timestamp when event was created", example = "2024-12-03T10:15:30.")
     private LocalDateTime createdAt;
