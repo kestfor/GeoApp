@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mobile_app/screens/user_screens/friends/friend_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PureUser {
@@ -42,6 +43,7 @@ class PureUser {
 
 class User extends PureUser {
   static const String userDataKey = "user_data";
+  String? relationType; // friends/request_sent/request_received/none
   String? bio;
   DateTime? birthDate;
   Function? onLogOut;
@@ -55,6 +57,7 @@ class User extends PureUser {
     this.bio,
     this.birthDate,
     this.onLogOut,
+    this.relationType = "none"
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -99,15 +102,15 @@ class User extends PureUser {
     }
   }
 
-  factory User.fromGoogleSignIn(GoogleSignInAccount account) {
-    return User(
-      id: 1,
-      firstName: account.displayName!.split(" ")[0],
-      lastName: account.displayName!.split(" ")[1],
-      pictureUrl: account.photoUrl ?? "",
-      username: account.email,
-    );
-  }
+  // factory User.fromGoogleSignIn(GoogleSignInAccount account) {
+  //   return User(
+  //     id: 1,
+  //     firstName: account.displayName!.split(" ")[0],
+  //     lastName: account.displayName!.split(" ")[1],
+  //     pictureUrl: account.photoUrl ?? "",
+  //     username: account.email,
+  //   );
+  // }
 
   void logOut() {
     if (onLogOut != null) {
