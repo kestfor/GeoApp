@@ -15,6 +15,9 @@ from .utils import get_medias, resolve_media_location
 if TYPE_CHECKING:
     from core.models import MediaRepresentation
     from sqlalchemy.ext.asyncio import AsyncSession
+    from core.services.s3 import S3Service
+
+
 
 router = APIRouter(prefix="/files", tags=["files"])
 
