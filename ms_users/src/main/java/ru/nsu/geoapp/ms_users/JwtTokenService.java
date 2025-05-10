@@ -91,6 +91,24 @@ public class JwtTokenService {
         return token;
     }
 
+    public String getPublicKey() {
+        byte[] encoded = publicKey.getEncoded();
+        String base64 = Base64.getEncoder().encodeToString(encoded);
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < base64.length(); i += 64) {
+            int end = Math.min(base64.length(), i + 64);
+            result.append(base64, i, end);
+            if (end != base64.length()) {
+                result.append("\n");
+            }
+        }
+
+        return "-----BEGIN PUBLIC KEY-----\n" +
+                result +
+                "\n-----END PUBLIC KEY-----";
+    }
+
     public boolean isAccessToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(this.publicKey)

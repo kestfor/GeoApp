@@ -1,16 +1,17 @@
 package ru.nsu.geoapp.ms_users;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.nsu.geoapp.ms_users.dto.*;
 
 import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -122,6 +123,11 @@ public class AuthController {
             LOGGER.debug("Could not validate token: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Exception upon validating token", e);
         }
+    }
+
+    @GetMapping(value = "/validate", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<?> getPublicKey() {
+        return ResponseEntity.ok(jwtTokenService.getPublicKey());
     }
 
     private String extractBearerToken(String authHeader) {
