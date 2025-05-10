@@ -3,6 +3,8 @@ package ru.nsu.geoapp.ms_users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,14 +20,24 @@ import java.util.Base64;
 import java.util.Date;
 
 @Service
-public class JwtTokenProvider {
+public class JwtTokenService {
 
     private final PrivateKey privateKey;
     private final PublicKey publicKey;
     private final long jwtExpiration;
+    private final long jwtExpirationRefresh;
+    private final RedisTokenService redisTokenService;
 
-    public JwtTokenProvider(@Value("${app.jwt.expiration}") long jwtExpiration) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenService.class);
+
+    public JwtTokenService(
+            @Value("${app.jwt.expiration}") long jwtExpiration,
+            @Value("${app.jwt.expiration-refresh}") long jwtExpirationRefresh,
+            RedisTokenService redisTokenService
+    ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.jwtExpiration = jwtExpiration;
+        this.jwtExpirationRefresh = jwtExpirationRefresh;
+        this.redisTokenService = redisTokenService;
         this.privateKey = loadPrivateKey("keys/private_key.pem");
         this.publicKey = loadPublicKey("keys/public_key.pem");
     }
@@ -53,19 +65,43 @@ public class JwtTokenProvider {
         return KeyFactory.getInstance("RSA").generatePublic(keySpec);
     }
 
-    public JwtToken generateToken(String email) {
+    public JwtToken generateAccessToken(String subject) {
+        return this.generateToken(subject, false);
+    }
+
+    public JwtToken generateRefreshToken(String subject) {
+        return this.generateToken(subject, true);
+    }
+
+    private JwtToken generateToken(String subject, boolean isRefresh) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpiration);
+        Date expiryDate;
+        if (isRefresh) {
+            expiryDate = new Date(now.getTime() + jwtExpirationRefresh);
+        } else {
+            expiryDate = new Date(now.getTime() + jwtExpiration);
+        }
 
         JwtToken token = new JwtToken();
-        token.setSubject(email);
+        token.setSubject(subject);
         token.setIssuedAt(now);
         token.setExpiryDate(expiryDate);
+        token.setRefresh(isRefresh);
         token.signWith(privateKey, Jwts.SIG.RS256, "RS256");
         return token;
     }
 
-    public String getEmailFromToken(String token) {
+    public boolean isAccessToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(this.publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return !((boolean) claims.get("isRefresh"));
+    }
+
+    public String getSubjectFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(this.publicKey)
                 .build()
@@ -75,19 +111,55 @@ public class JwtTokenProvider {
         return claims.getSubject();
     }
 
+    public Date getExpirationDateFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(this.publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getExpiration();
+    }
+
+    public Date getIssuedDateFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(this.publicKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.getIssuedAt();
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().verifyWith(this.publicKey).build().parseSignedClaims(token);
-            return true;
+            LOGGER.debug("Validating {}", token);
+            Claims claims = Jwts.parser().verifyWith(this.publicKey).build().parseSignedClaims(token).getPayload();
+            // token is signed ad expiration date is okay
+            // check for revoked date with Redis
+            String subject = claims.getSubject();
+            Date issuedAt = claims.getIssuedAt();
+            LOGGER.debug("{} Token is valid, checking revoked", token);
+            boolean isRevoked = this.redisTokenService.isTokenRevoked(subject, issuedAt.getTime());
+            if (isRevoked) {
+                LOGGER.debug("{} Token is revoked.", token);
+            }
+            return !isRevoked;
         } catch (Exception ex) {
+            LOGGER.debug("Exception while verifying token {}: {}", token, ex.getMessage());
             return false;
         }
+    }
+
+    public RedisTokenService getRedisTokenService() {
+        return redisTokenService;
     }
 
     public static class JwtToken {
         private String subject;
         private Date issuedAt;
         private Date expiryDate;
+        private boolean isRefresh = false;
 
         public String getSubject() {
             return subject;
@@ -128,8 +200,17 @@ public class JwtTokenProvider {
                     .subject(subject)
                     .issuedAt(issuedAt)
                     .expiration(expiryDate)
+                    .claim("isRefresh", isRefresh)
                     .signWith(key, algo)
                     .compact();
+        }
+
+        public boolean isRefresh() {
+            return isRefresh;
+        }
+
+        public void setRefresh(boolean refresh) {
+            isRefresh = refresh;
         }
     }
 }
