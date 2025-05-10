@@ -4,13 +4,13 @@ import lombok.Data;
 
 @Data
 public class GoogleAuthRequest {
-    private String googleToken;
+    private String token;
 
-    public String getGoogleToken() {
-        return googleToken;
+    public String getToken() {
+        return token;
     }
 
-    public void setGoogleToken(String googleToken) {
-        this.googleToken = googleToken;
+    public void setToken(String token) {
+        this.token = token;
     }
 }
