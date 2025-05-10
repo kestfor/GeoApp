@@ -1,6 +1,8 @@
 package ru.nsu.geoapp.ms_users;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +20,9 @@ public class AuthController {
     private final GoogleTokenVerifier googleTokenVerifier;
     private final JwtTokenProvider jwtTokenProvider;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
+
+
     public AuthController(GoogleTokenVerifier googleTokenVerifier,
                           JwtTokenProvider jwtTokenProvider) {
         this.googleTokenVerifier = googleTokenVerifier;
@@ -27,21 +32,29 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
         try {
+            LOGGER.debug("Starting to verify GJWT: {}", request.getToken());
             // Верификация Google токена
-            GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getGoogleToken());
+            GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getToken());
+            LOGGER.debug("GJWT verified, seems legit. Generating local JWT");
 
             // Генерация внутреннего JWT
-            String internalToken = jwtTokenProvider.generateToken(payload.getEmail());
+            JwtTokenProvider.JwtToken internalToken = jwtTokenProvider.generateToken(payload.getEmail());
+            LOGGER.debug("Local JWT generated: {}", internalToken.asString());
 
             // Создание ответа
-            AuthResponse response = new AuthResponse();
-            response.setToken(internalToken);
-            response.setEmail(payload.getEmail());
-            response.setName((String) payload.get("name"));
-            response.setName((String) payload.get("picture"));
+            AuthResponse response = new AuthResponse(
+                    internalToken.asString(),
+                    "refresh_token_here", //todo: refresh token
+                    internalToken.getExpiryDate().getTime() / 1000,
+                    payload.getEmail(),
+                    (String) payload.get("name"),
+                    (String) payload.get("picture")
+            );
+            LOGGER.debug("Generated response: {}", response);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            LOGGER.debug("Invalid Google token: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Google token", e);
         }
     }
