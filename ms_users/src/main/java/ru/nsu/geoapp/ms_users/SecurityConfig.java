@@ -24,7 +24,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/google").permitAll()
+                        .requestMatchers("/auth/google").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
