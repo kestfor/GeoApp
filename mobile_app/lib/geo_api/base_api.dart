@@ -7,15 +7,15 @@ import 'package:mobile_app/geo_api/token_manager/token_manager.dart';
 enum AuthType { google }
 
 class BaseApi {
-  static const String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net";
-  //static const String baseUrl = "http://192.168.0.48:8000";
+  //static const String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net";
+  static const String baseUrl = "http://192.168.0.18:8080";
   static final Encoding defaultEncoding = Encoding.getByName('utf-8')!;
   static final Map<String, String> _defaultHeaders = <String, String>{
     'Content-Type': 'application/json; charset=UTF-8',
   };
   static final refresher = ApiKeyRefresher(refreshUrl: "$baseUrl/refresh_token");
   static final Map<AuthType, Authenticator> authenticators = {
-    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$baseUrl/google_auth"),
+    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$baseUrl/auth/google"),
   };
   static final BaseApi _instance = BaseApi._internal();
   static TokenManager? _tokenManager;

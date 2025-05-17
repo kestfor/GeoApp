@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:mobile_app/screens/user_screens/friends/friend_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PureUser {
@@ -30,16 +28,9 @@ class PureUser {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'username': username,
-      'first_name': firstName,
-      'last_name': lastName,
-      'picture_url': pictureUrl,
-    };
+    return {'id': id, 'username': username, 'first_name': firstName, 'last_name': lastName, 'picture_url': pictureUrl};
   }
 }
-
 
 class User extends PureUser {
   static const String userDataKey = "user_data";
@@ -57,7 +48,7 @@ class User extends PureUser {
     this.bio,
     this.birthDate,
     this.onLogOut,
-    this.relationType = "none"
+    this.relationType = "none",
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -69,6 +60,7 @@ class User extends PureUser {
       pictureUrl: json['picture_url'],
       bio: json['bio'],
       birthDate: json['birth_date'],
+      relationType: json["relation_type"],
     );
   }
 
@@ -82,6 +74,7 @@ class User extends PureUser {
       'picture_url': pictureUrl,
       'bio': bio,
       'birth_date': birthDate,
+      'relation_type': relationType,
     };
   }
 

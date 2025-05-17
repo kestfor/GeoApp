@@ -18,15 +18,15 @@ class ApiKeyRefresher implements Refresher {
     };
     return data;
 
-    final Uri uri = Uri.parse('$refreshUrl');
-    Map<String, dynamic> body = {"refresh_token": refreshToken, "grant_type": "refresh_token"};
-    var res = await http.post(uri, body: jsonEncode(body));
-
-    if (res.statusCode != 200) {
-      throw Exception('Failed to refresh token');
-    }
-
-    return jsonDecode(res.body);
+    // final Uri uri = Uri.parse('$refreshUrl');
+    // Map<String, dynamic> body = {"refresh_token": refreshToken, "grant_type": "refresh_token"};
+    // var res = await http.post(uri, body: jsonEncode(body));
+    //
+    // if (res.statusCode != 200) {
+    //   throw Exception('Failed to refresh token');
+    // }
+    //
+    // return jsonDecode(res.body);
   }
 }
 
@@ -57,6 +57,15 @@ class ThroughGoogleAuthenticator implements Authenticator {
       throw Exception('ID token is not set');
     }
 
+    final Uri uri = Uri.parse(authUrl);
+    Map<String, dynamic> body = {"idToken": idToken};
+    var res = await http.post(uri, body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
+
+    // if (res.statusCode != 200) {
+    //   throw Exception('Failed to authenticate with Google');
+    // }
+
+    //mocking
     Map<String, dynamic> data = {
       "jwt": {
         "access_token": "access_token",
@@ -71,14 +80,5 @@ class ThroughGoogleAuthenticator implements Authenticator {
     };
     return Future.delayed(Duration(seconds: 1), () => data);
 
-    final Uri uri = Uri.parse(authUrl);
-    Map<String, dynamic> body = {"idToken": idToken};
-    var res = await http.post(uri, body: jsonEncode(body));
-
-    if (res.statusCode != 200) {
-      throw Exception('Failed to authenticate with Google');
-    }
-
-    return jsonDecode(res.body);
   }
 }
