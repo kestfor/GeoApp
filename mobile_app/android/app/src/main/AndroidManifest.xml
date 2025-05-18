@@ -18,6 +18,8 @@
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
 
     <application
         android:label="Geo Album"
@@ -62,4 +64,7 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+
+
+
 </manifest>

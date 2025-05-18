@@ -36,7 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_sign_in: ^6.0.0
   http:
+  firebase_messaging:
   toastification:
+  flutter_local_notifications: ^19.2.1
   cached_network_image:
   shared_preferences:
   flutter_secure_storage: ^9.0.0

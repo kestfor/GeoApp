@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -21,15 +22,28 @@ import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:provider/provider.dart';
 import 'package:toastification/toastification.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'notifications/firebase_notifications.dart';
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
   await FMTCObjectBoxBackend().initialise();
   await FMTCStore('mapStore').manage.create();
-
   await dotenv.load(fileName: ".env");
+
+  await FirebaseNotificationService.initFirebase();
+  await FirebaseNotificationService.instance.init();
+
+  final notificationService = FirebaseNotificationService.instance;
+  final token = await notificationService.token;
+  print(token);
+
   MainUserController controller = MainUserController();
   var initialScreen = await getInitScreen(controller);
+
+
+
   runApp(
     MultiProvider(
       providers: [
