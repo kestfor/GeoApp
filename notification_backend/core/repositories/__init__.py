@@ -1,1 +1,1 @@
-from .token import DeviceTokenRepository
+from .device_token_repository import DeviceTokenRepository

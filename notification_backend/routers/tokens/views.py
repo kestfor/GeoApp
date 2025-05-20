@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
@@ -19,7 +21,8 @@ async def register_token(
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     repository = DeviceTokenRepository(session)
-    token = await repository.upsert(user_id=user_id, token=payload.token, platform=payload.platform, is_active=True)
+    token = await repository.upsert(user_id=UUID(user_id), token=payload.token, platform=payload.platform,
+                                    is_active=True)
     return token
 
 

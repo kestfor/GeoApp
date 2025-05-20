@@ -1,7 +1,7 @@
 import datetime
 from collections import defaultdict
 from typing import List, Optional, Set
-
+from uuid import UUID
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
@@ -35,7 +35,7 @@ class DeviceTokenRepository:
 
     async def list_by_user(
             self,
-            user_id: str,
+            user_id: UUID,
             active_only: bool = True
     ) -> List[DeviceToken]:
         statement = select(DeviceToken).where(DeviceToken.user_id == user_id)
@@ -47,7 +47,7 @@ class DeviceTokenRepository:
 
     async def upsert(
             self,
-            user_id: str,
+            user_id: UUID,
             token: str,
             platform: DevicePlatform,
             is_active: bool = True,
@@ -78,8 +78,8 @@ class DeviceTokenRepository:
 
         # 2) Выполняем конструкцию и получаем результирующий ряд
         result = await self.session.execute(stmt)
-        obj = result.scalar_one()
-
+        row = result.first()  # получаем строку с данными
+        obj = DeviceToken(**row._mapping)  # создаём ORM-объект из данных
         return obj
 
     async def deactivate(self, token_id: int) -> Optional[DeviceToken]:
