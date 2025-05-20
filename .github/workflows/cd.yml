@@ -1,0 +1,19 @@
+name: Запуск start.sh
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-start-script:
+    # Таргетируем self-hosted runner
+    runs-on: [self-hosted]
+    steps:
+      # Чекаут репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Запуск скрипта
+      - name: Запустить start.sh
+        run: ./start.sh
