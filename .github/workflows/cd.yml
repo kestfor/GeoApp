@@ -1,0 +1,23 @@
+name: Запуск start.sh
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+    inputs:
+        logLevel:
+          description: 'Log level'     
+          required: true
+          default: 'warning'
+
+jobs:
+  run-start-script:
+    # Таргетируем self-hosted runner
+    runs-on: [self-hosted]
+    steps:
+      # Чекаут репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      # Запуск скрипта
+      - name: Запустить start.sh
+        run: ./start.sh
