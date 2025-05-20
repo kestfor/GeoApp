@@ -10,7 +10,7 @@ services:
       sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000"
     restart: always
     ports:
-      - "8001:8000"
+      - "8004:8000"
     depends_on:
       - kafka
       - postgres
@@ -29,7 +29,7 @@ services:
     networks:
       - postgres_network
     ports:
-      - "5432:5432"
+      - "5435:5432"
     restart: unless-stopped
 
   zookeeper:
