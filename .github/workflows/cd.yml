@@ -3,7 +3,7 @@ name: Запуск start.sh
 on:
   push:
     branches:
-      - [main, dev]
+      - main
   workflow_dispatch:
 
 jobs:
