@@ -9,3 +9,10 @@ services:
     volumes:
       - ./lua:/usr/local/openresty/nginx/lua/
       - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+    networks:
+      - default
+      - shared_network
+
+networks:
+  shared_network:
+    external: true
