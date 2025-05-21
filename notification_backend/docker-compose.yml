@@ -73,6 +73,8 @@ services:
   kafka-exporter:
     image: danielqsj/kafka-exporter
     command: [ "--kafka.server=kafka:9092"]
+    depends_on:
+      - kafka
     networks:
       - default
       - shared_network
