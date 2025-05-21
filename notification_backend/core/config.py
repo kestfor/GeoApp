@@ -3,7 +3,6 @@ from typing import Dict
 
 from pydantic import BaseModel, computed_field, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import URL
 
 BASE_DIR = Path(__file__).parent.parent
 
@@ -37,14 +36,6 @@ class PostgresSettings(BaseSettings):
             hide_password=False)
 
 
-class RedisSettings(BaseSettings):
-    HOST: str = Field(default='localhost', alias="REDIS_HOST")
-    PORT: int = Field(default=6379, alias="REDIS_PORT")
-    PASSWORD: str = Field(default='password', alias="REDIS_PASSWORD")
-    DB: int = Field(default=0, alias="REDIS_DB")
-
-    model_config = SettingsConfigDict(env_file="./.env", extra='ignore')
-
 
 class SecureDocs(BaseSettings):
     USERNAME: str = Field(default="admin", alias='SECURE_DOCS_USERNAME')
@@ -61,19 +52,6 @@ class CORSSettings(BaseModel):
     allow_headers: list[str] = ["*"]
 
 
-class LokiSettings(BaseSettings):
-    url: str | None= Field(default=None, alias="LOKI_URL")
-    username: str | None = Field(default=None, alias="LOKI_USERNAME")
-    password: str | None = Field(default=None, alias="LOKI_PASSWORD")
-
-    @property
-    def auth(self):
-        if self.username and self.password:
-            return (self.username, self.password)
-        return None
-
-    model_config = SettingsConfigDict(env_file="./.env", extra='ignore')
-
 
 class FirebaseSettings(BaseSettings):
     cred_path: str = Field(alias="FIREBASE_CRED_PATH")
@@ -81,18 +59,25 @@ class FirebaseSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file="./.env", extra='ignore')
 
 
+class KafkaSettings(BaseSettings):
+    host: str = Field(default='localhost', alias='KAFKA_HOST')
+    port: int = Field(default=9090, alias='KAFKA_PORT')
+
+    @property
+    def url(self) -> str:
+        return f"{self.host}:{self.port}"
+
+
 class Settings(BaseSettings):
     app_prefix: str = "/api/notifications/"
 
     postgres: PostgresSettings = PostgresSettings()
 
-    redis: RedisSettings = RedisSettings()
-
     secure_docs: SecureDocs = SecureDocs()
 
     cors: CORSSettings = CORSSettings()
 
-    loki_settings: LokiSettings = LokiSettings()
+    kafka: KafkaSettings = KafkaSettings()
 
     firebase_settings: FirebaseSettings = FirebaseSettings()
 

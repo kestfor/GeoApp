@@ -11,8 +11,9 @@ from core.repositories import DeviceTokenRepository
 from core.services.firebase import FirebaseService, get_firebase_service
 from .messages import FriendResponseMessage, PostCreatedMessage, NewCommentMessage
 from .utils import render_post_message, render_comment_message, render_friend_message
+from core.config import settings
 
-router = KafkaRouter("localhost:29092")
+router = KafkaRouter(settings.kafka.url)
 logger = logging.getLogger("event_consumer")
 
 
