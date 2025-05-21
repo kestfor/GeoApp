@@ -3,6 +3,7 @@ from typing import Dict
 
 from pydantic import BaseModel, computed_field, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
 BASE_DIR = Path(__file__).parent.parent
 
