@@ -1,9 +1,8 @@
 version: "3.8"
 
 services:
-  fastapi:
+  notifications-api:
     build: ./
-    container_name: fastapi
     env_file:
       - .env
     command: >
@@ -70,6 +69,15 @@ services:
       KAFKA_CLUSTERS_0_NAME: 'local'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9092'
       KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter
+    command: [ "--kafka.server=kafka:9092"]
+    networks:
+      - default
+      - shared_network
+    ports:
+      - 9308:9308
 
 volumes:
   pg_volume:
