@@ -15,7 +15,8 @@ services:
       - kafka
       - postgres
     networks:
-      - postgres_network
+      - default
+      - shared_network
 
   postgres:
     image: postgres:17-alpine
@@ -26,8 +27,6 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - pg_volume:/var/lib/postgresql/data
-    networks:
-      - postgres_network
     ports:
       - "5435:5432"
     restart: unless-stopped
@@ -83,6 +82,8 @@ volumes:
       o: bind
       device: ./docker_volumes/kafka_volume
 
+
+
 networks:
-  postgres_network:
-    driver: bridge
+  shared_network:
+    external: true
