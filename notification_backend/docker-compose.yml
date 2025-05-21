@@ -57,6 +57,9 @@ services:
       - KAFKA_CREATE_TOPICS=user.events:1:1,post.events:1:1,comments.events:1:1,notification.events:1:1
     volumes:
       - kafka_volume:/bitnami/kafka
+    networks:
+      - default
+      - shared_network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
