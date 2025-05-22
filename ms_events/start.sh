@@ -1,1 +1,1 @@
-docker-compose -p ms_events up -d --build
+docker compose -p ms_events up -d --build
