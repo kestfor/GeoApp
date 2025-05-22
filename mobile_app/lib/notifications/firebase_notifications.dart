@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobile_app/firebase_options.dart';
+import 'package:mobile_app/geo_api/services/notifications/notifications_service.dart';
 
 /// Service responsible for handling Firebase Cloud Messaging notifications.
 class FirebaseNotificationService {
@@ -24,6 +25,15 @@ class FirebaseNotificationService {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform
     );
+  }
+
+  Future<void> _sendToken() async {
+    if (token == null) {
+      throw Exception("token is not initialized");
+    }
+
+    final service = NotificationService();
+    await service.sendToken(token);
   }
 
   /// Initialize Firebase, request permissions, configure listeners
@@ -48,6 +58,7 @@ class FirebaseNotificationService {
 
     // Background handler (must be a top-level function)
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
+    await _sendToken();
   }
 
   get token => _token;

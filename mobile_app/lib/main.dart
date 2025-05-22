@@ -37,7 +37,6 @@ void main() async {
 
   final notificationService = FirebaseNotificationService.instance;
   final token = await notificationService.token;
-  print(token);
 
   MainUserController controller = MainUserController();
   var initialScreen = await getInitScreen(controller);
