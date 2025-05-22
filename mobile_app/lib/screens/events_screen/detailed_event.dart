@@ -107,10 +107,10 @@ class DetailedEventState extends State<DetailedEvent> {
                   SizedBox(height: 16),
                   DescriptionBlock(event: event),
                   SizedBox(height: 16),
-                  Align(
-                      alignment: Alignment.bottomRight,
-                      child: buildOpenChatButton(context)),
-                  SizedBox(height: 16),
+                  // Align(
+                  //     alignment: Alignment.bottomRight,
+                  //     child: buildOpenChatButton(context)),
+                  // SizedBox(height: 16),
                   ListOfConnectedUsers(users: users),
                 ],
               ),
@@ -118,7 +118,7 @@ class DetailedEventState extends State<DetailedEvent> {
           ),
         ),
       ),
-      // bottomNavigationBar: buildOpenChatButton(context),
+      bottomNavigationBar: Padding(padding: EdgeInsets.symmetric(horizontal: 120), child:buildOpenChatButton(context)),
     );
   }
 

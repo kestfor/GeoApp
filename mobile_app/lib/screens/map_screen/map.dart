@@ -144,7 +144,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           width: _markerSize,
           height: _markerSize,
           point: LatLng(l.point.lat, l.point.lon),
-          child: InkWell(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
             onLongPress: () {
               animateToFromEvent(LatLng(l.point.lat, l.point.lon));
             },
@@ -156,7 +158,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               content: eventPopUp(context, l),
               child: EventCard(key: Key(l.id.toString()), event: l),
             ),
-          ),
+            )),
         ),
       );
     }
