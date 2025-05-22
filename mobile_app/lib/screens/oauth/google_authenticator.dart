@@ -1,6 +1,8 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mobile_app/geo_api/base_api.dart';
+import 'package:mobile_app/notifications/firebase_notifications.dart';
 import 'package:mobile_app/utils/mocks.dart';
+
 import '../../types/user/user.dart';
 
 // GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -38,7 +40,10 @@ class GoogleAuthenticator {
 
     //TODO : remove mock user
     _user = mockUser;
-    _user!.onLogOut = signOut;
+    _user!.onLogOut = () {
+      FirebaseNotificationService.instance.deleteToken();
+      signOut();
+    };
   }
 
   Future<User> getUser() {

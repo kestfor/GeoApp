@@ -33,7 +33,12 @@ class FirebaseNotificationService {
     }
 
     final service = NotificationService();
-    await service.sendToken(token);
+    await service.registerToken(token);
+  }
+
+  Future<void> deleteToken() async {
+    final service = NotificationService();
+    await service.deleteToken(token);
   }
 
   /// Initialize Firebase, request permissions, configure listeners

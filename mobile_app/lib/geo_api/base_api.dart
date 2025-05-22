@@ -70,6 +70,14 @@ class BaseApi {
     return res;
   }
 
+  Future<http.Response> delete(Uri uri, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+    headers ??= {};
+    headers.addAll(await getAuthHeaders());
+
+    var res = await http.delete(uri, body: jsonEncode(body), headers: headers, encoding: defaultEncoding);
+    return res;
+  }
+
   BaseApi._internal();
 
   factory BaseApi() {
