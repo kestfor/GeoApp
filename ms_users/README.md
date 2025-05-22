@@ -10,9 +10,9 @@ API_PORT={{microservice_api_port_goes_here}}
 ```
 
 ### Swagger:
-Доступ к сваггеру: `/swagger-ui/index.html`
+Доступ к сваггеру: `/api/users_service/swagger-ui/index.html`
 
-Доступ к JSON спецификации: `/v3/api-docs`
+Доступ к JSON спецификации: `/api/users_service/v3/api-docs`
 
 Перед выкладыванием в прод **обязательно** отключить swagger документацию, в `./src/main/resouces/application.properties` поставить значение
 ```commandline

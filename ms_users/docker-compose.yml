@@ -22,6 +22,7 @@ services:
       - ms_users_postgres
       - ms_users_redis
     environment:
+      SERVER_SERVLET_CONTEXT_PATH: "/api/users_service"
       POSTGRES_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
     env_file:
       - .env
