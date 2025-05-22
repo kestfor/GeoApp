@@ -262,7 +262,7 @@ class _EventEditingScreenState extends State<EventEditingScreen> {
               //SizedBox(height: 16),
               buildAddLocationButton(),
               SizedBox(height: 8),
-              buildSelectFrindsButton(),
+              //buildSelectFrindsButton(),
             ],
           ),
         ),

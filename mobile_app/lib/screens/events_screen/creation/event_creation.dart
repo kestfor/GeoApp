@@ -267,7 +267,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
               SizedBox(height: 16),
               buildAddLocationButton(),
               SizedBox(height: 8),
-              buildSelectFrindsButton(),
+              //buildSelectFrindsButton(),
             ],
           ),
         ),

@@ -108,7 +108,7 @@ class DetailedEventState extends State<DetailedEvent> {
                   DescriptionBlock(event: event),
                   SizedBox(height: 16),
                   Align(
-                      alignment: Alignment.center,
+                      alignment: Alignment.bottomRight,
                       child: buildOpenChatButton(context)),
                   SizedBox(height: 16),
                   ListOfConnectedUsers(users: users),
