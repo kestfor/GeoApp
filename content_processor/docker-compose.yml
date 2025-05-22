@@ -33,11 +33,6 @@ services:
 
 volumes:
   pg_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/pg_volume
 
 networks:
   shared_network:
