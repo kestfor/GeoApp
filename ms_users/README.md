@@ -6,6 +6,7 @@ POSTGRES_USER={{here_goes_username}}
 POSTGRES_PASSWORD={{here_goes_password}}
 POSTGRES_DB={{here_goes_db_name}}
 POSTGRES_PORT={{here_goes_db_port}}
+API_PORT={{microservice_api_port_goes_here}}
 ```
 
 ### Собрать и запустить контейнер:

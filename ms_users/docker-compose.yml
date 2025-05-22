@@ -18,8 +18,6 @@ services:
 
   ms_users_web:
     build: .
-    volumes:
-      - .:.
     depends_on:
       - ms_users_postgres
       - ms_users_redis
@@ -27,4 +25,6 @@ services:
       POSTGRES_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
     env_file:
       - .env
+    ports:
+      - "${API_PORT}:8080"
     restart: always

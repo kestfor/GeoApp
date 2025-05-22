@@ -1,4 +1,5 @@
 FROM openjdk:21-oracle
+RUN microdnf install findutils
 
 COPY ./src ./src
 COPY ./build.gradle ./build.gradle
@@ -10,6 +11,4 @@ COPY ./settings.gradle ./settings.gradle
 RUN ./gradlew build
 
 WORKDIR /build/libs/
-
-EXPOSE 50080
 CMD ["java", "-jar", "ms_users-0.0.1.jar"]
