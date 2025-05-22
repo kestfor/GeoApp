@@ -35,17 +35,17 @@ def get_docs_auth_dep():
 
 
 @router.get("/docs", response_class=HTMLResponse)
-async def get_docs(username: str = Depends(get_docs_auth_dep)) -> HTMLResponse:
-    return get_swagger_ui_html(openapi_url="/api/openapi.json", title="docs")
+async def get_docs(username: str = get_docs_auth_dep()) -> HTMLResponse:
+    return get_swagger_ui_html(openapi_url="docs/openapi.json", title="docs")
 
 
 @router.get("/redoc", response_class=HTMLResponse)
-async def get_redoc(username: str = Depends(get_docs_auth_dep)) -> HTMLResponse:
-    return get_redoc_html(openapi_url="/api/openapi.json", title="redoc")
+async def get_redoc(username: str = get_docs_auth_dep()) -> HTMLResponse:
+    return get_redoc_html(openapi_url="docs/openapi.json", title="redoc")
 
 
-@router.get("/api/openapi.json", response_class=JSONResponse)
-async def get_openapi_json(request: Request, username: str = Depends(get_docs_auth_dep)) -> JSONResponse:
+@router.get("/docs/openapi.json", response_class=JSONResponse)
+async def get_openapi_json(request: Request, username: str = get_docs_auth_dep()) -> JSONResponse:
     app: FastAPI = request.app
     openapi_schema = get_openapi(
         title=app.title,
