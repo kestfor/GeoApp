@@ -1,7 +1,6 @@
 # Define your module's routes here
 import secrets
 
-from core.config import settings
 from fastapi import APIRouter, Depends, HTTPException, FastAPI
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.openapi.utils import get_openapi
@@ -9,6 +8,8 @@ from fastapi.security import HTTPBasicCredentials, HTTPBasic
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse
+
+from core.config import settings
 
 router = APIRouter(tags=["docs"])
 security = HTTPBasic()
@@ -33,18 +34,16 @@ def get_docs_auth_dep():
 
 
 @router.get("/docs", response_class=HTMLResponse)
-async def get_docs(request: Request, username: str = get_docs_auth_dep()) -> HTMLResponse:
-    base_url = request.base_url
-    return get_swagger_ui_html(openapi_url=f"{base_url.path[:-4]}/api/openapi.json", title="docs")
+async def get_docs(username: str = get_docs_auth_dep()) -> HTMLResponse:
+    return get_swagger_ui_html(openapi_url="docs/openapi.json", title="docs")
 
 
 @router.get("/redoc", response_class=HTMLResponse)
-async def get_redoc(request: Request, username: str = get_docs_auth_dep()) -> HTMLResponse:
-    base_url = request.base_url
-    return get_redoc_html(openapi_url=f"{base_url.path[:-4]}/api/openapi.json", title="redoc")
+async def get_redoc(username: str = get_docs_auth_dep()) -> HTMLResponse:
+    return get_redoc_html(openapi_url="docs/openapi.json", title="redoc")
 
 
-@router.get("/api/openapi.json", response_class=JSONResponse)
+@router.get("/docs/openapi.json", response_class=JSONResponse)
 async def get_openapi_json(request: Request, username: str = get_docs_auth_dep()) -> JSONResponse:
     app: FastAPI = request.app
     openapi_schema = get_openapi(

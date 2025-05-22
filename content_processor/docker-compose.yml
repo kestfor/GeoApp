@@ -2,9 +2,8 @@ version: "3.8"
 
 services:
 
-  fastapi:
+  content-processor:
     build: ./
-    container_name: fastapi
     env_file:
       - .env
     command: >
@@ -15,10 +14,11 @@ services:
     depends_on:
       - postgres
     networks:
-      - postgres_network
+      - default
+      - shared_network
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${PG_DATABASE}
       POSTGRES_USER: ${PG_USER}
@@ -26,8 +26,6 @@ services:
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
       - pg_volume:/var/lib/postgresql/data
-    networks:
-      - postgres_network
     ports:
       - "5434:5432"
     restart: unless-stopped
@@ -40,15 +38,7 @@ volumes:
       type: none
       o: bind
       device: ./docker_volumes/pg_volume
-  redis_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/redis_volume
-
-
 
 networks:
-  postgres_network:
-    driver: bridge
+  shared_network:
+    external: true
