@@ -23,10 +23,6 @@ class TokenManager {
     required String refreshToken,
     required int expiresAt,
   }) {
-    if (_instance != null) {
-      return _instance!;
-    }
-
     _instance = TokenManager._internal(refresher, accessToken, refreshToken, expiresAt);
     return _instance!;
   }
@@ -104,7 +100,7 @@ class TokenManager {
 
   bool get isReady => _ready;
 
-  bool get isExpired => DateTime.now().millisecondsSinceEpoch >= _expiresAt;
+  bool get isExpired => DateTime.now().millisecondsSinceEpoch / 1000 >= _expiresAt;
 
-  bool get isExpiring => (_expiresAt - DateTime.now().millisecondsSinceEpoch).abs() <= 1000 * closestToExpireSeconds;
+  bool get isExpiring => (_expiresAt - DateTime.now().millisecondsSinceEpoch / 1000).abs() <= closestToExpireSeconds;
 }

@@ -13,22 +13,21 @@ class ApiKeyRefresher implements Refresher {
 
   @override
   Future<Map<String, dynamic>> refresh(String refreshToken) async {
-    // Map<String, dynamic> data = {
-    //   "access_token": "access_token",
-    //   "refresh_token": "refresh_token",
-    //   "expires_at": (DateTime.now().millisecondsSinceEpoch / 1000 + 3600).toInt(),
-    // };
-    // return data;
-
     final Uri uri = Uri.parse('$refreshUrl');
-    Map<String, dynamic> body = {"refresh_token": refreshToken, "grant_type": "refresh_token"};
-    var res = await http.post(uri, body: jsonEncode(body));
+    Map<String, dynamic> body = {"refresh": refreshToken};
+    var res = await http.post(uri, body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
 
     if (res.statusCode != 200) {
-      throw Exception('Failed to refresh token');
+      throw Exception('Failed to refresh token, ${res.reasonPhrase} for url: $uri');
     }
 
-    return jsonDecode(res.body);
+    final Map<String, dynamic> data = jsonDecode(res.body);
+    final result = {
+      "access_token": data["token"],
+      "refresh_token": data["refresh"],
+      "expires_at": DateTime.now().millisecondsSinceEpoch / 1000 + 3600,
+    };
+    return result;
   }
 }
 
@@ -68,17 +67,21 @@ class ThroughGoogleAuthenticator implements Authenticator {
     }
 
     final receivedData = jsonDecode(res.body);
-    print(receivedData);
 
     //mocking
     Map<String, dynamic> data = {
       "jwt": {
         "access_token": receivedData["token"],
         "refresh_token": receivedData["refresh"],
-        "expires_at": receivedData["exp"],
+        "expires_at": (DateTime.now().millisecondsSinceEpoch / 1000).toInt() + 1000000,
       },
       "user": mockUser.toJson()
     };
+
+
+    print("Google Authenticator: received data: $data");
+
+
     return Future.delayed(Duration(seconds: 1), () => data);
 
   }

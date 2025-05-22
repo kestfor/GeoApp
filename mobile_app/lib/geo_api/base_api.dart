@@ -13,9 +13,9 @@ class BaseApi {
   static final Map<String, String> _defaultHeaders = <String, String>{
     'Content-Type': 'application/json; charset=UTF-8',
   };
-  static final refresher = ApiKeyRefresher(refreshUrl: "$baseUrl/api/users_service/auth/refresh");
+  static final refresher = ApiKeyRefresher(refreshUrl: "http://192.168.0.18:8003/auth/refresh");
   static final Map<AuthType, Authenticator> authenticators = {
-    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$baseUrl/api/users_service/auth/google"),
+    AuthType.google: ThroughGoogleAuthenticator(authUrl: "http://192.168.0.18:8003/auth/google"),
   };
   static final BaseApi _instance = BaseApi._internal();
   static TokenManager? _tokenManager;
@@ -35,6 +35,7 @@ class BaseApi {
     final jwt = authData['jwt'];
     Map<dynamic, dynamic> userData = authData['user'];
 
+    print("JWT: $jwt");
     _tokenManager = TokenManager.fromTokenData(
       refresher: refresher,
       refreshToken: jwt['refresh_token'],

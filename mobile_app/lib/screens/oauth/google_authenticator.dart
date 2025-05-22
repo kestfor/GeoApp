@@ -27,6 +27,7 @@ class GoogleAuthenticator {
       throw Exception("idToken is null");
     }
     final res = await BaseApi.authenticate(AuthType.google, {"idToken": idToken});
+    print("successfully authenticated");
     return res;
   }
 
@@ -42,8 +43,8 @@ class GoogleAuthenticator {
     //TODO : remove mock user
     _user = mockUser;
     _user!.onLogOut = () {
-      FirebaseNotificationService.instance.deleteToken();
       signOut();
+      FirebaseNotificationService.instance.deleteToken();
     };
   }
 
