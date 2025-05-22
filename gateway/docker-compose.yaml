@@ -9,3 +9,4 @@ services:
     volumes:
       - ./lua:/usr/local/openresty/nginx/lua/
       - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./proxy_headers.conf:/usr/local/openresty/nginx/conf/proxy_headers.conf
