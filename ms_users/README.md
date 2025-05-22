@@ -9,8 +9,12 @@ POSTGRES_PORT={{here_goes_db_port}}
 API_PORT={{microservice_api_port_goes_here}}
 ```
 
-### Перед продакшеном:
-Обязательно отключить swagger документацию, в `./src/main/resouces/application.properties` поставить значение
+### Swagger:
+Доступ к сваггеру: `/swagger-ui/index.html`
+
+Доступ к JSON спецификации: `/v3/api-docs`
+
+Перед выкладыванием в прод **обязательно** отключить swagger документацию, в `./src/main/resouces/application.properties` поставить значение
 ```commandline
 springdoc.api-docs.enabled=false
 springdoc.swagger-ui.enabled=false
