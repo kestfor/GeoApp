@@ -37,15 +37,15 @@ services:
       - ALLOW_ANONYMOUS_LOGIN=yes
     ports:
       - '2181:2181'
+    volumes:
+      - zookeeper_data:/bitnami/zookeeper
+    restart: unless-stopped
 
   kafka:
     image: bitnami/kafka:3.5
     container_name: kafka
     depends_on:
       - zookeeper
-    ports:
-      - '9092:9092'     # внешний порт (хост → Kafka)
-      - '29092:29092'   # альтернативный внешний порт
     environment:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
@@ -56,6 +56,10 @@ services:
       - KAFKA_CREATE_TOPICS=user.events:1:1,post.events:1:1,comments.events:1:1,notification.events:1:1
     volumes:
       - kafka_volume:/bitnami/kafka
+    ports:
+      - '9092:9092'     # internal listener
+      - '29092:29092'   # external listener
+    restart: unless-stopped
     networks:
       - default
       - shared_network
@@ -63,23 +67,29 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
-    ports:
-      - '8080:8080'
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:9092'
       KAFKA_CLUSTERS_0_ZOOKEEPER: 'zookeeper:2181'
-
-  kafka-exporter:
-    image: danielqsj/kafka-exporter
-    command: [ "--kafka.server=kafka:9092"]
-    depends_on:
-      - kafka
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
     networks:
       - default
       - shared_network
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter
+    command:
+      - "--kafka.server=kafka:9092"
+    depends_on:
+      - kafka
+    restart: on-failure
     ports:
       - 9308:9308
+    networks:
+      - default
+      - shared_network
 
 volumes:
   pg_volume:
@@ -88,6 +98,7 @@ volumes:
       type: none
       o: bind
       device: ./docker_volumes/pg_volume
+
   kafka_volume:
     driver: local
     driver_opts:
@@ -95,7 +106,12 @@ volumes:
       o: bind
       device: ./docker_volumes/kafka_volume
 
-
+  zookeeper_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./docker_volumes/zookeeper_data
 
 networks:
   shared_network:
