@@ -1,6 +1,11 @@
 package ru.nsu.geoapp.ms_users;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,6 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Auth Controller", description = "Operations with user authentication")
 public class AuthController {
 
     private final GoogleTokenVerifier googleTokenVerifier;
@@ -29,6 +35,11 @@ public class AuthController {
         this.jwtTokenService = jwtTokenService;
     }
 
+    @Operation(summary = "Get internal auth and refresh tokens from google auth")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Valid Google JWT, user authenticated"),
+            @ApiResponse(responseCode = "401", description = "Invalid Google JWT", content = @Content)
+    })
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
         try {
@@ -64,6 +75,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Refresh tokens' pair")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tokens refreshed"),
+            @ApiResponse(responseCode = "401", description = "Invalid refresh token", content = @Content)
+    })
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refreshTokenPair(@RequestBody RefreshRequest request) {
         try {
@@ -89,6 +105,12 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Revoke every valid token from user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tokens revoked"),
+            @ApiResponse(responseCode = "401", description = "Invalid auth token", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error upon revoking tokens", content = @Content)
+    })
     @PostMapping("/revokeall")
     public ResponseEntity<Void> revokeAllTokens(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -103,6 +125,12 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Validate any token (either auth or refresh)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token is valid"),
+            @ApiResponse(responseCode = "401", description = "Token is invalid", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error upon validating token", content = @Content)
+    })
     @PostMapping("/validate")
     public ResponseEntity<ValidateResponse> validateToken(@RequestBody ValidateRequest request) {
         try {
@@ -121,10 +149,14 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             LOGGER.debug("Could not validate token: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Exception upon validating token", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon validating token", e);
         }
     }
 
+    @Operation(summary = "Get Public Key that is used to validate jwt sign")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Returns Public Key")
+    })
     @GetMapping(value = "/validate", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<?> getPublicKey() {
         return ResponseEntity.ok(jwtTokenService.getPublicKey());
