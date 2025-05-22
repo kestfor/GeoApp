@@ -9,6 +9,13 @@ POSTGRES_PORT={{here_goes_db_port}}
 API_PORT={{microservice_api_port_goes_here}}
 ```
 
+### Перед продакшеном:
+Обязательно отключить swagger документацию, в `./src/main/resouces/application.properties` поставить значение
+```commandline
+springdoc.api-docs.enabled=false
+springdoc.swagger-ui.enabled=false
+```
+
 ### Собрать и запустить контейнер:
 ```commandline
 docker-compose up -d --build

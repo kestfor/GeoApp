@@ -36,3 +36,5 @@ out/
 ### VS Code ###
 .vscode/
 /.env
+/src/main/resources/keys/private_key.pem
+/src/main/resources/keys/public_key.pem

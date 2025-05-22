@@ -27,6 +27,11 @@ public class SecurityConfig {
                         .requestMatchers("/auth/google").permitAll()
                         .requestMatchers("/auth/refresh").permitAll()
                         .requestMatchers("/auth/validate").permitAll()
+
+                        .requestMatchers("/v3/api-docs/**").permitAll()
+                        .requestMatchers("/swagger-ui/**").permitAll()
+                        .requestMatchers("/swagger-ui.html").permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -36,6 +36,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+	// OpenAPI Swagger Documentation
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
 	// Google API
 	implementation 'com.google.api-client:google-api-client:1.33.0'
 
