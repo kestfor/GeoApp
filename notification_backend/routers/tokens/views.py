@@ -11,7 +11,7 @@ from .schema import DeviceTokenCreate, DeviceTokenDelete
 router = APIRouter(prefix="/tokens", tags=["tokens"])
 
 
-@router.post("/tokens")
+@router.post("")
 async def register_token(
         request: Request,
         payload: DeviceTokenCreate,
@@ -26,7 +26,7 @@ async def register_token(
     return token
 
 
-@router.delete("/tokens")
+@router.delete("")
 async def register_token(
         request: Request,
         payload: DeviceTokenDelete,

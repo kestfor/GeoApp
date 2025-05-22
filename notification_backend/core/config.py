@@ -70,7 +70,7 @@ class KafkaSettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    app_prefix: str = "/api/notifications/"
+    app_prefix: str = "/api/notifications"
 
     postgres: PostgresSettings = PostgresSettings()
 
