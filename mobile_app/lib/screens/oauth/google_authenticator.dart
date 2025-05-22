@@ -37,6 +37,7 @@ class GoogleAuthenticator {
 
     final auth = await _currentUser!.authentication;
     final userData = await _verifyIdToken(auth);
+    FirebaseNotificationService.instance.registerToken();
 
     //TODO : remove mock user
     _user = mockUser;

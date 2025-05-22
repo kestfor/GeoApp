@@ -27,7 +27,7 @@ class FirebaseNotificationService {
     );
   }
 
-  Future<void> _sendToken() async {
+  Future<void> registerToken() async {
     if (token == null) {
       throw Exception("token is not initialized");
     }
@@ -63,7 +63,6 @@ class FirebaseNotificationService {
 
     // Background handler (must be a top-level function)
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
-    await _sendToken();
   }
 
   get token => _token;
