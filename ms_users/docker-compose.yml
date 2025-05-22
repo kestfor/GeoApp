@@ -1,0 +1,30 @@
+services:
+  ms_users_redis:
+    image: redis:8.0
+
+  ms_users_postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
+    command: postgres -p ${POSTGRES_PORT} -c datestyle='ISO, DMY'
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  ms_users_web:
+    build: .
+    volumes:
+      - .:.
+    depends_on:
+      - ms_users_postgres
+      - ms_users_redis
+    environment:
+      POSTGRES_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
+    env_file:
+      - .env
+    restart: always
