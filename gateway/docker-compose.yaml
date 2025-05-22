@@ -10,3 +10,10 @@ services:
       - ./lua:/usr/local/openresty/nginx/lua/
       - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./proxy_headers.conf:/usr/local/openresty/nginx/conf/proxy_headers.conf
+    networks:
+      - default
+      - shared_network
+
+networks:
+  shared_network:
+    external: true
