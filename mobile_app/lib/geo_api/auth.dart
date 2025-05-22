@@ -2,31 +2,33 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile_app/geo_api/token_manager/token_manager.dart';
+import 'package:mobile_app/utils/mocks.dart';
 
 
 class ApiKeyRefresher implements Refresher {
   final String refreshUrl;
 
+
   ApiKeyRefresher({required this.refreshUrl});
 
   @override
   Future<Map<String, dynamic>> refresh(String refreshToken) async {
-    Map<String, dynamic> data = {
-      "access_token": "access_token",
-      "refresh_token": "refresh_token",
-      "expires_at": (DateTime.now().millisecondsSinceEpoch / 1000 + 3600).toInt(),
-    };
-    return data;
+    // Map<String, dynamic> data = {
+    //   "access_token": "access_token",
+    //   "refresh_token": "refresh_token",
+    //   "expires_at": (DateTime.now().millisecondsSinceEpoch / 1000 + 3600).toInt(),
+    // };
+    // return data;
 
-    // final Uri uri = Uri.parse('$refreshUrl');
-    // Map<String, dynamic> body = {"refresh_token": refreshToken, "grant_type": "refresh_token"};
-    // var res = await http.post(uri, body: jsonEncode(body));
-    //
-    // if (res.statusCode != 200) {
-    //   throw Exception('Failed to refresh token');
-    // }
-    //
-    // return jsonDecode(res.body);
+    final Uri uri = Uri.parse('$refreshUrl');
+    Map<String, dynamic> body = {"refresh_token": refreshToken, "grant_type": "refresh_token"};
+    var res = await http.post(uri, body: jsonEncode(body));
+
+    if (res.statusCode != 200) {
+      throw Exception('Failed to refresh token');
+    }
+
+    return jsonDecode(res.body);
   }
 }
 
@@ -58,25 +60,24 @@ class ThroughGoogleAuthenticator implements Authenticator {
     }
 
     final Uri uri = Uri.parse(authUrl);
-    Map<String, dynamic> body = {"idToken": idToken};
+    Map<String, dynamic> body = {"token": idToken};
     var res = await http.post(uri, body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
 
-    // if (res.statusCode != 200) {
-    //   throw Exception('Failed to authenticate with Google');
-    // }
+    if (res.statusCode != 200) {
+      throw Exception('Failed to authenticate with Google, ${res.reasonPhrase} for url: $uri');
+    }
+
+    final receivedData = jsonDecode(res.body);
+    print(receivedData);
 
     //mocking
     Map<String, dynamic> data = {
       "jwt": {
-        "access_token": "access_token",
-        "refresh_token": "refresh_token",
-        "expires_at": (DateTime
-            .now()
-            .millisecondsSinceEpoch / 1000).toInt(),
+        "access_token": receivedData["token"],
+        "refresh_token": receivedData["refresh"],
+        "expires_at": receivedData["exp"],
       },
-      "user": {
-        //some user data
-      },
+      "user": mockUser.toJson()
     };
     return Future.delayed(Duration(seconds: 1), () => data);
 

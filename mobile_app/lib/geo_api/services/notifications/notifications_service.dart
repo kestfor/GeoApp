@@ -25,6 +25,7 @@ class NotificationService {
 
     final uri = Uri.parse("$baseUrl/tokens");
     final res = await baseApi.post(uri, body: body);
+    print(uri);
     if (res.statusCode != HttpStatus.ok) {
       throw Exception("failed to register token: ${res.reasonPhrase}");
     }
