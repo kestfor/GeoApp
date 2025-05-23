@@ -168,6 +168,43 @@ public class EventController {
         return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore);
     }
 
+    @GetMapping("/available")
+    @Operation(
+            summary = "Get pure user events",
+            description = "Returns a list of pure events for the specified user by UUID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = EventPureResponseDTO.class))
+                    )
+            )
+    })
+    public List<EventPureResponseDTO> getAvailablePureEvents(
+            @RequestHeader(value="X-User-Id",
+                    required = true)
+            UUID userId,
+            @RequestParam(value = "name", required = false)
+            @Parameter(description = "Name filter")
+            String name,
+            @RequestParam(value = "description", required = false)
+            @Parameter(description = "Description filter")
+            String description,
+            @RequestParam(value = "createdAfter", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @Parameter(description = "Minimum creation date", example = "2025-04-01T00:00:00")
+            LocalDateTime createdAfter,
+            @RequestParam(value = "createdBefore", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            @Parameter(description = "Maximum creation date", example = "2025-04-30T23:59:59")
+            LocalDateTime createdBefore
+    ) {
+        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore);
+    }
+
+
 
     @DeleteMapping("/{event_id}")
     @Operation(
