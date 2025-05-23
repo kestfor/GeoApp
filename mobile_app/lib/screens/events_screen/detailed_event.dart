@@ -79,9 +79,9 @@ class DetailedEventState extends State<DetailedEvent> {
                 onPressed: () async {
                   await Navigator.push(context, CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)));
                   setState(() {
+
                     print(event);
                     this.event = Future.value(event);
-                    this.users = Future.value(event.members);
                   });
                 },
               );
