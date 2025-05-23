@@ -153,6 +153,9 @@ public class EventService {
                 event.getDescription().substring(0, Math.min(50, event.getDescription().length())) : "");
         dto.setCreatedAt(event.getCreatedAt());
         dto.setDisplayPhoto(getDisplayPhoto(event));
+        dto.setLatitude(event.getLatitude());
+        dto.setLongitude(event.getLongitude());
+        dto.setParticipantIds(event.getParticipantIds());
         return dto;
     }
 
