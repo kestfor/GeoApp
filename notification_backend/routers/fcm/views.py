@@ -16,7 +16,7 @@ async def send_to_token(
         req: SendToTokenRequest,
         fb: "FirebaseService" = Depends(get_firebase_service)
 ) -> SendResponse:
-    notification = Notification(req.title, req.body, req.image_url)
+    notification = Notification(req.title, req.description, req.image_url)
     msg = Message(token=req.token, notification=notification)
     resp = await fb.send_to_token(
         message=msg,
@@ -29,7 +29,7 @@ async def send_multicast(
         req: SendMulticastRequest,
         fb: "FirebaseService" = Depends(get_firebase_service)
 ) -> MulticastResponse:
-    nt = Notification(req.title, req.body, req.image_url)
+    nt = Notification(req.title, req.description, req.image_url)
     msg = MulticastMessage(tokens=req.tokens, notification=nt)
     batch_response = await fb.send_multicast(message=msg)
     failed_tokens = [req.tokens[i] for i, r in enumerate(batch_response.responses) if not r.success]

@@ -9,7 +9,6 @@ class SendToTokenRequest(BaseModel):
     title: str = Field(..., description="Notification title")
     description: Optional[str] = Field(None, description="Notification body")
     image_url: Optional[str] = Field(None, description="Image URL")
-    data: Optional[Dict[str, str]] = Field(None, description="Optional data payload")
 
 
 class SendMulticastRequest(BaseModel):
@@ -17,7 +16,6 @@ class SendMulticastRequest(BaseModel):
     title: str = Field(..., description="Notification title")
     description: Optional[str] = Field(None, description="Notification body")
     image_url: Optional[str] = Field(None, description="Image URL")
-    data: Optional[Dict[str, str]] = Field(None, description="Optional data payload")
 
 
 class TopicSubscriptionRequest(BaseModel):

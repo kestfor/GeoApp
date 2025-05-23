@@ -2,8 +2,9 @@ import datetime
 import logging
 from typing import Optional, Dict
 
-from sqlalchemy import and_, select, inspect, Column, func
+from sqlalchemy import and_, select, inspect, Column, func, DateTime
 from sqlalchemy.ext.asyncio import AsyncAttrs
+from sqlalchemy.orm import declarative_mixin
 from sqlalchemy.util import immutabledict
 from sqlmodel import SQLModel, Field, TIMESTAMP
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -70,25 +71,22 @@ class BaseModelMixin(AsyncAttrs):
         return f"<{self.__class__.__name__} {', '.join(attrs)}>"
 
 
-utc_now = lambda: datetime.datetime.now()
-
-
+@declarative_mixin
 class TimestampMixin:
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
-        # Добавим поля в конец класса
-        cls.created_at: TIMESTAMP = Field(sa_column=Column(TIMESTAMP, default=utc_now, nullable=False,
-                                                           server_default=func.now()))
-        cls.updated_at: TIMESTAMP = Field(sa_column=Column(TIMESTAMP, default=utc_now, nullable=False,
-                                                           server_default=func.now(), onupdate=utc_now))
-
-        # Обновим __annotations__ для корректной генерации модели
-        if not hasattr(cls, "__annotations__"):
-            cls.__annotations__ = {}
-
-        cls.__annotations__["created_at"] = datetime.datetime
-        cls.__annotations__["updated_at"] = datetime.datetime
+def utc_now():
+    return datetime.datetime.now(datetime.UTC)
 
 
 convention = {
