@@ -18,6 +18,10 @@ public class EventSpecifications {
         };
     }
 
+    public static Specification<Event> hasParticipantId(UUID participantId) {
+        return (root, query, cb) -> cb.isMember(participantId, root.get("participantIds"));
+    }
+
     public static Specification<Event> containsDescription(String description) {
         return (root, query, cb) -> {
             if (description == null) return null;

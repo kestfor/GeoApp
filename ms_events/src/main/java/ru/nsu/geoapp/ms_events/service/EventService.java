@@ -103,6 +103,27 @@ public class EventService {
                 .collect(Collectors.toList());
     }
 
+    public List<EventPureResponseDTO> getPureEventsByUserId(
+            UUID userId,
+            String name,
+            String description,
+            LocalDateTime createdAfter,
+            LocalDateTime createdBefore
+    ) {
+        Specification<Event> ownerSpec = EventSpecifications.hasOwnerId(userId);
+        Specification<Event> participantSpec = EventSpecifications.hasParticipantId(userId);
+
+        Specification<Event> combinedSpec = ownerSpec.or(participantSpec)
+                .and(EventSpecifications.containsName(name))
+                .and(EventSpecifications.containsDescription(description))
+                .and(EventSpecifications.createdAfter(createdAfter))
+                .and(EventSpecifications.createdBefore(createdBefore));
+
+        return eventRepository.findAll(combinedSpec).stream()
+                .map(this::mapToPureResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public void deleteEvent(UUID eventId) {
         eventRepository.deleteById(eventId);
     }

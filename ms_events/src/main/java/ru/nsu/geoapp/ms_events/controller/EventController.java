@@ -149,7 +149,7 @@ public class EventController {
     })
     public List<EventPureResponseDTO> getPureEventsByUserId(
             @PathVariable("user_id") @Parameter(description = "User UUID")
-            UUID ownerId,
+            UUID userId,
             @RequestParam(value = "name", required = false)
             @Parameter(description = "Name filter")
             String name,
@@ -165,7 +165,7 @@ public class EventController {
             @Parameter(description = "Maximum creation date", example = "2025-04-30T23:59:59")
             LocalDateTime createdBefore
     ) {
-        return eventService.getPureEventsByOwnerId(ownerId, name, description, createdAfter, createdBefore);
+        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore);
     }
 
 
