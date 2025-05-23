@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.nsu.geoapp.ms_events.dto.error.NotFoundErrorDTO;
@@ -62,8 +63,8 @@ public class EventController {
             ),
     })
     @ResponseStatus(HttpStatus.CREATED)
-    public EventDetailedResponseDTO createEvent(@Valid @RequestBody EventCreateRequestDTO requestDTO) {
-        return eventService.createEvent(requestDTO);
+    public EventDetailedResponseDTO createEvent(@Valid @RequestBody EventCreateRequestDTO requestDTO, @RequestHeader HttpHeaders headers) {
+        return eventService.createEvent(requestDTO, headers);
     }
 
 
@@ -99,9 +100,10 @@ public class EventController {
             )
     })
     public EventDetailedResponseDTO updateEvent(@PathVariable("event_id") UUID eventId,
-                                                @Valid @RequestBody EventUpdateRequestDTO requestDTO
+                                                @Valid @RequestBody EventUpdateRequestDTO requestDTO,
+                                                @RequestHeader HttpHeaders headers
     ) {
-        return eventService.updateEvent(eventId, requestDTO);
+        return eventService.updateEvent(eventId, requestDTO, headers);
     }
 
 
@@ -128,8 +130,9 @@ public class EventController {
                     )
             )
     })
-    public EventDetailedResponseDTO getEventDetailed(@PathVariable("eventId") UUID eventId) {
-        return eventService.getEventDetailed(eventId);
+    public EventDetailedResponseDTO getEventDetailed(@PathVariable("eventId") UUID eventId,
+                                                     @RequestHeader HttpHeaders headers) {
+        return eventService.getEventDetailed(eventId, headers);
     }
 
 
@@ -163,9 +166,10 @@ public class EventController {
             @RequestParam(value = "createdBefore", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @Parameter(description = "Maximum creation date", example = "2025-04-30T23:59:59")
-            LocalDateTime createdBefore
+            LocalDateTime createdBefore,
+            @RequestHeader HttpHeaders headers // Получение заголовков
     ) {
-        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore);
+        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore, headers);
     }
 
     @GetMapping("/available")
@@ -183,7 +187,7 @@ public class EventController {
             )
     })
     public List<EventPureResponseDTO> getAvailablePureEvents(
-            @RequestHeader(value="X-User-Id",
+            @RequestHeader(value = "X-User-Id",
                     required = true)
             UUID userId,
             @RequestParam(value = "name", required = false)
@@ -199,11 +203,11 @@ public class EventController {
             @RequestParam(value = "createdBefore", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
             @Parameter(description = "Maximum creation date", example = "2025-04-30T23:59:59")
-            LocalDateTime createdBefore
+            LocalDateTime createdBefore,
+            @RequestHeader HttpHeaders headers
     ) {
-        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore);
+        return eventService.getPureEventsByUserId(userId, name, description, createdAfter, createdBefore, headers);
     }
-
 
 
     @DeleteMapping("/{event_id}")

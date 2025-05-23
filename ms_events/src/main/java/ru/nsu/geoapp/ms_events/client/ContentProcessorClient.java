@@ -23,9 +23,8 @@ public class ContentProcessorClient {
         this.contentProcessorUrl = contentProcessorUrl;
     }
 
-    public ResponseEntity<List<MediaFileDTO>> getMediaInfo(List<UUID> mediaIds) {
+    public ResponseEntity<List<MediaFileDTO>> getMediaInfo(List<UUID> mediaIds, HttpHeaders headers) {
         String url = contentProcessorUrl + "/files/info";
-        HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<List<UUID>> requestEntity = new HttpEntity<>(mediaIds, headers);
         return restTemplate.exchange(

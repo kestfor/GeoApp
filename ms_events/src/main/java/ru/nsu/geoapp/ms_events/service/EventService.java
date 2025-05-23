@@ -3,6 +3,7 @@ package ru.nsu.geoapp.ms_events.service;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -33,7 +34,7 @@ public class EventService {
     private final ContentProcessorClient contentProcessorClient;
     private final KafkaTemplate<String, PostCreatedMessage> kafkaTemplate;
 
-    public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO) {
+    public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO, HttpHeaders headers) {
         Event event = new Event();
         event.setOwnerId(requestDTO.getOwnerId());
         event.setName(requestDTO.getName());
@@ -58,10 +59,10 @@ public class EventService {
             }
         });
 
-        return mapToDetailedResponseDTO(savedEvent);
+        return mapToDetailedResponseDTO(savedEvent, headers);
     }
 
-    public EventDetailedResponseDTO updateEvent(UUID eventId, EventUpdateRequestDTO requestDTO) {
+    public EventDetailedResponseDTO updateEvent(UUID eventId, EventUpdateRequestDTO requestDTO, HttpHeaders headers) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
@@ -92,13 +93,13 @@ public class EventService {
         event.setUpdatedAt(LocalDateTime.now());
 
         Event updatedEvent = eventRepository.save(event);
-        return mapToDetailedResponseDTO(updatedEvent);
+        return mapToDetailedResponseDTO(updatedEvent, headers);
     }
 
-    public EventDetailedResponseDTO getEventDetailed(UUID eventId) {
+    public EventDetailedResponseDTO getEventDetailed(UUID eventId, HttpHeaders headers) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
-        return mapToDetailedResponseDTO(event);
+        return mapToDetailedResponseDTO(event, headers);
     }
 
     public List<EventPureResponseDTO> getPureEventsByOwnerId(
@@ -106,7 +107,8 @@ public class EventService {
             String name,
             String description,
             LocalDateTime createdAfter,
-            LocalDateTime createdBefore
+            LocalDateTime createdBefore,
+            HttpHeaders headers
     ) {
         Specification<Event> spec = Specification.where(EventSpecifications.hasOwnerId(ownerId))
                 .and(EventSpecifications.containsName(name))
@@ -115,7 +117,7 @@ public class EventService {
                 .and(EventSpecifications.createdBefore(createdBefore));
 
         return eventRepository.findAll(spec).stream()
-                .map(this::mapToPureResponseDTO)
+                .map(event -> mapToPureResponseDTO(event, headers)) // Передача заголовков
                 .collect(Collectors.toList());
     }
 
@@ -124,7 +126,8 @@ public class EventService {
             String name,
             String description,
             LocalDateTime createdAfter,
-            LocalDateTime createdBefore
+            LocalDateTime createdBefore,
+            HttpHeaders headers
     ) {
         Specification<Event> ownerSpec = EventSpecifications.hasOwnerId(userId);
         Specification<Event> participantSpec = EventSpecifications.hasParticipantId(userId);
@@ -136,7 +139,7 @@ public class EventService {
                 .and(EventSpecifications.createdBefore(createdBefore));
 
         return eventRepository.findAll(combinedSpec).stream()
-                .map(this::mapToPureResponseDTO)
+                .map(event -> mapToPureResponseDTO(event, headers)) // Передача заголовков
                 .collect(Collectors.toList());
     }
 
@@ -153,7 +156,7 @@ public class EventService {
                 event.getParticipantIds().stream().map(UUID::toString).toList());
     }
 
-    private EventDetailedResponseDTO mapToDetailedResponseDTO(Event event) {
+    private EventDetailedResponseDTO mapToDetailedResponseDTO(Event event, HttpHeaders headers) {
         EventDetailedResponseDTO dto = new EventDetailedResponseDTO();
         dto.setEventId(event.getId());
         dto.setOwnerId(event.getOwnerId());
@@ -165,11 +168,11 @@ public class EventService {
         dto.setParticipantIds(event.getParticipantIds());
         dto.setCreatedAt(event.getCreatedAt());
         dto.setUpdatedAt(event.getUpdatedAt());
-        dto.setMedia(getMediaObjects(event.getMediaIds()));
+        dto.setMedia(getMediaObjects(event.getMediaIds(), headers));
         return dto;
     }
 
-    private EventPureResponseDTO mapToPureResponseDTO(Event event) {
+    private EventPureResponseDTO mapToPureResponseDTO(Event event, HttpHeaders headers) {
         EventPureResponseDTO dto = new EventPureResponseDTO();
         dto.setId(event.getId());
         dto.setOwnerId(event.getOwnerId());
@@ -177,29 +180,29 @@ public class EventService {
         dto.setDescriptionShort(event.getDescription() != null ?
                 event.getDescription().substring(0, Math.min(50, event.getDescription().length())) : "");
         dto.setCreatedAt(event.getCreatedAt());
-        dto.setDisplayPhoto(getDisplayPhoto(event));
+        dto.setDisplayPhoto(getDisplayPhoto(event, headers));
         dto.setLatitude(event.getLatitude());
         dto.setLongitude(event.getLongitude());
         dto.setParticipantIds(event.getParticipantIds());
         return dto;
     }
 
-    private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds) {
+    private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds, HttpHeaders headers) {
         if (mediaIds.isEmpty()) {
             return List.of();
         }
-        ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds);
+        ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds, headers);
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             return response.getBody();
         }
         return List.of();
     }
 
-    private MediaFileDTO getDisplayPhoto(Event event) {
+    private MediaFileDTO getDisplayPhoto(Event event, HttpHeaders headers) {
         if (event.getMediaIds() == null || event.getMediaIds().isEmpty()) {
             return null;
         }
-        List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds());
+        List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds(), headers);
         for (MediaFileDTO file : mediaFiles) {
             if ("photo".equals(file.getType())) {
                 return file;
