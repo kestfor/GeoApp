@@ -48,9 +48,11 @@ public class AuthController {
             GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getToken());
             LOGGER.debug("GJWT verified, seems legit. Generating internal JWTs");
 
+            User user = jwtTokenService.getUserService().getOrCreateUser(payload);
+
             // Generate internal JWTs
-            JwtTokenService.JwtToken accessToken = jwtTokenService.generateAccessToken(payload.getEmail());
-            JwtTokenService.JwtToken refreshToken = jwtTokenService.generateRefreshToken(payload.getEmail());
+            JwtTokenService.JwtToken accessToken = jwtTokenService.generateAccessToken(user.getId().toString());
+            JwtTokenService.JwtToken refreshToken = jwtTokenService.generateRefreshToken(user.getId().toString());
             LOGGER.debug(
                     "Internal JWT pair generated: {} {}",
                     accessToken.asString().substring(52, 60) + "...",
@@ -117,9 +119,14 @@ public class AuthController {
             String token = extractBearerToken(authHeader);
             String subject = jwtTokenService.getSubjectFromToken(token);
             User user = jwtTokenService.getUserService().findBySubject(subject);
+            if (user == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not find user with uuid " + subject);
+            }
             jwtTokenService.getUserService().revokeAllTokensForUser(user);
             LOGGER.debug("Revoked tokens for {}", subject);
             return ResponseEntity.ok().build();
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.error("Could not revoke tokens: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error upon revokening tokens", e);

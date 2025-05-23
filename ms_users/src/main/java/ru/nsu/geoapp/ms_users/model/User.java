@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -11,11 +14,14 @@ import lombok.NoArgsConstructor;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String username;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(nullable = false)
     private String firstName;
@@ -26,9 +32,9 @@ public class User {
     @Column()
     private String pictureUrl;
 
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column()
+    private Date birthDate;
 
     @Column(nullable = false)
-    private Long revokenDate;
+    private Long revokedUTC;
 }

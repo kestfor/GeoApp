@@ -3,6 +3,8 @@ package ru.nsu.geoapp.ms_users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -27,6 +29,7 @@ public class JwtTokenService {
     private final PublicKey publicKey;
     private final long jwtExpiration;
     private final long jwtExpirationRefresh;
+    @Getter
     private final UserService userService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenService.class);
@@ -160,7 +163,11 @@ public class JwtTokenService {
             Date issuedAt = claims.getIssuedAt();
             LOGGER.debug("{} Token is valid, checking revoked", token);
             User user = this.userService.findBySubject(subject);
-            boolean isRevoked = user.getRevokenDate() <= issuedAt.getTime();
+            if (user == null) {
+                LOGGER.debug("user not found {}.", subject);
+                return false;
+            }
+            boolean isRevoked = user.getRevokedUTC() <= issuedAt.getTime();
             if (isRevoked) {
                 LOGGER.debug("{} Token is revoked.", token);
             }
@@ -171,39 +178,17 @@ public class JwtTokenService {
         }
     }
 
-    public UserService getUserService() {
-        return userService;
-    }
-
     public static class JwtToken {
+        @Setter
+        @Getter
         private String subject;
+        @Setter
+        @Getter
         private Date issuedAt;
+        @Setter
+        @Getter
         private Date expiryDate;
         private boolean isRefresh = false;
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
-
-        public Date getIssuedAt() {
-            return issuedAt;
-        }
-
-        public void setIssuedAt(Date issuedAt) {
-            this.issuedAt = issuedAt;
-        }
-
-        public Date getExpiryDate() {
-            return expiryDate;
-        }
-
-        public void setExpiryDate(Date expiryDate) {
-            this.expiryDate = expiryDate;
-        }
 
         private String signedString = null;
 
