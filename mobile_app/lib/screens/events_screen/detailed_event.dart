@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -77,11 +78,11 @@ class DetailedEventState extends State<DetailedEvent> {
               return IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () async {
-                  await Navigator.push(context, CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)));
+                  Event? result = await Navigator.push(context, CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)));
                   setState(() {
-
-                    print(event);
-                    this.event = Future.value(event);
+                    if (result != null) {
+                      this.event = Future.value(result);
+                    }
                   });
                 },
               );
@@ -305,7 +306,7 @@ class MediaBlock extends StatelessWidget {
     List<Widget> items = [];
     for (int i = 0; i < media.length; i++) {
       if (media[i] is ImgContent) {
-        items.add(_buildImg(context, (media[i] as ImgContent).images[0].url, media, i, buttonCarouselController));
+        items.add(_buildImg(context, (media[i] as ImgContent).images["medium"]!.url, media, i, buttonCarouselController));
       } else if (media[i] is VideoContent) {
         items.add(_buildImg(context, (media[i] as VideoContent).thumbnailUrl, media, i, buttonCarouselController));
       }
@@ -318,7 +319,7 @@ class MediaBlock extends StatelessWidget {
         aspectRatio: 16 / 9,
         viewportFraction: 0.9,
         initialPage: 0,
-        enableInfiniteScroll: true,
+        enableInfiniteScroll: false,
         reverse: false,
         autoPlay: false,
         autoPlayInterval: Duration(seconds: 3),
@@ -406,6 +407,7 @@ class ListOfConnectedUsers extends StatelessWidget {
   }
 
   Widget buildList(context, List<PureUser> data) {
+    print(data);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,

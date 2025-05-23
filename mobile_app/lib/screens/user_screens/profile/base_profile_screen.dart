@@ -1,14 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_app/geo_api/services/events/filters.dart';
 import 'package:mobile_app/repositories/event_repository/event_repository.dart';
 import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/user/user.dart';
-import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
 import '../../../style/shimmer.dart';
@@ -21,13 +19,13 @@ import 'events_grid.dart';
 import 'overlapping_images.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final int userId;
+  final String userId;
   static const String routeName = "/profile";
 
   const ProfileScreen({super.key, required this.userId});
 
   static Route getProfileRoute(RouteSettings settings) {
-    int? user = settings.arguments as int?;
+    String? user = settings.arguments as String?;
     if (user == null) {
       throw Exception("User object is required in args");
     }
@@ -58,6 +56,10 @@ class ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  void setEventsCallback(context, List<PureEvent> events) => {};
+
+  void setFriendsCallback(context, List<PureUser> friends) => {};
+
   User? get user => _user;
 
   List<PureEvent>? get events => _events;
@@ -66,10 +68,11 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   void _fetchEvents() {
     _eventsService
-        .fetchEventsForUser(EventFilter(userId: widget.userId))
+        .fetchEventsForUser()
         .then((events) {
           setState(() {
             this._events = events;
+            setEventsCallback(context, events);
           });
         })
         .onError((error, stackTrace) {
@@ -188,7 +191,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       child: InkWell(
         onTap: () {
-          Navigator.pushNamed(context, EventsScreen.routeName, arguments: {"events": pureEventsMock, "user": _user});
+          Navigator.pushNamed(context, EventsScreen.routeName, arguments: {"events": _events, "user": _user});
         },
         child: Card(color: Colors.white, child: EventsGrid(imageUrls: eventsImg)),
       ),

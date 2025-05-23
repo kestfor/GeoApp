@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:mobile_app/screens/events_screen/creation/friends_picker.dart';
+import 'package:mobile_app/geo_api/services/events/events_services.dart';
 import 'package:mobile_app/style/colors.dart';
-import 'package:mobile_app/utils/mocks.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/utils/loading_screen.dart';
 
 import '../../../geo_api/services/media_storage/models/models.dart';
 import '../../../types/events/events.dart';
-import '../../../types/user/user.dart';
 import '../../map_screen/geolocator.dart';
 import 'map_position_picker.dart';
 
@@ -32,13 +32,15 @@ class EventEditingScreen extends StatefulWidget {
 
   final Event event;
 
-  const EventEditingScreen({super.key, required this.event});
+  EventEditingScreen({super.key, required this.event});
 
   @override
   _EventEditingScreenState createState() => _EventEditingScreenState();
 }
 
 class _EventEditingScreenState extends State<EventEditingScreen> {
+  final eventService = EventsService();
+
   late final TextEditingController _eventNameController = TextEditingController(text: widget.event.name);
   late final TextEditingController _eventDescriptionController = TextEditingController(text: widget.event.description);
   List<MediaFull> readyMedia = [];
@@ -46,7 +48,6 @@ class _EventEditingScreenState extends State<EventEditingScreen> {
   late LatLng? location = LatLng(widget.event.point.lat, widget.event.point.lon);
   bool _isTitleValid = true;
   bool _isLocationValid = true;
-  late List<PureUser> friends = widget.event.members;
 
   @override
   void initState() {
@@ -109,30 +110,30 @@ class _EventEditingScreenState extends State<EventEditingScreen> {
   //   }
   // }
 
-  void handleUpdate() {
+  void handleUpdate() async {
     if (!verify()) {
       return;
     }
 
-    widget.event.members = friends;
-    widget.event.name = _eventNameController.text;
-    widget.event.description = _eventDescriptionController.text;
-    widget.event.point = Point(lat: location!.latitude, lon: location!.longitude);
-    widget.event.membersId = friends.map((e) => e.id).toList();
+    final oldEvent = Event.from(widget.event);
+    oldEvent.name = _eventNameController.text;
+    oldEvent.description = _eventDescriptionController.text;
+    oldEvent.point = Point(lat: location!.latitude, lon: location!.longitude);
 
-    // uploadFiles(context);
+    final ls = LoadingScreen();
+    ls.showLoadingScreen(context);
+    try {
+      await eventService.updateEvent(oldEvent);
+      ls.closeLoadingScreen(context);
+    } on Exception catch (e) {
+      showError(context, "can't update even't");
+      print(e);
+      ls.closeLoadingScreen(context);
+      return;
+    }
 
-    // //TODO: Add event update logic here
-    // final newEvent = PureEvent(
-    //   id: 123,
-    //   coverUrl: "",
-    //   name: _eventNameController.text,
-    //   authorId: widget.user.id,
-    //   membersId: [],
-    //   point: Point(lat: location!.latitude, lon: location!.longitude),
-    // );
-
-    Navigator.pop(context, widget.event);
+    showSuccess(context, "event has been updated");
+    Navigator.pop(context, oldEvent);
   }
 
   void pickLocation() async {
@@ -181,32 +182,32 @@ class _EventEditingScreenState extends State<EventEditingScreen> {
     );
   }
 
-  Widget buildSelectFrindsButton() {
-    return CupertinoListTile(
-      onTap: () async {
-        List<PureUser>? res = await Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder:
-                (context) =>
-                    FriendsSelectionScreen(friends: friendsMocks, selectedFriendIds: friends.map((e) => e.id).toList()),
-          ),
-        );
-        if (res != null) {
-          setState(() {
-            friends = widget.event.members;
-          });
-        }
-      },
-      padding: const EdgeInsets.all(0),
-      leading: Icon(Icons.person, color: black),
-      title:
-          friends.isEmpty
-              ? Text("Choose who can see", style: TextStyle(fontSize: 16))
-              : Text("${friends.length} friends selected", style: TextStyle(fontSize: 16)),
-      trailing: Icon(Icons.arrow_forward_ios, color: gray),
-    );
-  }
+  // Widget buildSelectFrindsButton() {
+  //   return CupertinoListTile(
+  //     onTap: () async {
+  //       List<PureUser>? res = await Navigator.push(
+  //         context,
+  //         CupertinoPageRoute(
+  //           builder:
+  //               (context) =>
+  //                   FriendsSelectionScreen(friends: friendsMocks, selectedFriendIds: friends.map((e) => e.id).toList()),
+  //         ),
+  //       );
+  //       if (res != null) {
+  //         setState(() {
+  //           friends = widget.event.members;
+  //         });
+  //       }
+  //     },
+  //     padding: const EdgeInsets.all(0),
+  //     leading: Icon(Icons.person, color: black),
+  //     title:
+  //         friends.isEmpty
+  //             ? Text("Choose who can see", style: TextStyle(fontSize: 16))
+  //             : Text("${friends.length} friends selected", style: TextStyle(fontSize: 16)),
+  //     trailing: Icon(Icons.arrow_forward_ios, color: gray),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {

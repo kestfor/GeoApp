@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/screens/user_screens/profile/popup_button.dart';
+import 'package:provider/provider.dart';
+
 import '../../../style/colors.dart';
+import '../../../types/controllers/main_user_controller.dart';
 import '../../oauth/auth_screen.dart';
 import '../edit_profile/edit_profile.dart';
 import 'base_profile_screen.dart';
@@ -9,11 +12,10 @@ import 'base_profile_screen.dart';
 enum Actions { edit, logOut }
 
 class MyProfileScreen extends ProfileScreen {
-
   static const String routeName = "/me";
 
   static Route getMyProfileRoute(RouteSettings settings) {
-    int? user = settings.arguments as int?;
+    String? user = settings.arguments as String?;
     if (user == null) {
       throw Exception("User object is required in args");
     }
@@ -27,7 +29,6 @@ class MyProfileScreen extends ProfileScreen {
 }
 
 class MyProfileScreenState extends ProfileScreenState {
-
   Widget _buildMoreButton() {
     Map<Actions, Widget> mapping = {
       Actions.edit: Row(
@@ -61,7 +62,6 @@ class MyProfileScreenState extends ProfileScreenState {
     );
   }
 
-
   Widget _buildNameInfo() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -81,6 +81,18 @@ class MyProfileScreenState extends ProfileScreenState {
   }
 
   @override
+  void setEventsCallback(context, events) {
+    Provider.of<MainUserController>(context, listen: false).clearEvents();
+    Provider.of<MainUserController>(context, listen: false).addEvents(events);
+  }
+
+  @override
+  void setFriendsCallback(context, friends) {
+    Provider.of<MainUserController>(context, listen: false).clearFriends();
+    Provider.of<MainUserController>(context, listen: false).addFriends(friends);
+  }
+
+  @override
   Widget get moreButton {
     if (user == null) {
       return SizedBox();
@@ -88,12 +100,12 @@ class MyProfileScreenState extends ProfileScreenState {
     return _buildMoreButton();
   }
 
-    @override
-    Widget get nameInfo {
-      if (user == null) {
-        return nameInfoShimmer;
-      } else {
-        return _buildNameInfo();
-      }
+  @override
+  Widget get nameInfo {
+    if (user == null) {
+      return nameInfoShimmer;
+    } else {
+      return _buildNameInfo();
     }
   }
+}

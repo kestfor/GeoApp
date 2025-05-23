@@ -74,9 +74,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     return PhotoView(
       heroAttributes: PhotoViewHeroAttributes(
         transitionOnUserGestures: true,
-        tag: (media as ImgContent).images[0].url + index.toString(),
+        tag: (media as ImgContent).images["medium"]!.url + index.toString(),
       ),
-      imageProvider: CachedNetworkImageProvider(media.images[0].url),
+      imageProvider: CachedNetworkImageProvider(media.images["medium"]!.url),
       backgroundDecoration: const BoxDecoration(color: Colors.black),
     );
   }

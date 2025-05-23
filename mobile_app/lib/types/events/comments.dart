@@ -1,6 +1,6 @@
 class PureComment {
   final int id;
-  final int authorId;
+  final String authorId;
   final String text;
   final int createdAt;
   final int updatedAt;

@@ -17,6 +17,10 @@ class MainUserController extends ChangeNotifier {
 
   bool get isLoggedIn => _user != null;
 
+  List<PureEvent> get events => _events;
+  List<PureUser> get friend => _friends;
+
+
   void logOut() {
     if (_user != null) {
       _user!.onLogOut?.call();

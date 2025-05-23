@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:uuid/uuid.dart';
 
 import '../friends/friend_button.dart';
 import 'base_profile_screen.dart';
@@ -11,7 +12,7 @@ class UserScreen extends ProfileScreen {
 
   static Route getUserRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
-    int? user = args["user"] as int?;
+    String? user = args["user"] as String?;
     FriendStatus? status = args["status"] as FriendStatus?;
     if (user == null) {
       throw Exception("User object is required in args");

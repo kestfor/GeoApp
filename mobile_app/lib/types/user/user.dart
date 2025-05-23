@@ -1,9 +1,10 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 class PureUser {
-  int id;
+  String id;
   String username;
   String firstName;
   String lastName;

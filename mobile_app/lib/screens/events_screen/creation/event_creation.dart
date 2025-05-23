@@ -5,18 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/demo/widgets/media_preview.dart';
+import 'package:mobile_app/geo_api/services/events/events_services.dart';
 import 'package:mobile_app/geo_api/services/media_storage/converter.dart';
 import 'package:mobile_app/geo_api/services/media_storage/media_storage_service.dart';
-import 'package:mobile_app/screens/events_screen/creation/friends_picker.dart';
 import 'package:mobile_app/style/colors.dart';
-import 'package:mobile_app/utils/mocks.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
+import 'package:mobile_app/utils/loading_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../../geo_api/services/media_storage/models/models.dart';
+import '../../../types/events/events.dart';
 import '../../../types/user/user.dart';
 import '../../map_screen/geolocator.dart';
 import 'map_position_picker.dart';
-import 'upload_status.dart';
 
 class EventCreationScreen extends StatefulWidget {
   static const String routeName = "/event_creation";
@@ -55,6 +57,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   bool _isTitleValid = true;
   bool _isLocationValid = true;
   List<int> friends = [];
+  late String ownerId;
 
   @override
   void initState() {
@@ -86,34 +89,44 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     return true;
   }
 
-  Future<void> uploadFiles(context) async {
-    showDialog(context: context, builder: (context) => Center(child: CircularProgressIndicator()));
+  Future<Event> createEvent(List<String> mediaIds) async {
+    Event event = Event(
+      createdAt: DateTime.now(),
+      point: Point(lat: location!.latitude, lon: location!.longitude),
+      id: "",
+      coverUrl: "",
+      name: _eventNameController.text,
+      authorId: ownerId,
+      // TODO user friends provider
+      membersId: [ownerId],
+      mediaIds: mediaIds,
+      files: [],
+      description: _eventDescriptionController.text,
+    );
 
+    final eventsService = EventsService();
+    event = await eventsService.createEvent(event);
+    return event;
+  }
+
+  Future<void> uploadFilesAndCreate(context) async {
+    final ls = LoadingScreen();
+    ls.showLoadingScreen(context);
     await Future.wait(preprocessTasks);
-    Navigator.pop(context);
 
     MediaStorageService mediaService = MediaStorageService();
-    final key = Provider.of<GlobalKey<ScaffoldMessengerState>>(context, listen: false);
-    final successColor = Theme.of(context).primaryColor;
-    mediaService
-        .uploadFiles(readyMedia)
-        .then(
-          (value) {
-            StatusBannerOverlay().hideOverlay();
-            key.currentState?.showSnackBar(
-              SnackBar(backgroundColor: successColor, content: Text("New event created!")),
-            );
-          },
-          onError: (error, stackStrace) {
-            StatusBannerOverlay().hideOverlay();
-            // showError(context, "Error while creating event, please try later");
-            key.currentState?.showSnackBar(
-              const SnackBar(backgroundColor: red, content: Text("Error while creating event, please try later")),
-            );
-            log("Error uploading files: ${error.toString()}");
-          },
-        );
-    StatusBannerOverlay().showOverlay(context, message: "uploading files...");
+    try {
+      final ids = await mediaService.uploadFiles(readyMedia);
+      final event = await createEvent(ids);
+
+      Provider.of<MainUserController>(context, listen: false).addEvent(PureEvent.fromEvent(event));
+
+      showSuccess(context, "new event has been created");
+    } on Exception catch (e) {
+      showError(context, "error during creating new event, try later");
+      log(e.toString());
+    }
+    ls.closeLoadingScreen(context);
   }
 
   Future<void> preprocessFiles() async {
@@ -127,22 +140,12 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     }
   }
 
-  void handleCreate() {
+  void handleCreate() async {
     if (!verify()) {
       return;
     }
 
-    uploadFiles(context);
-
-    // //TODO: Add event creation logic here
-    // final newEvent = PureEvent(
-    //   id: 123,
-    //   coverUrl: "",
-    //   name: _eventNameController.text,
-    //   authorId: widget.user.id,
-    //   membersId: [],
-    //   point: Point(lat: location!.latitude, lon: location!.longitude),
-    // );
+    await uploadFilesAndCreate(context);
 
     Navigator.pop(context);
   }
@@ -190,31 +193,33 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
   }
 
-  Widget buildSelectFrindsButton() {
-    return CupertinoListTile(
-      onTap: () async {
-        List<PureUser>? res = await Navigator.push(
-          context,
-          CupertinoPageRoute(builder: (context) => FriendsSelectionScreen(friends: friendsMocks)),
-        );
-        if (res != null) {
-          setState(() {
-            friends = res.map((e) => e.id).toList();
-          });
-        }
-      },
-      padding: const EdgeInsets.all(0),
-      leading: Icon(Icons.person, color: black),
-      title:
-          friends.isEmpty
-              ? Text("Choose who can see", style: TextStyle(fontSize: 16))
-              : Text("${friends.length} friends selected", style: TextStyle(fontSize: 16)),
-      trailing: Icon(Icons.arrow_forward_ios, color: gray),
-    );
-  }
+  // Widget buildSelectFrindsButton() {
+  //   return CupertinoListTile(
+  //     onTap: () async {
+  //       List<PureUser>? res = await Navigator.push(
+  //         context,
+  //         CupertinoPageRoute(builder: (context) => FriendsSelectionScreen(friends: friendsMocks)),
+  //       );
+  //       if (res != null) {
+  //         setState(() {
+  //           friends = res.map((e) => e.id).toList();
+  //         });
+  //       }
+  //     },
+  //     padding: const EdgeInsets.all(0),
+  //     leading: Icon(Icons.person, color: black),
+  //     title:
+  //         friends.isEmpty
+  //             ? Text("Choose who can see", style: TextStyle(fontSize: 16))
+  //             : Text("${friends.length} friends selected", style: TextStyle(fontSize: 16)),
+  //     trailing: Icon(Icons.arrow_forward_ios, color: gray),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
+    User? user = Provider.of<MainUserController>(context, listen: false).user;
+    ownerId = user!.id;
     return Scaffold(
       backgroundColor: lightGrayWithPurple,
       appBar: AppBar(

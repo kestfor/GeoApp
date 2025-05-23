@@ -104,10 +104,14 @@ class EventsScreenState extends State<EventsScreen> {
       throw Exception("unexpected nullable value");
     }
 
+    List<PureEvent> events = Provider.of<MainUserController>(context, listen: false).events;
+
+    print(events);
+
     Navigator.pushNamed(
       context,
       MapScreen.routeName,
-      arguments: {"user": user, "startPosition": start, "startAnimation": animation},
+      arguments: {"user": user, "startPosition": start, "startAnimation": animation, "events": events},
     );
   }
 

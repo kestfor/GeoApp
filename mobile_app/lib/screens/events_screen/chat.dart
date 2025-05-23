@@ -12,8 +12,8 @@ import 'package:mobile_app/types/user/user.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-Map<int, types.User> chatUserFromPure(List<PureUser> users) {
-  Map<int, types.User> chatUsers = {};
+Map<String, types.User> chatUserFromPure(List<PureUser> users) {
+  Map<String, types.User> chatUsers = {};
 
   for (var user in users) {
     chatUsers[user.id] = types.User(

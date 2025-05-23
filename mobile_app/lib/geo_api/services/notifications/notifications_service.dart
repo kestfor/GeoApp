@@ -4,7 +4,7 @@ import '../../base_api.dart';
 
 class NotificationService {
   static final BaseApi baseApi = BaseApi();
-  static final String baseUrl = "${BaseApi.baseUrl}/api/notifications";
+  static final String baseUrl = "http://192.168.0.18:8004/api/notifications";
 
   String _getPlatformString() {
     if (Platform.isAndroid) {

@@ -1,7 +1,5 @@
-import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/types/media/media.dart';
-
-import '../media/media.dart';
+import 'package:mobile_app/types/user/user.dart';
 
 class Point {
   double lat;
@@ -10,11 +8,11 @@ class Point {
   Point({required this.lat, required this.lon});
 
   factory Point.fromJson(Map<String, dynamic> json) {
-    return Point(lat: json['lat'], lon: json['lon']);
+    return Point(lat: json['latitude'], lon: json['longitude']);
   }
 
   Map<String, dynamic> toJson() {
-    return {'lat': lat, 'lon': lon};
+    return {'latitude': lat, 'longitude': lon};
   }
 
   @override
@@ -24,12 +22,13 @@ class Point {
 }
 
 class PureEvent {
-  int id;
+  String id;
   String coverUrl;
   String name;
-  int authorId;
-  List<int> membersId;
+  String? authorId;
+  List<String> membersId;
   Point point;
+  DateTime createdAt;
 
   PureEvent({
     required this.id,
@@ -38,28 +37,44 @@ class PureEvent {
     required this.authorId,
     required this.membersId,
     required this.point,
+    required this.createdAt,
   });
 
   factory PureEvent.fromJson(Map<String, dynamic> json) {
+    DateTime cr = DateTime.parse(json["createdAt"]);
     return PureEvent(
-      point: json["point"],
+      point: Point(lat: json["latitude"], lon: json["longitude"]),
       id: json['id'],
-      coverUrl: json['cover_url'],
+      coverUrl: json["displayPhoto"]["representations"]["medium"]["url"],
       name: json['name'],
-      authorId: json['author_id'],
-      membersId: List<int>.from(json['members_id']),
+      authorId: json['ownerId'],
+      membersId: List<String>.from(json['participantIds']),
+      createdAt: cr,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'cover_url': coverUrl,
+      'displayPhoto': coverUrl,
       'name': name,
-      'author_id': authorId,
-      'members_id': membersId,
-      'point': point.toJson(),
+      'ownerId': authorId,
+      'participantIds': membersId,
+      'longitude': point.lon,
+      "latitude": point.lat,
     };
+  }
+
+  factory PureEvent.fromEvent(Event event) {
+    return PureEvent(
+      createdAt: event.createdAt,
+      id: event.id,
+      coverUrl: event.coverUrl,
+      name: event.name,
+      authorId: event.authorId,
+      membersId: event.membersId,
+      point: event.point,
+    );
   }
 
   @override
@@ -72,6 +87,7 @@ class Event extends PureEvent {
   String? description;
   List<PureUser> members;
   List<MediaContent> files = [];
+  List<String> mediaIds = [];
 
   Event({
     required super.point,
@@ -80,36 +96,58 @@ class Event extends PureEvent {
     required super.name,
     required super.authorId,
     required super.membersId,
+    required super.createdAt,
     this.description,
     this.members = const [],
-    required this.files
+    this.mediaIds = const [],
+    required this.files,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
-      point: json["point"],
-      files: (json['files'] as List).map((e) => resolveFromJson(e)).toList(),
-      id: json['id'],
-      coverUrl: json['cover_url'],
+    DateTime cr = DateTime.parse(json["createdAt"]);
+    final res = Event(
+      createdAt: cr,
+      point: Point(lat: json["latitude"], lon: json["longitude"]),
+      id: json['eventId'],
+      coverUrl: "",
       name: json['name'],
-      authorId: json['author_id'],
-      membersId: List<int>.from(json['members_id']),
+      authorId: json['ownerId'],
+      membersId: List<String>.from(json['participantIds']),
       description: json['description'],
-      members: (json['members'] as List).map((e) => PureUser.fromJson(e)).toList(),
+      //members: (json['members'] as List).map((e) => PureUser.fromJson(e)).toList(),
+      files: (json['media'] as List).map((e) => resolveFromJson(e)).toList(),
+    );
+    res.coverUrl = getCover(res.files);
+    return res;
+  }
+
+  factory Event.from(Event event) {
+    return Event(
+      createdAt: event.createdAt,
+      point: event.point,
+      id: event.id,
+      coverUrl: event.coverUrl,
+      name: event.name,
+      files: event.files,
+      membersId: event.membersId,
+      description: event.description,
+      authorId: event.authorId,
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
-      'point': point.toJson(),
-      'cover_url': coverUrl,
+      'longitude': point.lon,
+      "latitude": point.lat,
+      //'displayPhoto': coverUrl,
+      "eventId": id,
       'name': name,
-      'author_id': authorId,
-      'members_id': membersId,
+      'ownerId': authorId,
+      'participantIds': membersId,
       'description': description,
-      'members': members.map((e) => e.toJson()).toList(),
+      'mediaIds': files.isNotEmpty ? files.map((file) => getId(file)).toList() : mediaIds,
+      //'members': members.map((e) => e.toJson()).toList(),
     };
   }
 }

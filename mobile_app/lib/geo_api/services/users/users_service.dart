@@ -1,4 +1,5 @@
 import 'package:mobile_app/geo_api/base_api.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../types/user/user.dart';
 import '../../../utils/mocks.dart';
@@ -6,7 +7,7 @@ import '../../../utils/mocks.dart';
 class UsersService {
   static final BaseApi baseApi = BaseApi();
 
-  Future<List<PureUser>> getUsersFromIds(List<int> ids) async {
+  Future<List<PureUser>> getUsersFromIds(List<String> ids) async {
     //TODO replace with real API call
     List<PureUser> users = [];
     for (var id in ids) {
@@ -21,11 +22,11 @@ class UsersService {
     return Future.delayed(Duration(milliseconds: 300), () => users);
   }
 
-  Future<PureUser> getUserFromId(int id) async {
+  Future<PureUser> getUserFromId(String id) async {
     return mockUser;
   }
 
-  Future<User> getDetailedUser(int userId) async {
+  Future<User> getDetailedUser(String userId) async {
     for (var u in allUsers) {
       if (u.id == userId) {
         return Future.delayed(Duration(milliseconds: 300), () => u);
@@ -47,7 +48,7 @@ class UsersService {
     return Future.delayed(Duration(milliseconds: 300), () => null);
   }
 
-  Future<List<User>> fetchFriendsForUser(int userId, {String query = "", int? limit, int? offset}) async {
+  Future<List<User>> fetchFriendsForUser(String userId, {String query = "", int? limit, int? offset}) async {
     Map<String, dynamic> body = {"limit": 20, "offset": 0, "query": query, "user_id": userId};
     return Future.delayed(Duration(milliseconds: 300), () => friendsMocks);
   }

@@ -11,7 +11,7 @@ class BaseApi {
   static const String baseUrl = "http://192.168.0.18:80";
   static final Encoding defaultEncoding = Encoding.getByName('utf-8')!;
   static final Map<String, String> _defaultHeaders = <String, String>{
-    'Content-Type': 'application/json; charset=UTF-8',
+    "Content-Type": "application/json; charset=UTF-8",
   };
   static final refresher = ApiKeyRefresher(refreshUrl: "http://192.168.0.18:8003/auth/refresh");
   static final Map<AuthType, Authenticator> authenticators = {
@@ -51,7 +51,8 @@ class BaseApi {
       throw Exception('token is not initialized, need to call authenticate() first');
     }
     final headers = Map.of(defaultHeaders);
-    headers.addAll({'Authorization': 'Bearer ${await _tokenManager!.accessToken}'});
+    // TODO убрать X-User-Id
+    headers.addAll({'Authorization': 'Bearer ${await _tokenManager!.accessToken}', "X-User-Id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"});
     return headers;
   }
 
@@ -76,6 +77,14 @@ class BaseApi {
     headers.addAll(await getAuthHeaders());
 
     var res = await http.delete(uri, body: jsonEncode(body), headers: headers, encoding: defaultEncoding);
+    return res;
+  }
+
+  Future<http.Response> put(Uri uri, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+    headers ??= {};
+    headers.addAll(await getAuthHeaders());
+
+    var res = await http.put(uri, body: jsonEncode(body), headers: headers, encoding: defaultEncoding);
     return res;
   }
 

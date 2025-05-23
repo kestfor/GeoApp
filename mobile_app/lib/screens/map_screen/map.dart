@@ -43,8 +43,9 @@ class MapScreen extends StatefulWidget {
   final User user;
   final LatLng startPosition; // Moscow
   final StartAnimation? startAnimation;
+  final List<PureEvent> events;
 
-  const MapScreen({super.key, required this.user, required this.startPosition, this.startAnimation});
+  const MapScreen({super.key, required this.user, required this.startPosition, required this.events, this.startAnimation});
 
   static Route getMapRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
@@ -52,13 +53,18 @@ class MapScreen extends StatefulWidget {
     if (user == null) {
       throw Exception("User object is required in args");
     }
+    List<PureEvent>? events = args["events"];
+    if (events == null) {
+      throw Exception("events object is required in args");
+    }
+
     LatLng? startPosition = args["startPosition"];
     StartAnimation? startAnimation = args["startAnimation"];
 
     startPosition ??= const LatLng(55.7558, 37.6173);
 
     return CupertinoPageRoute(
-      builder: (context) => MapScreen(user: user, startPosition: startPosition!, startAnimation: startAnimation),
+      builder: (context) => MapScreen(user: user, startPosition: startPosition!, startAnimation: startAnimation, events: events),
     );
   }
 
@@ -76,7 +82,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   late ZoomPhysicsController zoomPhysics = ZoomPhysicsController(controller: _animatedMapController, zoomLevel: 11.0);
   late FlingPhysicsController flingPhysics = FlingPhysicsController(controller: _animatedMapController);
-  final events = pureEventsMock;
   late double _markerSize = calculateMarkerSize(zoomPhysics.zoom);
 
   Future<void> animateToFromEvent(LatLng event) async {
@@ -138,7 +143,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
   List<Marker> getLandmarksMarkers(context) {
     List<Marker> res = [];
-    for (var l in events) {
+    for (var l in widget.events) {
       res.add(
         Marker(
           width: _markerSize,
