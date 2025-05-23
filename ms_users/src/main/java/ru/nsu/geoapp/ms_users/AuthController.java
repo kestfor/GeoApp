@@ -14,9 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.nsu.geoapp.ms_users.dto.*;
+import ru.nsu.geoapp.ms_users.model.User;
 
 import java.util.Date;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -116,7 +116,8 @@ public class AuthController {
         try {
             String token = extractBearerToken(authHeader);
             String subject = jwtTokenService.getSubjectFromToken(token);
-            jwtTokenService.getRedisTokenService().revokeAllTokensForUser(subject);
+            User user = jwtTokenService.getUserService().findBySubject(subject);
+            jwtTokenService.getUserService().revokeAllTokensForUser(user);
             LOGGER.debug("Revoked tokens for {}", subject);
             return ResponseEntity.ok().build();
         } catch (Exception e) {

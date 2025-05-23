@@ -1,6 +1,4 @@
 services:
-  ms_users_redis:
-    image: redis:8.0
 
   ms_users_postgres:
     image: postgres:13
@@ -20,10 +18,11 @@ services:
     build: .
     depends_on:
       - ms_users_postgres
-      - ms_users_redis
     environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_SERVLET_CONTEXT_PATH: "/api/users_service"
-      POSTGRES_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
     env_file:
       - .env
     ports:

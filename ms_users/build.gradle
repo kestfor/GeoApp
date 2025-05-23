@@ -39,6 +39,9 @@ dependencies {
 	// OpenAPI Swagger Documentation
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
 
+	// Postgres
+	runtimeOnly 'org.postgresql:postgresql'
+
 	// Google API
 	implementation 'com.google.api-client:google-api-client:1.33.0'
 

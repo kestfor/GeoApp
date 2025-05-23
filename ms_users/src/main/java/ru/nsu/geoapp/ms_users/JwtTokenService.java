@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import ru.nsu.geoapp.ms_users.model.User;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,18 +27,18 @@ public class JwtTokenService {
     private final PublicKey publicKey;
     private final long jwtExpiration;
     private final long jwtExpirationRefresh;
-    private final RedisTokenService redisTokenService;
+    private final UserService userService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenService.class);
 
     public JwtTokenService(
             @Value("${app.jwt.expiration}") long jwtExpiration,
             @Value("${app.jwt.expiration-refresh}") long jwtExpirationRefresh,
-            RedisTokenService redisTokenService
+            UserService userService
     ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.jwtExpiration = jwtExpiration;
         this.jwtExpirationRefresh = jwtExpirationRefresh;
-        this.redisTokenService = redisTokenService;
+        this.userService = userService;
         this.privateKey = loadPrivateKey("keys/private_key.pem");
         this.publicKey = loadPublicKey("keys/public_key.pem");
     }
@@ -158,7 +159,8 @@ public class JwtTokenService {
             String subject = claims.getSubject();
             Date issuedAt = claims.getIssuedAt();
             LOGGER.debug("{} Token is valid, checking revoked", token);
-            boolean isRevoked = this.redisTokenService.isTokenRevoked(subject, issuedAt.getTime());
+            User user = this.userService.findBySubject(subject);
+            boolean isRevoked = user.getRevokenDate() <= issuedAt.getTime();
             if (isRevoked) {
                 LOGGER.debug("{} Token is revoked.", token);
             }
@@ -169,8 +171,8 @@ public class JwtTokenService {
         }
     }
 
-    public RedisTokenService getRedisTokenService() {
-        return redisTokenService;
+    public UserService getUserService() {
+        return userService;
     }
 
     public static class JwtToken {
