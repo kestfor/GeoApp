@@ -52,9 +52,9 @@ public class EventService {
 
         future.whenComplete((result, ex) -> {
             if (ex == null) {
-                System.out.println("Сообщение успешно отправлено: " + result.getRecordMetadata().offset());
+                System.out.println("INFO Message sent to topic 'posts.events' with eventId: " + savedEvent.getId().toString());
             } else {
-                System.err.println("Ошибка при отправке сообщения: " + ex.getMessage());
+                System.out.println("ERROR Error sending message with eventId: " + savedEvent.getId().toString() + ", error:" + ex.getMessage());
             }
         });
 
