@@ -4,8 +4,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import ru.nsu.geoapp.ms_events.client.ContentProcessorClient;
+import ru.nsu.geoapp.ms_events.client.kafka.messages.PostCreatedMessage;
 import ru.nsu.geoapp.ms_events.dto.event.EventCreateRequestDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventDetailedResponseDTO;
 import ru.nsu.geoapp.ms_events.dto.event.EventPureResponseDTO;
@@ -19,6 +22,7 @@ import ru.nsu.geoapp.ms_events.repository.specification.EventSpecifications;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +31,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final ContentProcessorClient contentProcessorClient;
+    private final KafkaTemplate<String, PostCreatedMessage> kafkaTemplate;
 
     public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO) {
         Event event = new Event();
@@ -42,6 +47,17 @@ public class EventService {
         event.setUpdatedAt(LocalDateTime.now());
 
         Event savedEvent = eventRepository.save(event);
+
+        CompletableFuture<SendResult<String, PostCreatedMessage>> future = kafkaTemplate.send("post.events", savedEvent.getId().toString(), mapToPostCreatedMessage(event));
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                System.out.println("Сообщение успешно отправлено: " + result.getRecordMetadata().offset());
+            } else {
+                System.err.println("Ошибка при отправке сообщения: " + ex.getMessage());
+            }
+        });
+
         return mapToDetailedResponseDTO(savedEvent);
     }
 
@@ -126,6 +142,15 @@ public class EventService {
 
     public void deleteEvent(UUID eventId) {
         eventRepository.deleteById(eventId);
+    }
+
+    private PostCreatedMessage mapToPostCreatedMessage(Event event) {
+        return new PostCreatedMessage(event.getOwnerId().toString(),
+                "",
+                event.getId().toString(),
+                event.getName(),
+                event.getDescription(),
+                event.getParticipantIds().stream().map(UUID::toString).toList());
     }
 
     private EventDetailedResponseDTO mapToDetailedResponseDTO(Event event) {

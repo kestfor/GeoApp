@@ -11,6 +11,9 @@ services:
       postgres:
         condition: service_healthy
     restart: on-failure
+    networks:
+      - default
+      - shared_network
 
   postgres:
     image: postgres:17
@@ -28,3 +31,7 @@ services:
 
 volumes:
   postgres-data:
+
+networks:
+  shared_network:
+    external: true
