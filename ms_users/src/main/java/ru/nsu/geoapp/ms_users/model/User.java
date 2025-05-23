@@ -23,18 +23,18 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column()
+    @Column(name = "picture_url")
     private String pictureUrl;
 
-    @Column()
+    @Column(name = "birth_date")
     private Date birthDate;
 
-    @Column(nullable = false)
+    @Column(name = "revoked_UTC", nullable = false)
     private Long revokedUTC;
 }
