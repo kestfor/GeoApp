@@ -1,11 +1,13 @@
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:mobile_app/file_processing/image_processing.dart';
 import 'package:mobile_app/file_processing/video_processing.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
+
 import '../../../file_processing/types.dart';
 import 'models/models.dart' as tr;
 
 class Converter {
-  static tr.MediaVariant _toMediaVariant(SizeType sizeType) {
+  tr.MediaVariant _toMediaVariant(SizeType sizeType) {
     if (sizeType == SizeType.original) {
       return tr.MediaVariant.original;
     } else if (sizeType == SizeType.thumb) {
@@ -17,7 +19,7 @@ class Converter {
     }
   }
 
-  static tr.MimeType _toTransportMimeType(String mimeType) {
+  tr.MimeType _toTransportMimeType(String mimeType) {
     if (mimeType == "image/jpeg") {
       return tr.MimeType.imageJpeg;
     } else if (mimeType == "image/jpg") {
@@ -27,11 +29,11 @@ class Converter {
     } else if (mimeType == "video/mp4") {
       return tr.MimeType.videoMp4;
     } else {
-      throw Exception("Unknown mime type");
+      throw Exception("unsupported mime type: $mimeType");
     }
   }
 
-  static List<tr.MediaRepresentation> _toMediaRepr(ProcessedResult res, tr.MimeType mimeType) {
+  List<tr.MediaRepresentation> _toMediaRepr(ProcessedResult res, tr.MimeType mimeType) {
     List<tr.MediaRepresentation> mediaRepresentations = [];
 
     for (var entry in res.files.entries) {
@@ -50,7 +52,7 @@ class Converter {
   }
 
   // returns mapping of filepath to MediaFull
-  static Future<List<tr.MediaFull>> toTransport(List<HLPickerItem> files) async {
+  Future<List<tr.MediaFull>> toTransport(List<HLPickerItem> files) async {
     List<tr.MediaFull> medias = [];
     List<Future<void>> tasks = [];
 

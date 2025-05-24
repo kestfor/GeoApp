@@ -6,11 +6,13 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
 import 'package:mobile_app/style/colors.dart';
+import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:provider/provider.dart';
-import 'package:uuid/uuid.dart';
+
+import '../../geo_api/services/events/events_services.dart';
 
 Map<String, types.User> chatUserFromPure(List<PureUser> users) {
   Map<String, types.User> chatUsers = {};
@@ -49,17 +51,23 @@ class ChatScreen extends StatefulWidget {
   static Route getChatRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
 
+    String? eventId = args["eventId"] as String?;
     List<types.Message>? messages = args["messages"] as List<types.Message>?;
     if (messages == null) {
       throw Exception("Messages object is required in args");
     }
 
-    return CupertinoPageRoute(builder: (context) => ChatScreen(messages: messages));
+    if (eventId == null) {
+      throw Exception("Event ID is required in args");
+    }
+
+    return CupertinoPageRoute(builder: (context) => ChatScreen(messages: messages, eventId: eventId));
   }
 
   final List<types.Message> messages;
+  final String eventId;
 
-  const ChatScreen({super.key, required this.messages});
+  const ChatScreen({super.key, required this.messages, required this.eventId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -80,14 +88,27 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSendPressed(types.PartialText message, types.User author) {
-    final textMessage = types.TextMessage(
-      author: author,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: Uuid().v4(),
-      text: message.text,
-    );
-
-    _addMessage(textMessage);
+    final eventsApi = EventsService();
+    eventsApi
+        .sendComment(widget.eventId, author.id, message.text)
+        .then(
+          (val) => {
+            _addMessage(
+              types.TextMessage(
+                author: author,
+                createdAt: val.createdAt.millisecondsSinceEpoch ~/ 1000,
+                id: val.id,
+                text: val.text,
+              ),
+            ),
+            log("Comment sent successfully: $val"),
+          },
+        )
+        .onError((Exception e, stackTrace) {
+          log("Error sending comment: $e");
+          showError(context, "Failed to send message. Please try again later.");
+          return Future.error(e);
+        });
   }
 
   @override

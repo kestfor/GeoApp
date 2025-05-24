@@ -12,6 +12,7 @@ import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
+import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/media/media.dart';
 import 'package:mobile_app/types/user/user.dart';
@@ -19,6 +20,7 @@ import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
 import '../../style/shimmer.dart';
+import '../../utils/loading_screen.dart';
 import '../../utils/user_colors.dart';
 import 'chat.dart';
 import 'full_screen_media.dart';
@@ -78,7 +80,10 @@ class DetailedEventState extends State<DetailedEvent> {
               return IconButton(
                 icon: Icon(Icons.edit),
                 onPressed: () async {
-                  Event? result = await Navigator.push(context, CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)));
+                  Event? result = await Navigator.push(
+                    context,
+                    CupertinoPageRoute(builder: (_) => EventEditingScreen(event: event)),
+                  );
                   setState(() {
                     if (result != null) {
                       this.event = Future.value(result);
@@ -119,26 +124,33 @@ class DetailedEventState extends State<DetailedEvent> {
           ),
         ),
       ),
-      bottomNavigationBar: Padding(padding: EdgeInsets.symmetric(horizontal: 120), child:buildOpenChatButton(context)),
+      bottomNavigationBar: Padding(padding: EdgeInsets.symmetric(horizontal: 120), child: buildOpenChatButton(context)),
     );
   }
 
   void openChat(context) async {
-    final comments = messagesFromComments(commentsMock, friendsMocks);
+    final ls = LoadingScreen();
+    ls.showLoadingScreen(context);
+    List<PureUser> users;
 
-    Navigator.push(context, CupertinoPageRoute(builder: (context) => ChatScreen(messages: comments)));
+    users = await this.users;
+    List<PureComment> comments = await eventsApi.getCommentsForEvent(pureEvent.id);
+
+    final messages = messagesFromComments(comments, users);
+
+    ls.closeLoadingScreen(context);
+    Navigator.push(context, CupertinoPageRoute(builder: (context) => ChatScreen(messages: messages, eventId: pureEvent.id)));
   }
 
   Widget buildOpenChatButton(context) {
-    return
-      MaterialButton(
-        color: Colors.white,
-        onPressed: () async {
-          openChat(context);
-        },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Icon(CupertinoIcons.chat_bubble_2_fill, color: Theme.of(context).primaryColor),
-      );
+    return MaterialButton(
+      color: Colors.white,
+      onPressed: () async {
+        openChat(context);
+      },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Icon(CupertinoIcons.chat_bubble_2_fill, color: Theme.of(context).primaryColor),
+    );
   }
 }
 
@@ -273,6 +285,7 @@ class MediaBlock extends StatelessWidget {
   }
 
   Widget _buildImg(context, url, allMedia, index, controller) {
+    print(url);
     return Hero(
       transitionOnUserGestures: true,
       tag: url + index.toString(),
@@ -306,7 +319,11 @@ class MediaBlock extends StatelessWidget {
     List<Widget> items = [];
     for (int i = 0; i < media.length; i++) {
       if (media[i] is ImgContent) {
-        items.add(_buildImg(context, (media[i] as ImgContent).images["medium"]!.url, media, i, buttonCarouselController));
+        print((media[i] as ImgContent).fileId);
+        print((media[i] as ImgContent).images["medium"]!.url);
+        items.add(
+          _buildImg(context, (media[i] as ImgContent).images["medium"]!.url, media, i, buttonCarouselController),
+        );
       } else if (media[i] is VideoContent) {
         items.add(_buildImg(context, (media[i] as VideoContent).thumbnailUrl, media, i, buttonCarouselController));
       }
@@ -334,31 +351,6 @@ class MediaBlock extends StatelessWidget {
 
     return carousel;
 
-    // return Hero(
-    //   tag: item.images[0].url,
-    //   child: Container(
-    //     decoration: BoxDecoration(
-    //       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.7), blurRadius: 10, offset: Offset(0, 10))],
-    //     ),
-    //     child: ClipRRect(
-    //       borderRadius: BorderRadius.circular(15),
-    //       child: GestureDetector(
-    //         onTap: () async {
-    //           await Navigator.push(
-    //             context,
-    //             MaterialPageRoute(builder: (_) => FullScreenMediaViewer(media: media, initialIndex: 0)),
-    //           );
-    //         },
-    //         child: CachedNetworkImage(
-    //           imageUrl: item.images[0].url,
-    //           width: double.infinity,
-    //           height: 200,
-    //           fit: BoxFit.cover,
-    //         ),
-    //       ),
-    //     ),
-    //   ),
-    // );
   }
 
   @override

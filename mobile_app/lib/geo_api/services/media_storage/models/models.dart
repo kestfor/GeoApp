@@ -80,6 +80,7 @@ enum MimeType {
   imagePng,
   @JsonValue('video/mp4')
   videoMp4,
+
 }
 
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)

@@ -76,6 +76,9 @@ class ProfileScreenState extends State<ProfileScreen> {
           });
         })
         .onError((error, stackTrace) {
+          setState(() {
+            _events = [];
+          });
           showError(context, "Error while fetching events");
           print("Error fetching events: $error");
         });
@@ -90,7 +93,10 @@ class ProfileScreenState extends State<ProfileScreen> {
           });
         })
         .onError((error, stackTrace) {
-          showError(context, "Error while fetching events");
+          setState(() {
+            _user = null;
+          });
+          showError(context, "Error while fetching user");
           print("Error fetching user: $error");
         });
   }
@@ -104,6 +110,9 @@ class ProfileScreenState extends State<ProfileScreen> {
           });
         })
         .onError((error, stackTrace) {
+          setState(() {
+            _friends = [];
+          });
           showError(context, "Error while fetching friends");
           print("Error fetching friends: $error");
         });

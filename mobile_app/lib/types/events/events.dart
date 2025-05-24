@@ -41,6 +41,9 @@ class PureEvent {
   });
 
   factory PureEvent.fromJson(Map<String, dynamic> json) {
+
+    print(json);
+
     DateTime cr = DateTime.parse(json["createdAt"]);
     return PureEvent(
       point: Point(lat: json["latitude"], lon: json["longitude"]),

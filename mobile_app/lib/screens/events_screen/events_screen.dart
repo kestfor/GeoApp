@@ -81,8 +81,6 @@ class EventsScreenState extends State<EventsScreen> {
       ),
     );
 
-    await Future.delayed(Duration(milliseconds: 300));
-
     User? user = Provider.of<MainUserController>(context, listen: false).user;
     if (user == null) {
       throw Exception("unexpected nullable value");

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:mobile_app/types/events/comments.dart';
-import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/media/media.dart';
 
 import '../types/user/user.dart';
@@ -234,20 +233,22 @@ extension RX on Random {
 
 final commentsMock = [
   PureComment(
-    id: 1,
+    id: "1",
+    eventId: "1",
     authorId: '4',
     text:
         "This event was amazing! The views were breathtaking and the company was fantastic. Can't wait for the next one!",
-    createdAt: (DateTime.now().subtract(Duration(days: 1)).millisecondsSinceEpoch / 1000).toInt(),
-    updatedAt: (DateTime.now().subtract(Duration(days: 1)).millisecondsSinceEpoch / 1000).toInt(),
+    createdAt: (DateTime.now().subtract(Duration(days: 1))),
+    updatedAt: (DateTime.now().subtract(Duration(days: 1))),
   ),
   PureComment(
-    id: 2,
+    eventId: "1",
+    id: "2",
     authorId: '5',
     text:
         "I had a great time hiking with everyone! The trail was challenging but worth it. Looking forward to more adventures together!",
-    createdAt: (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch / 1000).toInt(),
-    updatedAt: (DateTime.now().subtract(Duration(days: 2)).millisecondsSinceEpoch / 1000).toInt(),
+    createdAt: (DateTime.now().subtract(Duration(days: 2))),
+    updatedAt: (DateTime.now().subtract(Duration(days: 2))),
   ),
 ];
 

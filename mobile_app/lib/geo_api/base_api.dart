@@ -9,13 +9,18 @@ enum AuthType { google }
 class BaseApi {
   //static const String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net";
   static const String baseUrl = "http://192.168.0.18:80";
+  static const String mobileNetUrl = "http://192.168.197.192";
+  static const String wifiNetUrl = "http://192.168.0.18";
+
+  static final String url = wifiNetUrl;
+
   static final Encoding defaultEncoding = Encoding.getByName('utf-8')!;
   static final Map<String, String> _defaultHeaders = <String, String>{
     "Content-Type": "application/json; charset=UTF-8",
   };
-  static final refresher = ApiKeyRefresher(refreshUrl: "http://192.168.0.18:8003/auth/refresh");
+  static final refresher = ApiKeyRefresher(refreshUrl: "$url:8003/api/users_service/auth/refresh");
   static final Map<AuthType, Authenticator> authenticators = {
-    AuthType.google: ThroughGoogleAuthenticator(authUrl: "http://192.168.0.18:8003/auth/google"),
+    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$url:8003/api/users_service/auth/google"),
   };
   static final BaseApi _instance = BaseApi._internal();
   static TokenManager? _tokenManager;

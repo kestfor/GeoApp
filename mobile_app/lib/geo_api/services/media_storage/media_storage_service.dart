@@ -44,9 +44,9 @@ class MediaStorageService {
 
     try {
       await Future.wait(tasks, eagerError: true);
-      log("All files uploaded successfully");
+      log("All Variants uploaded successfully");
     } catch (e) {
-      log("Error uploading file: $e, one of the tasks failed");
+      log("Error uploading file: $e, one of the variant failed");
       throw Exception("Error uploading file: $e");
     }
     return uuid;
@@ -81,7 +81,7 @@ class MediaStorageService {
   Future<List<String>> uploadFiles(List<MediaFull> media) async {
     final presRes = await _getPresUrls(media);
     List<String> uuids = [];
-    log("presigned data: $presRes");
+    //log("presigned data: $presRes");
     for (var med in media) {
       final uuid = await _uploadVariants(med, presRes);
       uuids.add(uuid);

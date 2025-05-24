@@ -33,12 +33,15 @@ class ImageProcessor {
       hashes[SizeType.original] = val;
     });
 
+    String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+
     // Process function
     process(sizeType) async {
       Size size = sizeMapping[sizeType]!;
       XFile? result = await FlutterImageCompress.compressAndGetFile(
         filePath,
-        "${tempDir.path}/temp_${sizeType.toString().replaceAll("SizeType.", "")}.jpeg",
+        //jpeg format required by library
+        "${tempDir.path}/${fileName}_${sizeType.toString().replaceAll("SizeType.", "")}.jpeg",
         minWidth: size.width.toInt(),
         minHeight: size.height.toInt(),
       );
@@ -58,7 +61,7 @@ class ImageProcessor {
         continue;
       }
       tasks.add(process(sizeType));
-      print("created task for size $sizeType");
+      log("created task for size $sizeType for file $fileName");
     }
 
     await Future.wait(tasks);

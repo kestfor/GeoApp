@@ -62,9 +62,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(milliseconds: 1000), () {
-      preprocessFiles();
-    });
+    preprocessFiles();
   }
 
   bool verify() {
@@ -130,9 +128,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   }
 
   Future<void> preprocessFiles() async {
+    final converter = Converter();
     for (var file in widget.files) {
       task() async {
-        readyMedia.addAll(await Converter.toTransport([file]));
+        readyMedia.addAll(await converter.toTransport([file]));
         return null;
       }
 
