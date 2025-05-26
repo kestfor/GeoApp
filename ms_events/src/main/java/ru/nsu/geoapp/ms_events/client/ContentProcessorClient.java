@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -25,13 +26,18 @@ public class ContentProcessorClient {
 
     public ResponseEntity<List<MediaFileDTO>> getMediaInfo(List<UUID> mediaIds, HttpHeaders headers) {
         String url = contentProcessorUrl + "/files/info";
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<List<UUID>> requestEntity = new HttpEntity<>(mediaIds, headers);
+        HttpHeaders newHeaders = new HttpHeaders();
+        newHeaders.putAll(headers);
+        newHeaders.remove("content-length");
+        newHeaders.remove("user-agent");
+
+        HttpEntity<List<UUID>> requestEntity = new HttpEntity<>(mediaIds, newHeaders);
         return restTemplate.exchange(
                 url,
                 HttpMethod.POST,
                 requestEntity,
-                new ParameterizedTypeReference<List<MediaFileDTO>>() {}
+                new ParameterizedTypeReference<List<MediaFileDTO>>() {
+                }
         );
     }
 }
