@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -30,7 +30,8 @@ public class ContentProcessorClient {
         newHeaders.putAll(headers);
         newHeaders.remove("content-length");
         newHeaders.remove("user-agent");
-
+        //TODO фиксануть костылькос
+        newHeaders.put("X-Forwarded-Host", Objects.requireNonNull(headers.get("host")));
         HttpEntity<List<UUID>> requestEntity = new HttpEntity<>(mediaIds, newHeaders);
         return restTemplate.exchange(
                 url,
