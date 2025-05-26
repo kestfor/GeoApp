@@ -158,7 +158,8 @@ public class UserController {
             }
 
             googleAuthRepository.deleteById_UserId(userId);
-            userRelationsRepository.deleteByUserIdOrOtherId(userId);
+            userRelationsRepository.deleteById_UserId(userId);
+            userRelationsRepository.deleteById_OtherId(userId);
 
             userRepository.deleteById(userId);
 
