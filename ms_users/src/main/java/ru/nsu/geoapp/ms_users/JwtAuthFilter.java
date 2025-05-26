@@ -33,7 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (token != null && jwtTokenService.validateToken(token) && jwtTokenService.isAccessToken(token)) {
                 String subject = jwtTokenService.getSubjectFromToken(token);
-
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(subject, null, new ArrayList<>());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
