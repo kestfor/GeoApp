@@ -8,6 +8,10 @@ import java.util.UUID;
 public class UserRequest {
     private UUID userId;
     private String username;
+    private String lastName;
+    private String firstName;
+    private String email;
+    private String pictureUrl;
     private String bio;
     private Date birthDate;
 }
