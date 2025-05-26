@@ -7,7 +7,7 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - lokidata:/loki
+      - ./docker_volumes/lokidata:/loki
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
 
@@ -24,7 +24,7 @@ services:
       - ./grafana/provisioning/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./grafana/provisioning/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./grafana/dashboards:/var/lib/grafana/dashboards
-      - grafanadata:/var/lib/grafana
+      - ./docker_volumes/grafanadata:/var/lib/grafana
 
   prometheus:
     image: prom/prometheus:latest
@@ -36,8 +36,7 @@ services:
       - shared_network
     volumes:
       - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
-      - prometheusdata:/prometheus
-
+      - ./docker_volumes/prometheusdata:/prometheus
 
   tempo:
     image: grafana/tempo:latest
@@ -46,7 +45,7 @@ services:
       - "3200:3200"
     volumes:
       - ./tempo/tempo-config.yaml:/etc/tempo.yaml
-      - tempodata:/var/tempo
+      - ./docker_volumes/tempodata:/var/tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
 
   node-exporter:
@@ -69,41 +68,13 @@ services:
     container_name: promtail
     volumes:
       - ./promtail/promtail-config.yaml:/etc/promtail/config.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro         # <-- для сбора stdout/stderr всех контейнеров
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - default
       - shared_network
     depends_on:
       - loki
     command: -config.file=/etc/promtail/config.yml
-
-volumes:
-  grafanadata:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/grafanadata
-
-  prometheusdata:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/prometheusdata
-  tempodata:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/tempodata
-  lokidata:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/lokidata
-
 
 networks:
   shared_network:
