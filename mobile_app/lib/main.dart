@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:mobile_app/geo_api/base_api.dart';
+import 'package:mobile_app/logger/logger.dart';
 import 'package:mobile_app/permissions/permission_handler.dart';
 import 'package:mobile_app/screens/events_screen/chat.dart';
 import 'package:mobile_app/screens/events_screen/creation/event_creation.dart';
@@ -31,6 +32,10 @@ void main() async {
   await FMTCStore('mapStore').manage.create();
   await dotenv.load(fileName: ".env");
 
+  final logger = Logger();
+  logger.configure(loggerName: 'Geo App', minimumLevel: LogLevel.debug);
+  logger.debug("Logger initialized");
+
   await PermissionHandler.handle();
   await FirebaseNotificationService.initFirebase();
   await FirebaseNotificationService.instance.init();
@@ -56,10 +61,10 @@ Future<Widget> getInitScreen(MainUserController controller) async {
 
   try {
     await BaseApi.loadTokenData();
-    print("Token data loaded");
+    Logger().debug("Token data loaded, skip login screen");
     controller.user = user;
   } on Exception catch (e) {
-    log(e.toString());
+    Logger().debug("$e, redirect to login screen");
     initialScreen = GoogleSignInScreen();
   }
 

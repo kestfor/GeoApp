@@ -285,7 +285,6 @@ class MediaBlock extends StatelessWidget {
   }
 
   Widget _buildImg(context, url, allMedia, index, controller) {
-    print(url);
     return Hero(
       transitionOnUserGestures: true,
       tag: url + index.toString(),
@@ -319,8 +318,6 @@ class MediaBlock extends StatelessWidget {
     List<Widget> items = [];
     for (int i = 0; i < media.length; i++) {
       if (media[i] is ImgContent) {
-        print((media[i] as ImgContent).fileId);
-        print((media[i] as ImgContent).images["medium"]!.url);
         items.add(
           _buildImg(context, (media[i] as ImgContent).images["medium"]!.url, media, i, buttonCarouselController),
         );
@@ -399,7 +396,6 @@ class ListOfConnectedUsers extends StatelessWidget {
   }
 
   Widget buildList(context, List<PureUser> data) {
-    print(data);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,

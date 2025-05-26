@@ -9,6 +9,7 @@ import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
+import '../../../logger/logger.dart';
 import '../../../style/shimmer.dart';
 import '../../../toast_notifications/notifications.dart';
 import '../../../utils/clickable_card/clickable_card.dart';
@@ -39,7 +40,7 @@ class ProfileScreen extends StatefulWidget {
 class ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   List<PureEvent>? _events;
-  List<User>? _friends;
+  List<PureUser>? _friends;
   final UserRepository _usersService = UserRepository();
   final EventsRepository _eventsService = EventsRepository();
 
@@ -64,7 +65,7 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   List<PureEvent>? get events => _events;
 
-  List<User>? get friends => _friends;
+  List<PureUser>? get friends => _friends;
 
   void _fetchEvents() {
     _eventsService
@@ -80,7 +81,7 @@ class ProfileScreenState extends State<ProfileScreen> {
             _events = [];
           });
           showError(context, "Error while fetching events");
-          print("Error fetching events: $error");
+          Logger().error("Error fetching events: $error");
         });
   }
 
@@ -97,7 +98,7 @@ class ProfileScreenState extends State<ProfileScreen> {
             _user = null;
           });
           showError(context, "Error while fetching user");
-          print("Error fetching user: $error");
+          Logger().error("Error fetching user: $error");
         });
   }
 
@@ -114,7 +115,7 @@ class ProfileScreenState extends State<ProfileScreen> {
             _friends = [];
           });
           showError(context, "Error while fetching friends");
-          print("Error fetching friends: $error");
+          Logger().error("Error fetching friends: $error");
         });
   }
 

@@ -8,19 +8,19 @@ enum AuthType { google }
 
 class BaseApi {
   //static const String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net";
-  static const String baseUrl = "http://192.168.0.18:80";
+  static const String baseUrl = "http://192.168.0.18";
   static const String mobileNetUrl = "http://192.168.197.192";
   static const String wifiNetUrl = "http://192.168.0.18";
 
-  static final String url = wifiNetUrl;
+  static final String url = baseUrl;
 
   static final Encoding defaultEncoding = Encoding.getByName('utf-8')!;
   static final Map<String, String> _defaultHeaders = <String, String>{
     "Content-Type": "application/json; charset=UTF-8",
   };
-  static final refresher = ApiKeyRefresher(refreshUrl: "$url:8003/api/users_service/auth/refresh");
+  static final refresher = ApiKeyRefresher(refreshUrl: "$url/api/users_service/auth/refresh");
   static final Map<AuthType, Authenticator> authenticators = {
-    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$url:8003/api/users_service/auth/google"),
+    AuthType.google: ThroughGoogleAuthenticator(authUrl: "$url/api/users_service/auth/google"),
   };
   static final BaseApi _instance = BaseApi._internal();
   static TokenManager? _tokenManager;
@@ -57,11 +57,13 @@ class BaseApi {
     }
     final headers = Map.of(defaultHeaders);
     // TODO убрать X-User-Id
-    headers.addAll({'Authorization': 'Bearer ${await _tokenManager!.accessToken}', "X-User-Id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"});
+    headers.addAll({'Authorization': 'Bearer ${await _tokenManager!.accessToken}',
+    //  "X-User-Id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    });
     return headers;
   }
 
-  Future<http.Response> post(Uri uri, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+  Future<http.Response> post(Uri uri, {Object? body, Map<String, String>? headers}) async {
     headers ??= {};
     headers.addAll(await getAuthHeaders());
 
@@ -72,12 +74,11 @@ class BaseApi {
   Future<http.Response> get(Uri uri, {Map<String, String>? headers}) async {
     headers ??= {};
     headers.addAll(await getAuthHeaders());
-
     var res = await http.get(uri, headers: headers);
     return res;
   }
 
-  Future<http.Response> delete(Uri uri, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+  Future<http.Response> delete(Uri uri, {Object? body, Map<String, String>? headers}) async {
     headers ??= {};
     headers.addAll(await getAuthHeaders());
 
@@ -85,11 +86,19 @@ class BaseApi {
     return res;
   }
 
-  Future<http.Response> put(Uri uri, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+  Future<http.Response> put(Uri uri, {Object? body, Map<String, String>? headers}) async {
     headers ??= {};
     headers.addAll(await getAuthHeaders());
 
     var res = await http.put(uri, body: jsonEncode(body), headers: headers, encoding: defaultEncoding);
+    return res;
+  }
+
+  Future<http.Response> patch(Uri uri, {Object? body, Map<String, String>? headers}) async {
+    headers ??= {};
+    headers.addAll(await getAuthHeaders());
+
+    var res = await http.patch(uri, body: jsonEncode(body), headers: headers, encoding: defaultEncoding);
     return res;
   }
 

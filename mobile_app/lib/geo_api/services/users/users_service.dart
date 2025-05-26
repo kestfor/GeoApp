@@ -1,60 +1,82 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:mobile_app/geo_api/base_api.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../types/user/user.dart';
-import '../../../utils/mocks.dart';
 
 class UsersService {
   static final BaseApi baseApi = BaseApi();
+  final String baseUrl = "${BaseApi.url}:8003/api/users_service";
+
+  List<PureUser> _parseUsersFromJson(Uint8List body) {
+    List<dynamic> jsonList = jsonDecode(utf8.decode(body));
+    return jsonList.map((e) => PureUser.fromJson(e)).toList();
+  }
 
   Future<List<PureUser>> getUsersFromIds(List<String> ids) async {
-    //TODO replace with real API call
-    List<PureUser> users = [];
-    for (var id in ids) {
-      for (var u in allUsers) {
-        print("User id: ${u.id}, searching for $id");
-        if (u.id == id) {
-          users.add(u);
-          break;
-        }
-      }
+    final Uri uri = Uri.parse('$baseUrl/users/list');
+    final res = await baseApi.post(uri, body: ids);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to fetch users with ids $ids, ${res.reasonPhrase}');
     }
-    return Future.delayed(Duration(milliseconds: 300), () => users);
+
+    return _parseUsersFromJson(res.bodyBytes);
   }
 
   Future<PureUser> getUserFromId(String id) async {
-    return mockUser;
+    List<PureUser> users = await getUsersFromIds([id]);
+    if (users.isEmpty) {
+      throw Exception('User with id $id not found');
+    }
+    return users.first;
   }
 
   Future<User> getDetailedUser(String userId) async {
-    for (var u in allUsers) {
-      if (u.id == userId) {
-        return Future.delayed(Duration(milliseconds: 300), () => u);
-      }
+    final Uri uri = Uri.parse('$baseUrl/users/detailed/$userId');
+
+    final res = await baseApi.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to fetch user with id $userId, ${res.reasonPhrase}');
     }
 
-    return Future.delayed(Duration(milliseconds: 300), () => mockUser);
+    final user = User.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
+    return user;
   }
 
-  Future<void> modifyUser(User user) async {
-    if (user.username.isEmpty) {
-      throw Exception("Username cannot be empty");
+  Future<User> modifyUser(User user) async {
+    final Uri uri = Uri.parse('$baseUrl/users');
+    final res = await baseApi.patch(uri, body: user.toJson());
+    if (res.statusCode != 200) {
+      throw Exception('Failed to modify user, ${res.reasonPhrase}');
     }
+    return user;
+  }
 
-    if (user.firstName.isEmpty) {
-      throw Exception("First name cannot be empty");
+  Future<void> deleteUser(String userId) async {
+    final Uri uri = Uri.parse('$baseUrl/users/$userId');
+    final res = await baseApi.delete(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to delete user with id $userId, ${res.reasonPhrase}');
     }
-
-    return Future.delayed(Duration(milliseconds: 300), () => null);
   }
 
-  Future<List<User>> fetchFriendsForUser(String userId, {String query = "", int? limit, int? offset}) async {
-    Map<String, dynamic> body = {"limit": 20, "offset": 0, "query": query, "user_id": userId};
-    return Future.delayed(Duration(milliseconds: 300), () => friendsMocks);
+  Future<List<PureUser>> fetchFriendsForUser(String userId) async {
+    final Uri uri = Uri.parse('$baseUrl/users/friends/$userId');
+    final res = await baseApi.get(uri);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to modify user, ${res.reasonPhrase}');
+    }
+    return _parseUsersFromJson(res.bodyBytes);
   }
 
-  Future<List<User>> fetchUsersFromQuery(String query) async {
-    Map<String, dynamic> body = {"limit": 20, "offset": 0, "query": query};
-    return Future.delayed(Duration(milliseconds: 300), () => friendsMocks);
+  Future<List<PureUser>> fetchUsersFromQuery(String query) async {
+    final Uri uri = Uri.parse('$baseUrl/users/search');
+    Map<String, dynamic> body = {"text": query};
+    final res = await baseApi.post(uri, body: body);
+    if (res.statusCode != 200) {
+      throw Exception('Failed to modify user, ${res.reasonPhrase}');
+    }
+    return _parseUsersFromJson(res.bodyBytes);
   }
 }

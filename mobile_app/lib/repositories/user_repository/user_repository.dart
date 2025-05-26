@@ -1,5 +1,3 @@
-import 'package:uuid/uuid.dart';
-
 import '../../geo_api/services/users/users_service.dart';
 import '../../types/user/user.dart';
 
@@ -14,15 +12,15 @@ class UserRepository {
     return await usersService.getDetailedUser(userId);
   }
 
-  Future<void> modifyUser(User user) async {
+  Future<User> modifyUser(User user) async {
     return await usersService.modifyUser(user);
   }
 
-  Future<List<User>> fetchFriendsForUser(String userId, {String query = "", int? limit, int? offset}) async {
-    return await usersService.fetchFriendsForUser(userId, query: query, limit: limit, offset: offset);
+  Future<List<PureUser>> fetchFriendsForUser(String userId, {String query = "", int? limit, int? offset}) async {
+    return await usersService.fetchFriendsForUser(userId);
   }
 
-  Future<List<User>> fetchUsersFromQuery(String query) async {
+  Future<List<PureUser>> fetchUsersFromQuery(String query) async {
     return await usersService.fetchUsersFromQuery(query);
   }
 
@@ -30,4 +28,3 @@ class UserRepository {
     return await usersService.getUserFromId(id);
   }
 }
-

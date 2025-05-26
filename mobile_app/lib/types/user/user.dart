@@ -56,12 +56,12 @@ class User extends PureUser {
     return User(
       id: json['id'],
       username: json['username'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
-      pictureUrl: json['picture_url'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      pictureUrl: json['pictureUrl'],
       bio: json['bio'],
-      birthDate: json['birth_date'],
-      relationType: json["relation_type"],
+      birthDate: json['birthDate'],
+      relationType: json["relationType"],
     );
   }
 
@@ -70,12 +70,12 @@ class User extends PureUser {
     return {
       'id': id,
       'username': username,
-      'first_name': firstName,
-      'last_name': lastName,
-      'picture_url': pictureUrl,
+      'firstName': firstName,
+      'lastName': lastName,
+      'pictureUrl': pictureUrl,
       'bio': bio,
-      'birth_date': birthDate,
-      'relation_type': relationType,
+      'birthDate': birthDate,
+      'relationType': relationType,
     };
   }
 

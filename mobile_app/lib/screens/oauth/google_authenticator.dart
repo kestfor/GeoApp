@@ -3,6 +3,7 @@ import 'package:mobile_app/geo_api/base_api.dart';
 import 'package:mobile_app/notifications/firebase_notifications.dart';
 import 'package:mobile_app/utils/mocks.dart';
 
+import '../../logger/logger.dart';
 import '../../types/user/user.dart';
 
 // GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -27,7 +28,7 @@ class GoogleAuthenticator {
       throw Exception("idToken is null");
     }
     final res = await BaseApi.authenticate(AuthType.google, {"idToken": idToken});
-    print("successfully authenticated");
+    Logger().debug("user successfully authenticated");
     return res;
   }
 
@@ -40,8 +41,7 @@ class GoogleAuthenticator {
     final userData = await _verifyIdToken(auth);
     FirebaseNotificationService.instance.registerToken();
 
-    //TODO : remove mock user
-    _user = mockUser;
+    _user = User.fromJson(Map<String, dynamic>.from(userData));
     _user!.onLogOut = () {
       signOut();
       FirebaseNotificationService.instance.deleteToken();

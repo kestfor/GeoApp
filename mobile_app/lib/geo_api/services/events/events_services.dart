@@ -9,7 +9,7 @@ import '../../../utils/mocks.dart';
 
 class EventsService {
   final BaseApi baseApi = BaseApi();
-  final String baseUrl = "${BaseApi.url}:8002";
+  final String baseUrl = "${BaseApi.url}:8002/api/events_service";
 
   // Future<List<PureEvent>> fetchEventsForUser(EventFilter filter) async {
   //   Map<String, dynamic> body = {"limit": 20, "offset": 0, "filter": filter};

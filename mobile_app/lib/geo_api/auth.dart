@@ -1,13 +1,14 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:http/http.dart' as http;
 import 'package:mobile_app/geo_api/token_manager/token_manager.dart';
 import 'package:mobile_app/utils/mocks.dart';
 
+import '../logger/logger.dart';
 
 class ApiKeyRefresher implements Refresher {
   final String refreshUrl;
-
 
   ApiKeyRefresher({required this.refreshUrl});
 
@@ -22,11 +23,7 @@ class ApiKeyRefresher implements Refresher {
     }
 
     final Map<String, dynamic> data = jsonDecode(res.body);
-    final result = {
-      "access_token": data["token"],
-      "refresh_token": data["refresh"],
-      "expires_at": DateTime.now().millisecondsSinceEpoch / 1000 + 3600,
-    };
+    final result = {"access_token": data["token"], "refresh_token": data["refresh"], "expires_at": data["exp"]};
     return result;
   }
 }
@@ -73,16 +70,13 @@ class ThroughGoogleAuthenticator implements Authenticator {
       "jwt": {
         "access_token": receivedData["token"],
         "refresh_token": receivedData["refresh"],
-        "expires_at": (DateTime.now().millisecondsSinceEpoch / 1000).toInt() + 1000000,
+        "expires_at": receivedData["exp"],
       },
-      "user": mockUser.toJson()
+      "user": mockUser.toJson(),
     };
 
-
-    print("Google Authenticator: received data: $data");
-
+    Logger().debug("Google Authenticator: received data: $data");
 
     return Future.delayed(Duration(seconds: 1), () => data);
-
   }
 }

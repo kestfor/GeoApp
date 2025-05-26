@@ -24,7 +24,7 @@ class Converter {
       return tr.MimeType.imageJpeg;
     } else if (mimeType == "image/jpg") {
       return tr.MimeType.imageJpg;
-    } else if (mimeType == "image/png") {
+    } else if (mimeType == "image/png" || mimeType == "image/heic") {
       return tr.MimeType.imagePng;
     } else if (mimeType == "video/mp4") {
       return tr.MimeType.videoMp4;

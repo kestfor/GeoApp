@@ -9,6 +9,7 @@ import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:provider/provider.dart';
 
+import '../../logger/logger.dart';
 import '../../types/user/user.dart';
 import '../user_screens/profile/me_screen.dart';
 import 'google_authenticator.dart';
@@ -46,7 +47,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
       await user.saveToSharedPreferences();
       return;
     } on Exception catch (e) {
-      log("Error: $e");
+      Logger().error("$e");
       showError(context, "something went wrong, try again later");
     }
   }

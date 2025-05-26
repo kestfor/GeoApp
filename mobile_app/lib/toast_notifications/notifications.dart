@@ -3,8 +3,9 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:toastification/toastification.dart';
 
+import '../logger/logger.dart';
+
 void showError(context, message) {
-  log(message);
   toastification.show(
     alignment: Alignment.bottomCenter,
     context: context,

@@ -7,9 +7,9 @@ class PermissionHandler {
   static Future<void> handle() async {
 
     for (var permission in permissions) {
-      await permission.isDenied.then((value) {
+      await permission.isDenied.then((value) async {
         if (value) {
-          permission.request();
+          final res = await permission.request();
         }
       });
     }

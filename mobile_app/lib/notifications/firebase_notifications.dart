@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:mobile_app/firebase_options.dart';
 import 'package:mobile_app/geo_api/services/notifications/notifications_service.dart';
+
+import '../logger/logger.dart';
 
 /// Service responsible for handling Firebase Cloud Messaging notifications.
 class FirebaseNotificationService {
@@ -22,9 +23,7 @@ class FirebaseNotificationService {
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static Future<void> initFirebase() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform
-    );
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   }
 
   Future<void> registerToken() async {
@@ -45,13 +44,12 @@ class FirebaseNotificationService {
   Future<void> init() async {
     // Ensure Firebase is initialized
 
-
     // Request permissions for iOS
     await _requestPermission();
 
     // Get device token
     String? token = await _messaging.getToken();
-    debugPrint('FCM Token: $token');
+    Logger().debug('got FCM Token: $token');
     _token = token;
 
     // Configure local notifications for foreground messages
@@ -70,14 +68,16 @@ class FirebaseNotificationService {
   /// Request notification permissions on iOS (Android auto grants)
   Future<void> _requestPermission() async {
     if (Platform.isIOS) {
-      NotificationSettings settings = await _messaging.requestPermission(  alert: true,
+      NotificationSettings settings = await _messaging.requestPermission(
+        alert: true,
         announcement: false,
         badge: true,
         carPlay: false,
         criticalAlert: false,
         provisional: false,
-        sound: true,);
-      debugPrint('User granted permission: ${settings.authorizationStatus}');
+        sound: true,
+      );
+      Logger().debug('User granted permission: ${settings.authorizationStatus}');
     }
   }
 
@@ -92,25 +92,24 @@ class FirebaseNotificationService {
       initSettings,
       onDidReceiveNotificationResponse: (payload) {
         // Handle tap on notification
-        debugPrint('Notification payload: $payload');
+        Logger().debug('Notification payload: $payload');
       },
     );
   }
 
   /// Foreground message handler
   Future<void> _onMessage(RemoteMessage message) async {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
+    Logger().info('Got a message whilst in the foreground!');
 
     if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
+      Logger().info('Message also contained a notification: ${message.notification}');
     }
     await _showLocalNotification(message);
   }
 
   /// User tapped on notification
   void _onMessageOpenedApp(RemoteMessage message) {
-    debugPrint('Notification opened: ${message.messageId}');
+    Logger().debug('Notification opened: ${message.messageId}');
     // Navigate to a specific screen, etc.
   }
 
@@ -118,7 +117,6 @@ class FirebaseNotificationService {
   Future<void> _showLocalNotification(RemoteMessage message) async {
     final notification = message.notification;
 
-    print(notification);
     if (notification == null) return;
 
     final androidDetails = AndroidNotificationDetails(
@@ -146,6 +144,6 @@ class FirebaseNotificationService {
 /// Top-level background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Handling background message: ${message.messageId}');
+  Logger().debug('Handling background message: ${message.messageId}');
   // Optionally process data and show notifications
 }
