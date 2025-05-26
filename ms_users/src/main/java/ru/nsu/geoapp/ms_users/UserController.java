@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,8 @@ public class UserController {
     private final GoogleAuthRepository googleAuthRepository;
     private final UserRelationsRepository userRelationsRepository;
     private final JwtTokenService jwtTokenService;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserRepository userRepository,
                           GoogleAuthRepository googleAuthRepository,
@@ -66,22 +70,34 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Malformed UUID", content = @Content),
             @ApiResponse(responseCode = "404", description = "User with this uuid was not found", content = @Content)
     })
     @GetMapping("/detailed/{userId}")
     public ResponseEntity<UserResponse> readUser(@RequestHeader("Authorization") String authHeader, @PathVariable UUID userId) {
         try {
-            User requestedUser = userRepository.findById(userId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requested user with this uuid was not found")
-            );
-            User requestingUser = userRepository.findById(userId).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user with this uuid was not found")
-            );
+            LOGGER.debug("Starting /detailed/<userId>");
+            String token = extractBearerToken(authHeader);
+            String subject = jwtTokenService.getSubjectFromToken(token);
+            UUID requestingUserUUID = UUID.fromString(subject);
+            LOGGER.debug("Requested by {}", requestingUserUUID);
+            User requestedUser = userRepository.findById(userId).orElse(null);
+            LOGGER.debug("Requested: {}", (requestedUser != null) ? requestedUser.toString() : null);
+            User requestingUser = userRepository.findById(requestingUserUUID).orElse(null);
+            LOGGER.debug("Requesting: {}", (requestingUser != null) ? requestingUser.toString() : null);
+            if (requestedUser == null || requestingUser == null) {
+                return ResponseEntity.notFound().build();
+            }
 
+            LOGGER.debug("Creating relationId...");
             UserRelations.UserRelationId relationId = new UserRelations.UserRelationId();
+            LOGGER.debug("Empty relationId created...");
             relationId.setUserId(requestingUser.getId());
+            LOGGER.debug("Success on relationId.setUserId(requestingUser.getId())");
             relationId.setOtherId(requestedUser.getId());
+            LOGGER.debug("Success on relationId.setOtherId(requestedUser.getId());");
             UserRelations userRelations = userRelationsRepository.findById(relationId).orElse(null);
+            LOGGER.debug("userRelations: {}", (userRelations != null) ? userRelations.toString() : null);
 
             UserResponse response = new UserResponse();
             response.setId(requestedUser.getId());
@@ -95,8 +111,8 @@ public class UserController {
             response.setBirthDate(requestedUser.getBirthDate());
 
             return ResponseEntity.ok(response);
-        } catch (ResponseStatusException e) {
-            throw e;
+        //} catch (ResponseStatusException e) {
+        //    throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon getting detailed info user", e);
         }
@@ -137,14 +153,18 @@ public class UserController {
     @GetMapping("/friends/{userId}")
     public List<PureUserResponse> readUsersFriends(@RequestHeader("Authorization") String authHeader, @PathVariable UUID userId) {
         try {
+            LOGGER.debug("Starting /friends/<userId>");
             List<PureUserResponse> response = new ArrayList<>();
 
+            LOGGER.debug("Searching for relations of {}", userId);
             List<UserRelations> relations = userRelationsRepository.findById_UserId(userId);
             for (UserRelations relation : relations) {
                 if (!relation.getStatus().equals("FRIEND")) {
                     continue;
                 }
+                LOGGER.debug("Found friend {}", relation.getId().getOtherId());
                 User user = userRepository.findById(relation.getId().getOtherId()).orElse(null);
+                LOGGER.debug("Friend: {}", (user != null) ? user.toString() : null);
                 if (user != null) {
                     PureUserResponse pureUser = new PureUserResponse();
                     pureUser.setId(user.getId());
@@ -169,9 +189,12 @@ public class UserController {
     @PostMapping("/search")
     public List<PureUserResponse> searchUsers(@RequestHeader("Authorization") String authHeader, @RequestBody SearchRequest request) {
         try {
+            LOGGER.debug("Starting /search");
+            LOGGER.debug("Searching for \"{}\"", request.getText());
             List<User> users = userRepository.searchUsers(request.getText());
             List<PureUserResponse> response = new ArrayList<>();
             for (User user : users) {
+                LOGGER.debug("Found user: {}", user);
                 PureUserResponse pureUser = new PureUserResponse();
                 pureUser.setId(user.getId());
                 pureUser.setUsername(user.getUsername());
@@ -195,36 +218,47 @@ public class UserController {
     @PatchMapping()
     public ResponseEntity<Void> updateUser(@RequestHeader("Authorization") String authHeader, @RequestBody UserRequest request) {
         try {
-            if (!isUserAuthorized(authHeader, request.getUserId())) {
+            LOGGER.debug("Starting PATCHing user");
+            if (!isUserAuthorized(authHeader, request.getId())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
             }
 
-            User user = userRepository.findById(request.getUserId()).orElseThrow(
+            LOGGER.debug("Searching for user {}", request.getId());
+            User user = userRepository.findById(request.getId()).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User with this uuid was not found")
             );
 
+            LOGGER.debug("User found, patching...");
             if (request.getUsername() != null) {
                 user.setUsername(request.getUsername());
+                LOGGER.debug("Patched username: {}", user.getUsername());
             }
             if (request.getBirthDate() != null) {
                 user.setBirthDate(request.getBirthDate());
+                LOGGER.debug("Patched birthDate: {}", user.getBirthDate());
             }
             if (request.getBio() != null) {
                 user.setBio(request.getBio());
+                LOGGER.debug("Patched bio: {}", user.getBio());
             }
             if (request.getLastName() != null) {
                 user.setLastName(request.getLastName());
+                LOGGER.debug("Patched lastName: {}", user.getLastName());
             }
             if (request.getFirstName() != null) {
                 user.setFirstName(request.getFirstName());
+                LOGGER.debug("Patched firstName: {}", user.getFirstName());
             }
             if (request.getPictureUrl() != null) {
                 user.setPictureUrl(request.getPictureUrl());
+                LOGGER.debug("Patched pictureUrl: {}", user.getPictureUrl());
             }
             if (request.getEmail() != null) {
                 user.setEmail(request.getEmail());
+                LOGGER.debug("Patched email: {}", user.getEmail());
             }
             userRepository.save(user);
+            LOGGER.debug("Saved patch!");
 
             return ResponseEntity.ok().build();
         } catch (ResponseStatusException e) {
@@ -278,6 +312,7 @@ public class UserController {
         String token = extractBearerToken(authHeader);
         String uuidAsString = jwtTokenService.getSubjectFromToken(token);
         UUID uuidFromJWT = UUID.fromString(uuidAsString);
+        LOGGER.debug("Checking if user {} is authorized to modify {}", uuidFromJWT, userId);
         return (!onlyAdmin && uuidFromJWT.equals(userId)) || false; // todo: replace with admins' privileges check
     }
 

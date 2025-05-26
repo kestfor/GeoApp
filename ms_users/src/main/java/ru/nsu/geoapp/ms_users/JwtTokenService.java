@@ -167,7 +167,7 @@ public class JwtTokenService {
                 LOGGER.debug("user not found {}.", subject);
                 return false;
             }
-            boolean isRevoked = user.getRevokedUTC() <= issuedAt.getTime();
+            boolean isRevoked = issuedAt.getTime() <= user.getRevokedUTC();
             if (isRevoked) {
                 LOGGER.debug("{} Token is revoked.", token);
             }

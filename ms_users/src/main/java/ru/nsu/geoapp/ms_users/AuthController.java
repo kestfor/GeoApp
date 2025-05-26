@@ -71,9 +71,11 @@ public class AuthController {
             LOGGER.debug("Generated response: {}", response);
 
             return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.debug("Invalid Google token: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Google token", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Invalid Google token", e);
         }
     }
 
@@ -98,6 +100,7 @@ public class AuthController {
 
             RefreshResponse response = new RefreshResponse(
                     newAccessToken.asString(),
+                    newAccessToken.getExpiryDate().getTime() / 1000,
                     newRefreshToken.asString()
             );
             return ResponseEntity.ok(response);

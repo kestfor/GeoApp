@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Data
 public class UserRequest {
-    private UUID userId;
+    private UUID id;
     private String username;
     private String lastName;
     private String firstName;

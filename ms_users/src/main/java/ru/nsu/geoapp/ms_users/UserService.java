@@ -2,6 +2,7 @@ package ru.nsu.geoapp.ms_users;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.nsu.geoapp.ms_users.model.GoogleAuthData;
 import ru.nsu.geoapp.ms_users.model.User;
 import ru.nsu.geoapp.ms_users.repository.GoogleAuthRepository;
@@ -38,6 +39,7 @@ public class UserService {
         user.setRevokedUTC(currentTime);
     }
 
+    @Transactional
     public User getOrCreateUser(GoogleIdToken.Payload payload) {
         String subject = payload.getSubject();
         GoogleAuthData googleAuthData = googleAuthRepository.findById_GoogleSubject(subject).orElse(null);
@@ -48,13 +50,13 @@ public class UserService {
             );
         } else {
             user = new User();
-            user.setId(UUID.randomUUID());
+            //user.setId(UUID.randomUUID());
             user.setEmail(payload.getEmail());
             user.setUsername((String) payload.get("name"));
             user.setFirstName((String) payload.get("given_name"));
             user.setLastName((String) payload.get("family_name"));
             user.setPictureUrl((String) payload.get("picture"));
-            user.setRevokedUTC(System.currentTimeMillis());
+            user.setRevokedUTC(System.currentTimeMillis()-1);
             userRepository.save(user);
 
             GoogleAuthData.GoogleAuthId googleAuthId = new GoogleAuthData.GoogleAuthId();
