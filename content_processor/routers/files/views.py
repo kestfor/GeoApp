@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get(
-    "/{file_id}/{size}",
+    "/s3/{file_id}/{size}",
     responses={
         200: {
             "description": "HTML preview of image (если preview=true)",

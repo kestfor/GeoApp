@@ -27,4 +27,8 @@ def get_base_url(request: "Request") -> str:
     domain = f"{request.url.scheme}://{request.url.hostname}"
     if request.url.port:
         domain += f":{request.url.port}"
+    if "X-Forwarded-Host" in request.headers:
+        domain = request.headers["X-Forwarded-Host"]
+    if "Host" in request.headers:
+        domain = request.headers["Host"]
     return domain
