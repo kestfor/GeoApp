@@ -3,11 +3,14 @@ package ru.nsu.geoapp.ms_users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SecureDigestAlgorithm;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import ru.nsu.geoapp.ms_users.model.User;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,18 +29,19 @@ public class JwtTokenService {
     private final PublicKey publicKey;
     private final long jwtExpiration;
     private final long jwtExpirationRefresh;
-    private final RedisTokenService redisTokenService;
+    @Getter
+    private final UserService userService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtTokenService.class);
 
     public JwtTokenService(
             @Value("${app.jwt.expiration}") long jwtExpiration,
             @Value("${app.jwt.expiration-refresh}") long jwtExpirationRefresh,
-            RedisTokenService redisTokenService
+            UserService userService
     ) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
         this.jwtExpiration = jwtExpiration;
         this.jwtExpirationRefresh = jwtExpirationRefresh;
-        this.redisTokenService = redisTokenService;
+        this.userService = userService;
         this.privateKey = loadPrivateKey("keys/private_key.pem");
         this.publicKey = loadPublicKey("keys/public_key.pem");
     }
@@ -158,7 +162,12 @@ public class JwtTokenService {
             String subject = claims.getSubject();
             Date issuedAt = claims.getIssuedAt();
             LOGGER.debug("{} Token is valid, checking revoked", token);
-            boolean isRevoked = this.redisTokenService.isTokenRevoked(subject, issuedAt.getTime());
+            User user = this.userService.findBySubject(subject);
+            if (user == null) {
+                LOGGER.debug("user not found {}.", subject);
+                return false;
+            }
+            boolean isRevoked = user.getRevokedUTC() <= issuedAt.getTime();
             if (isRevoked) {
                 LOGGER.debug("{} Token is revoked.", token);
             }
@@ -169,39 +178,17 @@ public class JwtTokenService {
         }
     }
 
-    public RedisTokenService getRedisTokenService() {
-        return redisTokenService;
-    }
-
     public static class JwtToken {
+        @Setter
+        @Getter
         private String subject;
+        @Setter
+        @Getter
         private Date issuedAt;
+        @Setter
+        @Getter
         private Date expiryDate;
         private boolean isRefresh = false;
-
-        public String getSubject() {
-            return subject;
-        }
-
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
-
-        public Date getIssuedAt() {
-            return issuedAt;
-        }
-
-        public void setIssuedAt(Date issuedAt) {
-            this.issuedAt = issuedAt;
-        }
-
-        public Date getExpiryDate() {
-            return expiryDate;
-        }
-
-        public void setExpiryDate(Date expiryDate) {
-            this.expiryDate = expiryDate;
-        }
 
         private String signedString = null;
 

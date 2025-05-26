@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 
 @SpringBootApplication(exclude = {
 		DataSourceAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class
+		HibernateJpaAutoConfiguration.class,
+}, scanBasePackages={
+		"ru.nsu.geoapp.ms_users.repository"
 })
 public class MsUsersApplication {
 

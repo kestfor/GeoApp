@@ -34,10 +34,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// OpenAPI Swagger Documentation
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+	// Postgres
+	runtimeOnly 'org.postgresql:postgresql'
 
 	// Google API
 	implementation 'com.google.api-client:google-api-client:1.33.0'
