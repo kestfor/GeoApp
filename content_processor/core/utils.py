@@ -30,7 +30,7 @@ def get_base_url(request: "Request") -> str:
     if "X-Forwarded-Host" in request.headers:
         # TODO пофиксить костыль (nginx не ставит никакие доп хедеры которые я ему прописываю, этот вручную
         #  прокидываю через java, извлекая host хедер, port можно прописать в env и доставать оттуда)
-        domain = request.headers["X-Forwarded-Host"] + ":8001"
+        domain = f"{request.url.scheme}://{request.headers['X-Forwarded-Host']}:8001"
     # if "host" in request.headers:
     #     domain = request.headers["host"] + ":8001"
     return domain
