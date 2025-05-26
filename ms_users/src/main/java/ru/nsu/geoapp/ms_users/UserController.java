@@ -9,18 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.nsu.geoapp.ms_users.dto.PureUserResponse;
-import ru.nsu.geoapp.ms_users.dto.UserRequest;
-import ru.nsu.geoapp.ms_users.dto.UserResponse;
+import ru.nsu.geoapp.ms_users.dto.*;
 import ru.nsu.geoapp.ms_users.model.User;
 import ru.nsu.geoapp.ms_users.model.UserRelations;
 import ru.nsu.geoapp.ms_users.repository.GoogleAuthRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRelationsRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/users")
@@ -47,7 +43,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "JWT Token without privileges", content = @Content)
     })
     @PostMapping()
-    public ResponseEntity<UserResponse> createUser(@RequestHeader("Authorization") String authHeader, @RequestBody User user) {
+    public ResponseEntity<CreatedUserResponse> createUser(@RequestHeader("Authorization") String authHeader, @RequestBody User user) {
         try {
             if (!isUserAuthorized(authHeader, null, true)) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -55,7 +51,7 @@ public class UserController {
 
             userRepository.save(user);
 
-            UserResponse response = new UserResponse();
+            CreatedUserResponse response = new CreatedUserResponse();
             response.setId(user.getId());
 
             return ResponseEntity.ok(response);
@@ -73,7 +69,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User with this uuid was not found", content = @Content)
     })
     @GetMapping("/detailed/{userId}")
-    public ResponseEntity<UserResponse> readUser(@PathVariable UUID userId) {
+    public ResponseEntity<UserResponse> readUser(@RequestHeader("Authorization") String authHeader, @PathVariable UUID userId) {
         try {
             User requestedUser = userRepository.findById(userId).orElseThrow(
                     () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requested user with this uuid was not found")
@@ -112,7 +108,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @PostMapping("/list")
-    public List<PureUserResponse> readUsers(@RequestBody List<UUID> userUuids) {
+    public List<PureUserResponse> readUsers(@RequestHeader("Authorization") String authHeader, @RequestBody List<UUID> userUuids) {
         try {
             List<PureUserResponse> response = new ArrayList<>();
             for (UUID uuid : userUuids) {
@@ -139,7 +135,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     @GetMapping("/friends/{userId}")
-    public List<PureUserResponse> readUsersFriends(@PathVariable UUID userId) {
+    public List<PureUserResponse> readUsersFriends(@RequestHeader("Authorization") String authHeader, @PathVariable UUID userId) {
         try {
             List<PureUserResponse> response = new ArrayList<>();
 
@@ -162,6 +158,31 @@ public class UserController {
             return response;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon listing user's friends", e);
+        }
+    }
+
+    @Operation(summary = "Get pure users by their ids")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
+    })
+    @PostMapping("/search")
+    public List<PureUserResponse> searchUsers(@RequestHeader("Authorization") String authHeader, @RequestBody SearchRequest request) {
+        try {
+            List<User> users = userRepository.searchUsers(request.getText());
+            List<PureUserResponse> response = new ArrayList<>();
+            for (User user : users) {
+                PureUserResponse pureUser = new PureUserResponse();
+                pureUser.setId(user.getId());
+                pureUser.setUsername(user.getUsername());
+                pureUser.setFirstName(user.getFirstName());
+                pureUser.setLastName(user.getLastName());
+                pureUser.setPictureUrl(user.getPictureUrl());
+                response.add(pureUser);
+            }
+            return response;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon listing users", e);
         }
     }
 
@@ -221,7 +242,7 @@ public class UserController {
     })
     @DeleteMapping("/{userId}")
     @Transactional
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId, @RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Void> deleteUser( @RequestHeader("Authorization") String authHeader, @PathVariable UUID userId) {
         try {
             if (!isUserAuthorized(authHeader, userId)) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
