@@ -20,4 +20,4 @@ jobs:
         uses: actions/checkout@v3
       # Запуск скрипта
       - name: Запустить start.sh
-        run: ./start.sh
+        run: chmod +x ./start.sh && ./start.sh
