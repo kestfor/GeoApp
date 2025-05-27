@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_users;
+package ru.nsu.geoapp.ms_users.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.nsu.geoapp.ms_users.services.JwtTokenService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (token != null && jwtTokenService.validateToken(token) && jwtTokenService.isAccessToken(token)) {
                 String subject = jwtTokenService.getSubjectFromToken(token);
-
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(subject, null, new ArrayList<>());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

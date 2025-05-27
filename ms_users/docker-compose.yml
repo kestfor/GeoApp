@@ -20,7 +20,7 @@ services:
     depends_on:
       - ms_users_postgres
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       SERVER_SERVLET_CONTEXT_PATH: "/api/users_service"

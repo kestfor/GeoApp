@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_users;
+package ru.nsu.geoapp.ms_users.services;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -19,6 +19,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 
@@ -167,7 +168,7 @@ public class JwtTokenService {
                 LOGGER.debug("user not found {}.", subject);
                 return false;
             }
-            boolean isRevoked = user.getRevokedUTC() <= issuedAt.getTime();
+            boolean isRevoked = issuedAt.getTime() <= user.getRevokedUTC();
             if (isRevoked) {
                 LOGGER.debug("{} Token is revoked.", token);
             }
@@ -179,6 +180,7 @@ public class JwtTokenService {
     }
 
     public static class JwtToken {
+        private static int shortenedSize = 5;
         @Setter
         @Getter
         private String subject;
@@ -216,6 +218,20 @@ public class JwtTokenService {
 
         public void setRefresh(boolean refresh) {
             isRefresh = refresh;
+        }
+
+        public String toString() {
+            if (this.signedString == null) {
+                return null;
+            }
+
+            if (this.signedString.length() <= 2 * shortenedSize) {
+                return this.signedString;
+            }
+
+            String beginning = this.signedString.substring(0, shortenedSize);
+            String end = this.signedString.substring(this.signedString.length() - shortenedSize);
+            return beginning + "..." + end;
         }
     }
 }
