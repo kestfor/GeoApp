@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.nsu.geoapp.ms_users.dto.*;
 import ru.nsu.geoapp.ms_users.model.User;
+import ru.nsu.geoapp.ms_users.services.GoogleTokenVerifier;
+import ru.nsu.geoapp.ms_users.services.JwtTokenService;
 
 import java.util.Date;
 
@@ -43,7 +45,7 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity<AuthResponse> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
         try {
-            LOGGER.debug("Starting to verify GJWT: {}", request.getToken().substring(52, 60) + "...");
+            LOGGER.debug("Starting to verify GJWT: {}", request.getToken());
             // Verify Google JWT
             GoogleIdToken.Payload payload = googleTokenVerifier.verify(request.getToken());
             LOGGER.debug("GJWT verified, seems legit. Generating internal JWTs");
@@ -53,20 +55,25 @@ public class AuthController {
             // Generate internal JWTs
             JwtTokenService.JwtToken accessToken = jwtTokenService.generateAccessToken(user.getId().toString());
             JwtTokenService.JwtToken refreshToken = jwtTokenService.generateRefreshToken(user.getId().toString());
-            LOGGER.debug(
-                    "Internal JWT pair generated: {} {}",
-                    accessToken.asString().substring(52, 60) + "...",
-                    refreshToken.asString().substring(52, 60) + "..."
-            );
+            LOGGER.debug("Internal JWT pair generated: {} {}", accessToken, refreshToken);
+
+            UserResponse userResponse = new UserResponse();
+            userResponse.setId(user.getId());
+            userResponse.setUsername(user.getUsername());
+            userResponse.setFirstName(user.getFirstName());
+            userResponse.setLastName(user.getLastName());
+            userResponse.setPictureUrl(user.getPictureUrl());
+
+            userResponse.setRelationType("NONE");
+            userResponse.setBio(user.getBio());
+            userResponse.setBirthDate(user.getBirthDate());
 
             // Generate response
             AuthResponse response = new AuthResponse(
                     accessToken.asString(),
                     refreshToken.asString(),
                     accessToken.getExpiryDate().getTime() / 1000,
-                    payload.getEmail(),
-                    (String) payload.get("name"),
-                    (String) payload.get("picture")
+                    userResponse
             );
             LOGGER.debug("Generated response: {}", response);
 
@@ -87,7 +94,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<RefreshResponse> refreshTokenPair(@RequestBody RefreshRequest request) {
         try {
-            LOGGER.debug("Starting token refresh with refresh token: {}", request.getRefresh().substring(52, 60) + "...");
+            LOGGER.debug("Starting token refresh with refresh token: {}", request.getRefresh());
 
             if (!jwtTokenService.validateToken(request.getRefresh())) {
                 LOGGER.debug("Invalid refresh token");
@@ -104,9 +111,11 @@ public class AuthController {
                     newRefreshToken.asString()
             );
             return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.debug("Error upon refreshing token: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Error upon refreshing token", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error upon refreshing token", e);
         }
     }
 
@@ -145,7 +154,7 @@ public class AuthController {
     @PostMapping("/validate")
     public ResponseEntity<ValidateResponse> validateToken(@RequestBody ValidateRequest request) {
         try {
-            LOGGER.debug("Starting token validation: {}", request.getToken().substring(52, 60) + "...");
+            LOGGER.debug("Starting token validation: {}", request.getToken());
 
             if (!jwtTokenService.validateToken(request.getToken())) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
@@ -158,6 +167,8 @@ public class AuthController {
                     expirationDate.getTime() / 1000
             );
             return ResponseEntity.ok(response);
+        } catch (ResponseStatusException e) {
+            throw e;
         } catch (Exception e) {
             LOGGER.debug("Could not validate token: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon validating token", e);
@@ -173,7 +184,7 @@ public class AuthController {
         return ResponseEntity.ok(jwtTokenService.getPublicKey());
     }
 
-    private String extractBearerToken(String authHeader) {
+    String extractBearerToken(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }

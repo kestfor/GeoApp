@@ -17,6 +17,7 @@ import ru.nsu.geoapp.ms_users.model.UserRelations;
 import ru.nsu.geoapp.ms_users.repository.GoogleAuthRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRelationsRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRepository;
+import ru.nsu.geoapp.ms_users.services.JwtTokenService;
 
 import java.util.*;
 

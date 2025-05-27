@@ -4,28 +4,24 @@ import lombok.Data;
 
 @Data
 public class AuthResponse {
-    private String token;
-    private String refresh;
-    private long exp;
-    private UserData user;
+    private JWTData jwt;
+    private UserResponse user;
 
     @Data
-    public static class UserData {
-        private String email;
-        private String name;
-        private String picture;
+    public static class JWTData {
+        private String token;
+        private long exp;
+        private String refresh;
 
-        public UserData(String email, String name, String picture) {
-            this.email = email;
-            this.name = name;
-            this.picture = picture;
+        public JWTData(String token, long exp, String refresh) {
+            this.token = token;
+            this.exp = exp;
+            this.refresh = refresh;
         }
     }
 
-    public AuthResponse(String token, String refresh, long exp, String email, String name, String picture) {
-        this.token = token;
-        this.refresh = refresh;
-        this.exp = exp;
-        this.user = new UserData(email, name, picture);
+    public AuthResponse(String token, String refresh, long exp, UserResponse user) {
+        this.jwt = new JWTData(token, exp, refresh);
+        this.user = user;
     }
 }

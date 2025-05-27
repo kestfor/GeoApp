@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_users;
+package ru.nsu.geoapp.ms_users.services;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import org.springframework.stereotype.Service;
