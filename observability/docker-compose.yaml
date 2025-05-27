@@ -7,7 +7,7 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - ./docker_volumes/lokidata:/loki
+      - ./lokidata:/loki
       - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
 
@@ -24,7 +24,7 @@ services:
       - ./grafana/provisioning/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./grafana/provisioning/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./grafana/dashboards:/var/lib/grafana/dashboards
-      - ./docker_volumes/grafanadata:/var/lib/grafana
+      - ./grafanadata:/var/lib/grafana
 
   prometheus:
     image: prom/prometheus:latest
@@ -36,7 +36,7 @@ services:
       - shared_network
     volumes:
       - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
-      - ./docker_volumes/prometheusdata:/prometheus
+      - ./prometheusdata:/prometheus
 
   tempo:
     image: grafana/tempo:latest
@@ -45,7 +45,7 @@ services:
       - "3200:3200"
     volumes:
       - ./tempo/tempo-config.yaml:/etc/tempo.yaml
-      - ./docker_volumes/tempodata:/var/tempo
+      - ./tempodata:/var/tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
 
   node-exporter:
