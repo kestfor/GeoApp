@@ -29,6 +29,14 @@ services:
     ports:
       - "${API_PORT}:8080"
     restart: always
+    networks:
+      - default
+      - shared_network
+
 
 volumes:
   pg_volume:
+
+networks:
+  shared_network:
+    external: true
