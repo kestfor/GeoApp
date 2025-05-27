@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-      - pg_volume:/var/lib/postgresql/data
+      - ./docker_volumes/pg_volume:/var/lib/postgresql/data
     ports:
       - "5435:5432"
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
     ports:
       - '2181:2181'
     volumes:
-      - zookeeper_data:/bitnami/zookeeper
+      - ./docker_volumes/zookeeper_data:/bitnami/zookeeper
     restart: unless-stopped
 
   kafka:
@@ -55,10 +55,10 @@ services:
       - KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND=yes
       - KAFKA_CREATE_TOPICS=user.events:1:1,post.events:1:1,comments.events:1:1,notification.events:1:1
     volumes:
-      - kafka_volume:/bitnami/kafka
+      - ./docker_volumes/kafka_volume:/bitnami/kafka
     ports:
-      - '9092:9092'     # internal listener
-      - '29092:29092'   # external listener
+      - '9092:9092'
+      - '29092:29092'
     restart: unless-stopped
     networks:
       - default
@@ -91,27 +91,6 @@ services:
       - default
       - shared_network
 
-volumes:
-  pg_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/pg_volume
-
-  kafka_volume:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/kafka_volume
-
-  zookeeper_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./docker_volumes/zookeeper_data
 
 networks:
   shared_network:
