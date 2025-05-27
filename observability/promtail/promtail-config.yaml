@@ -15,7 +15,7 @@ scrape_configs:
       - host: unix:///var/run/docker.sock
         filters:
           - name: name
-            values: ["nnginx", "fastapi"]
+            values: ["content-processor", "notifications", "ms_users_web", "app"]
     relabel_configs:
       # service из Compose
       - source_labels: [__meta_docker_container_label_com_docker_compose_service]

@@ -6,6 +6,7 @@ services:
     ports:
       - "80:80"
     env_file: .env
+    restart: unless-stopped
     volumes:
       - ./lua:/usr/local/openresty/nginx/lua/
       - ./nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
