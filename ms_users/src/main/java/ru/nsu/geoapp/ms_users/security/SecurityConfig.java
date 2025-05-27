@@ -1,4 +1,4 @@
-package ru.nsu.geoapp.ms_users;
+package ru.nsu.geoapp.ms_users.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

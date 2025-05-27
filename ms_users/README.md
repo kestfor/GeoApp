@@ -20,6 +20,12 @@ springdoc.api-docs.enabled=false
 springdoc.swagger-ui.enabled=false
 ```
 
+### Hibernate
+Если мешает вывод хибернейта в консоли при дебаге, можно отключить показ sql запрсоов в `./src/main/resouces/application.properties`:
+```commandline
+spring.jpa.show-sql=false
+```
+
 ### Собрать и запустить контейнер:
 ```commandline
 docker-compose up -d --build

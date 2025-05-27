@@ -1,7 +1,5 @@
-package ru.nsu.geoapp.ms_users;
+package ru.nsu.geoapp.ms_users.services;
 
-import com.google.api.client.auth.openidconnect.IdTokenVerifier;
-import com.google.api.client.util.Clock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

@@ -35,6 +35,9 @@ public class User {
     @Column(name = "birth_date")
     private Date birthDate;
 
+    @Column(name = "bio")
+    private String bio;
+
     @Column(name = "revoked_UTC", nullable = false)
     private Long revokedUTC;
 }
