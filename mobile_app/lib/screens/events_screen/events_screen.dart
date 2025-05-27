@@ -102,7 +102,7 @@ class EventsScreenState extends State<EventsScreen> {
       throw Exception("unexpected nullable value");
     }
 
-    List<PureEvent> events = Provider.of<MainUserController>(context, listen: true).events;
+    List<PureEvent> events = Provider.of<MainUserController>(context, listen: false).events;
 
     Navigator.pushNamed(
       context,

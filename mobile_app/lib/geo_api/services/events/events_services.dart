@@ -9,7 +9,7 @@ import '../../../utils/mocks.dart';
 
 class EventsService {
   final BaseApi baseApi = BaseApi();
-  final String baseUrl = "${BaseApi.url}:8002/api/events_service";
+  final String baseUrl = "${BaseApi.url}/api/events_service";
 
   // Future<List<PureEvent>> fetchEventsForUser(EventFilter filter) async {
   //   Map<String, dynamic> body = {"limit": 20, "offset": 0, "filter": filter};
@@ -20,7 +20,7 @@ class EventsService {
     final Uri uri = Uri.parse("$baseUrl/events/available");
     var res = await baseApi.get(uri);
     if (res.statusCode != HttpStatus.ok) {
-      throw Exception("can't fetch events for user, ${res.reasonPhrase}");
+      throw Exception("can't fetch events for user, ${res.reasonPhrase} with url: $uri");
     }
 
     List<PureEvent> items = (jsonDecode(utf8.decode(res.bodyBytes)) as List).map((e) => PureEvent.fromJson(e)).toList();

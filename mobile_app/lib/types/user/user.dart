@@ -22,14 +22,14 @@ class PureUser {
     return PureUser(
       id: json['id'],
       username: json['username'],
-      firstName: json['first_name'],
-      lastName: json['last_name'],
-      pictureUrl: json['picture_url'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      pictureUrl: json['pictureUrl']?? "",
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'username': username, 'first_name': firstName, 'last_name': lastName, 'picture_url': pictureUrl};
+    return {'id': id, 'username': username, 'firstName': firstName, 'lastName': lastName, 'pictureUrl': pictureUrl};
   }
 }
 
@@ -52,16 +52,23 @@ class User extends PureUser {
     this.relationType = "none",
   });
 
+  static String convertRelationType(String type) {
+    return type.toLowerCase();
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
+    DateTime? birthDate = json['birthDate'] != null
+        ? DateTime.tryParse(json['birthDate'])
+        : null;
     return User(
       id: json['id'],
       username: json['username'],
       firstName: json['firstName'],
       lastName: json['lastName'],
-      pictureUrl: json['pictureUrl'],
+      pictureUrl: json['pictureUrl']?? "",
       bio: json['bio'],
-      birthDate: json['birthDate'],
-      relationType: json["relationType"],
+      birthDate: birthDate,
+      relationType: convertRelationType(json["relationType"]),
     );
   }
 
@@ -74,7 +81,7 @@ class User extends PureUser {
       'lastName': lastName,
       'pictureUrl': pictureUrl,
       'bio': bio,
-      'birthDate': birthDate,
+      'birthDate': birthDate?.toIso8601String(),
       'relationType': relationType,
     };
   }

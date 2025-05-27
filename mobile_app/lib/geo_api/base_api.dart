@@ -27,7 +27,6 @@ class BaseApi {
 
   Map<String, String> get defaultHeaders => _defaultHeaders;
 
-
   /// This method is used to authenticate the user using the specified AuthType, if auth is successful, userData will be returned
   static Future<Map<dynamic, dynamic>> authenticate(AuthType authType, Map<String, dynamic> additional) async {
     Authenticator? authenticator = authenticators[authType];
@@ -40,7 +39,6 @@ class BaseApi {
     final jwt = authData['jwt'];
     Map<dynamic, dynamic> userData = authData['user'];
 
-    print("JWT: $jwt");
     _tokenManager = TokenManager.fromTokenData(
       refresher: refresher,
       refreshToken: jwt['refresh_token'],
@@ -57,8 +55,9 @@ class BaseApi {
     }
     final headers = Map.of(defaultHeaders);
     // TODO убрать X-User-Id
-    headers.addAll({'Authorization': 'Bearer ${await _tokenManager!.accessToken}',
-    //  "X-User-Id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    headers.addAll({
+      'Authorization': 'Bearer ${await _tokenManager!.accessToken}',
+      //  "X-User-Id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
     });
     return headers;
   }

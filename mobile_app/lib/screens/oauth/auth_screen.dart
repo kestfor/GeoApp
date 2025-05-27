@@ -10,6 +10,7 @@ import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:provider/provider.dart';
 
 import '../../logger/logger.dart';
+import '../../notifications/firebase_notifications.dart';
 import '../../types/user/user.dart';
 import '../user_screens/profile/me_screen.dart';
 import 'google_authenticator.dart';
@@ -38,6 +39,9 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
     try {
       await googleAuth.signIn(); // sign in with google
       await googleAuth.authenticate(); // authenticate
+
+      FirebaseNotificationService.instance.registerToken(); // register token for notifications
+
       User user = await googleAuth.getUser(); // get user data
       Provider.of<MainUserController>(context, listen: false).user = user; // set user in provider
 
@@ -45,6 +49,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
       //saving user data
       await user.saveToSharedPreferences();
+      Logger().debug("User ${user.id} successfully saved to shared preferences");
       return;
     } on Exception catch (e) {
       Logger().error("$e");

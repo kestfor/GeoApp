@@ -6,26 +6,20 @@ import '../friends/friend_button.dart';
 import 'base_profile_screen.dart';
 
 class UserScreen extends ProfileScreen {
-  final FriendStatus status;
 
   static const String routeName = "/user_profile";
 
   static Route getUserRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
     String? user = args["user"] as String?;
-    FriendStatus? status = args["status"] as FriendStatus?;
     if (user == null) {
       throw Exception("User object is required in args");
     }
 
-    if (status == null) {
-      throw Exception("FriendStatus object is required in args");
-    }
-
-    return CupertinoPageRoute(builder: (context) => UserScreen(userId: user, status: status));
+    return CupertinoPageRoute(builder: (context) => UserScreen(userId: user));
   }
 
-  const UserScreen({super.key, required super.userId, required this.status});
+  const UserScreen({super.key, required super.userId});
 
   @override
   State createState() => UserScreenState();
@@ -33,7 +27,6 @@ class UserScreen extends ProfileScreen {
 
 class UserScreenState extends ProfileScreenState {
 
-  get status => (widget as UserScreen).status;
 
   Widget _buildNameInfo() {
     final name = Text(
@@ -54,7 +47,7 @@ class UserScreenState extends ProfileScreenState {
             name,
             SizedBox(width: 8),
             FriendButton(
-              status: status,
+              status: FriendStatus.values.byName(user!.relationType!),
               size: iconSize,
               onStatusChanged: (oldStatus, newStatus) {
                 print("oldStatus: $oldStatus, newStatus: $newStatus");

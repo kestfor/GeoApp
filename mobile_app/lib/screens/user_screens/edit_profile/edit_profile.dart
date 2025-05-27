@@ -5,7 +5,9 @@ import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/utils/date_picker/date_picker.dart';
+import 'package:mobile_app/utils/loading_screen.dart';
 
+import '../../../logger/logger.dart';
 import '../../../types/user/user.dart';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -63,13 +65,20 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     modified.bio = _bioController.text;
     modified.birthDate = _birthDate;
 
+    final loadingScreen = LoadingScreen();
+    loadingScreen.showLoadingScreen(context);
+
     try {
       await _usersService.modifyUser(modified);
-    } on Exception catch (error) {
-      print("$error");
+    } catch (error, stackTrace) {
+      Logger().error("$error");
       showError(context, error.toString());
+      loadingScreen.closeLoadingScreen(context);
       return;
     }
+
+    loadingScreen.closeLoadingScreen(context);
+
 
     setState(() {
       widget.user.firstName = _firstNameController.text;
@@ -79,6 +88,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       widget.user.birthDate = _birthDate;
     });
 
+    showSuccess(context, "saved");
     Navigator.pop(context, widget.user);
   }
 

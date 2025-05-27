@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../logger/logger.dart';
+
 abstract class Refresher {
   Future<Map<String, dynamic>> refresh(String refreshToken);
 }
@@ -68,7 +70,7 @@ class TokenManager {
       _expiresAt = data["expires_at"];
       _refresher = refresher;
       _instance = TokenManager._internal(refresher, _accessToken, _refreshToken, _expiresAt);
-      print("TokenManager: read token data: $_accessToken, $_refreshToken, $_expiresAt");
+      Logger().debug("TokenManager: read token data, expires at ${DateTime.fromMillisecondsSinceEpoch(_expiresAt * 1000)}");
     } else {
       throw Exception("No token data found");
     }
@@ -81,7 +83,7 @@ class TokenManager {
       _expiresAt = data["expires_at"];
       _refreshToken = data["refresh_token"];
       await _save();
-      print("token refreshed: $_accessToken, $_refreshToken, $_expiresAt");
+      Logger().debug("token refreshed: $_accessToken, $_refreshToken, $_expiresAt");
     } else {
       throw Exception("Failed to refresh token");
     }

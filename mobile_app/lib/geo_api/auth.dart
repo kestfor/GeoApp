@@ -14,7 +14,7 @@ class ApiKeyRefresher implements Refresher {
 
   @override
   Future<Map<String, dynamic>> refresh(String refreshToken) async {
-    final Uri uri = Uri.parse('$refreshUrl');
+    final Uri uri = Uri.parse(refreshUrl);
     Map<String, dynamic> body = {"refresh": refreshToken};
     var res = await http.post(uri, body: jsonEncode(body), headers: {'Content-Type': 'application/json'});
 
@@ -63,20 +63,22 @@ class ThroughGoogleAuthenticator implements Authenticator {
       throw Exception('Failed to authenticate with Google, ${res.reasonPhrase} for url: $uri');
     }
 
-    final receivedData = jsonDecode(res.body);
+    Map<String, dynamic> receivedData = jsonDecode(utf8.decode(res.bodyBytes));
+    Map<String, dynamic> jwt = {
+      "access_token": receivedData["jwt"]["token"],
+      "refresh_token": receivedData["jwt"]["refresh"],
+      "expires_at": receivedData["jwt"]["exp"],
+    };
+    // receivedData.remove("token");
+    // receivedData.remove("refresh");
+    // receivedData.remove("exp");
 
-    //mocking
     Map<String, dynamic> data = {
-      "jwt": {
-        "access_token": receivedData["token"],
-        "refresh_token": receivedData["refresh"],
-        "expires_at": receivedData["exp"],
-      },
-      "user": mockUser.toJson(),
+      "jwt": jwt,
+      "user": receivedData["user"],
     };
 
     Logger().debug("Google Authenticator: received data: $data");
-
-    return Future.delayed(Duration(seconds: 1), () => data);
+    return data;
   }
 }

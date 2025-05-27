@@ -1,11 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:mobile_app/logger/logger.dart';
+
 import '../../base_api.dart';
 
 class NotificationService {
   static final BaseApi baseApi = BaseApi();
-  static final String baseUrl = "${BaseApi.url}:8004/api/notifications";
+  static final String baseUrl = "${BaseApi.url}/api/notifications";
 
   String _getPlatformString() {
     if (Platform.isAndroid) {
@@ -27,9 +29,9 @@ class NotificationService {
     final uri = Uri.parse("$baseUrl/tokens");
     final res = await baseApi.post(uri, body: body);
     if (res.statusCode != HttpStatus.ok) {
-      throw Exception("failed to register token: ${res.reasonPhrase}");
+      throw Exception("failed to register token: ${res.reasonPhrase} for url: $uri");
     } else {
-      log("token successfully sent");
+      Logger().debug("token successfully sent");
     }
   }
 
@@ -41,9 +43,9 @@ class NotificationService {
     final uri = Uri.parse("$baseUrl/tokens");
     final res = await baseApi.delete(uri, body: body);
     if (res.statusCode != HttpStatus.noContent) {
-      throw Exception("failed to delete token: ${res.reasonPhrase}");
+      throw Exception("failed to delete token: ${res.reasonPhrase} for url: $uri");
     } else {
-      log("token successfully deleted");
+      Logger().debug("token successfully deleted");
     }
   }
 

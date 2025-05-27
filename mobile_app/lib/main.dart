@@ -26,6 +26,27 @@ import 'package:toastification/toastification.dart';
 
 import 'notifications/firebase_notifications.dart';
 
+Future<Widget> getInitScreen(MainUserController controller) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  User? user = await User.loadFromSharedPreferences();
+  if (user == null) {
+    Logger().debug("User is null, redirect to login screen");
+    return GoogleSignInScreen();
+  }
+  Widget initialScreen = MyProfileScreen(userId: user.id);
+
+  try {
+    await BaseApi.loadTokenData();
+    Logger().debug("Token data loaded, skip login screen");
+    controller.user = user;
+  } on Exception catch (e) {
+    Logger().debug("$e, redirect to login screen");
+    initialScreen = GoogleSignInScreen();
+  }
+
+  return initialScreen;
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FMTCObjectBoxBackend().initialise();
@@ -52,23 +73,6 @@ void main() async {
       child: ToastificationWrapper(child: MyApp(initialScreen: initialScreen)),
     ),
   );
-}
-
-Future<Widget> getInitScreen(MainUserController controller) async {
-  WidgetsFlutterBinding.ensureInitialized();
-  User? user = await User.loadFromSharedPreferences();
-  Widget initialScreen = user != null ? MyProfileScreen(userId: user.id) : GoogleSignInScreen();
-
-  try {
-    await BaseApi.loadTokenData();
-    Logger().debug("Token data loaded, skip login screen");
-    controller.user = user;
-  } on Exception catch (e) {
-    Logger().debug("$e, redirect to login screen");
-    initialScreen = GoogleSignInScreen();
-  }
-
-  return initialScreen;
 }
 
 class MyApp extends StatelessWidget {

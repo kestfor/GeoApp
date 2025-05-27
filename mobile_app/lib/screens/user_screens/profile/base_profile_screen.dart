@@ -5,9 +5,11 @@ import 'package:mobile_app/repositories/event_repository/event_repository.dart';
 import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
+import 'package:provider/provider.dart';
 
 import '../../../logger/logger.dart';
 import '../../../style/shimmer.dart';
@@ -86,20 +88,18 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _fetchUserData() {
-    _usersService
-        .getDetailedUser(widget.userId)
-        .then((u) {
-          setState(() {
-            _user = u;
-          });
-        })
-        .onError((error, stackTrace) {
-          setState(() {
-            _user = null;
-          });
-          showError(context, "Error while fetching user");
-          Logger().error("Error fetching user: $error");
-        });
+    _usersService.getDetailedUser(widget.userId).then((u) {
+      setState(() {
+        _user = u;
+      });
+    });
+    // .onError((error, stackTrace) {
+    //   setState(() {
+    //     _user = null;
+    //   });
+    //   showError(context, "Error while fetching user");
+    //   Logger().error("Error fetching user: $error");
+    // });
   }
 
   void _fetchFriends() {
@@ -189,11 +189,31 @@ class ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void checkIsfriendOrMain(context) {
+    final mainUser = Provider.of<MainUserController>(context, listen: false).user;
+    bool found = false;
+    for (var friend in _friends!) {
+      if (friend.id == mainUser!.id) {
+        found = true;
+      }
+    }
+
+    if (widget.userId == mainUser!.id) {
+      found = true;
+    }
+
+    if (!found) {
+      _events = [];
+    }
+  }
+
   Widget _buildEventsBlock(context) {
     final height = MediaQuery.of(context).size.width / 3 * 2;
-    if (_events == null) {
+    if (_events == null || _friends == null) {
       return DefaultShimmer(child: ContainerPlaceHolder(width: double.infinity, height: height));
     }
+
+    checkIsfriendOrMain(context);
 
     final eventsImg = _events!.map((event) => event.coverUrl).toList();
 

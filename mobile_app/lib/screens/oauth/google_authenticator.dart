@@ -39,7 +39,6 @@ class GoogleAuthenticator {
 
     final auth = await _currentUser!.authentication;
     final userData = await _verifyIdToken(auth);
-    FirebaseNotificationService.instance.registerToken();
 
     _user = User.fromJson(Map<String, dynamic>.from(userData));
     _user!.onLogOut = () {

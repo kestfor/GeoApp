@@ -6,14 +6,14 @@ import 'package:mobile_app/types/media/media.dart';
 import '../types/user/user.dart';
 
 final mockUser = User(
-  username: "alice",
-  id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  lastName: "Brown",
-  firstName: "Alice",
+  username: "Илья Анжин",
+  id: "089d9624-5f70-4b8b-a846-5b4b0ce008a1",
+  lastName: "Анжин",
+  firstName: "Илья",
   bio:
       "I am software engineer with a strong background in mobile app development. With expertise in Flutter and a keen eye for clean, intuitive design, I love crafting seamless user experiences. ",
   pictureUrl:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGVyc29ufGVufDB8fDB8fHww",
+      "https://lh3.googleusercontent.com/a/ACg8ocJMmH2fTepHg-FirqcntZ5EjzYHU4c7_dswgutBM0YbvPxbKVJ7=s96-c",
 );
 
 final friendsMocks = [
