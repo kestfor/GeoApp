@@ -474,7 +474,7 @@ public class UserController {
         return (!onlyAdmin && uuidFromJWT.equals(userId)) || false; // todo: replace with admins' privileges check
     }
 
-    private String extractBearerToken(String authHeader) {
+    String extractBearerToken(String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7);
         }
