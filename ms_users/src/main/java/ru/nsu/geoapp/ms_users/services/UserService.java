@@ -35,7 +35,7 @@ public class UserService {
     }
 
     public void revokeAllTokensForUser(User user) {
-        long currentTime = System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis() / 1000;
         user.setRevokedUTC(currentTime);
     }
 
@@ -56,7 +56,7 @@ public class UserService {
             user.setFirstName((String) payload.get("given_name"));
             user.setLastName((String) payload.get("family_name"));
             user.setPictureUrl((String) payload.get("picture"));
-            user.setRevokedUTC(System.currentTimeMillis()-1);
+            user.setRevokedUTC(System.currentTimeMillis()/1000 - 1);
             userRepository.save(user);
 
             GoogleAuthData.GoogleAuthId googleAuthId = new GoogleAuthData.GoogleAuthId();

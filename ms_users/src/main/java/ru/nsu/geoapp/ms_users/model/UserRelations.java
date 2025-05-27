@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -28,9 +28,9 @@ public class UserRelations {
     @EmbeddedId
     private UserRelationId id;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "updated_at")
+    private Date updatedAt;
 
     @Column(nullable = false)
-    private String status; // "PENDING", "FRIEND", "BLOCKED"
+    private String status; // "FRIEND", "SENT", "RECEIVED"
 }

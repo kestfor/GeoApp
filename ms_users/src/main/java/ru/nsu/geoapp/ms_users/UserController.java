@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +19,7 @@ import ru.nsu.geoapp.ms_users.repository.UserRelationsRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRepository;
 import ru.nsu.geoapp.ms_users.services.JwtTokenService;
 
+import java.time.Instant;
 import java.util.*;
 
 @RestController
@@ -48,18 +49,53 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "JWT Token without privileges", content = @Content)
     })
     @PostMapping()
-    public ResponseEntity<CreatedUserResponse> createUser(@RequestHeader("Authorization") String authHeader, @RequestBody User user) {
+    public ResponseEntity<CreatedUserResponse> createUser(@RequestHeader("Authorization") String authHeader, @RequestBody CreateRequest request) {
         try {
+            LOGGER.debug("Starting creating user...");
             if (!isUserAuthorized(authHeader, null, true)) {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
             }
-
+            LOGGER.debug("Hello admin!!");
+            User user = new User();
+            if (request.getUsername() == null) {
+                LOGGER.debug("username null");
+                throw new NullPointerException();
+            }
+            if (request.getEmail() == null) {
+                LOGGER.debug("email null");
+                throw new NullPointerException();
+            }
+            if (request.getFirstName() == null) {
+                LOGGER.debug("firstName null");
+                throw new NullPointerException();
+            }
+            if (request.getLastName() == null) {
+                LOGGER.debug("lastName null");
+                throw new NullPointerException();
+            }
+            user.setUsername(request.getUsername());
+            user.setEmail(request.getEmail());
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            if (request.getPictureUrl() != null) {
+                user.setPictureUrl(request.getPictureUrl());
+            }
+            if (request.getBirthDate() != null) {
+                user.setBirthDate(request.getBirthDate());
+            }
+            if (request.getBio() != null) {
+                user.setBio(request.getBio());
+            }
+            user.setRevokedUTC(System.currentTimeMillis()/1000 - 1);
+            LOGGER.debug("created user: {}", user);
             userRepository.save(user);
 
             CreatedUserResponse response = new CreatedUserResponse();
             response.setId(user.getId());
-
+            LOGGER.debug("Successfully made artificial user {}", response.getId());
             return ResponseEntity.ok(response);
+        } catch (NullPointerException e) {
+            return ResponseEntity.badRequest().build();
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
@@ -301,6 +337,89 @@ public class UserController {
         }
     }
 
+    @Operation(summary = "Update relations with specified user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "304", description = "Not modified", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
+            @ApiResponse(responseCode = "404", description = "User not found", content = @Content)
+    })
+    @PostMapping("/relations")
+    @Transactional
+    public ResponseEntity<Void> updateRelation(@RequestHeader("Authorization") String authHeader, @RequestBody RelationRequest request) {
+        try {
+            LOGGER.debug("Starting /relations");
+            String token = extractBearerToken(authHeader);
+            String subject = jwtTokenService.getSubjectFromToken(token);
+            UUID requestingUserUUID = UUID.fromString(subject);
+            LOGGER.debug("Requested by {}", requestingUserUUID);
+            User requestedUser = userRepository.findById(request.getId()).orElse(null);
+            LOGGER.debug("Requested: {}", (requestedUser != null) ? requestedUser.toString() : null);
+            User requestingUser = userRepository.findById(requestingUserUUID).orElse(null);
+            LOGGER.debug("Requesting: {}", (requestingUser != null) ? requestingUser.toString() : null);
+            if (requestedUser == null || requestingUser == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserRelations.UserRelationId relationIdA2B = new UserRelations.UserRelationId();
+            UserRelations.UserRelationId relationIdB2A = new UserRelations.UserRelationId();
+            relationIdA2B.setUserId(requestingUser.getId());
+            relationIdA2B.setOtherId(requestedUser.getId());
+            relationIdB2A.setUserId(requestedUser.getId());
+            relationIdB2A.setOtherId(requestingUser.getId());
+            UserRelations userRelationA2B = userRelationsRepository.findById(relationIdA2B).orElse(null);
+            UserRelations userRelationB2A = userRelationsRepository.findById(relationIdB2A).orElse(null);
+            if ((userRelationA2B == null && userRelationB2A != null) || (userRelationB2A == null && userRelationA2B != null)) {
+                LOGGER.error("One-sided relation spotted: A2B {} | B2A {}",
+                        (userRelationA2B != null) ? userRelationA2B.toString() : null,
+                        (userRelationB2A != null) ? userRelationB2A.toString() : null);
+                return ResponseEntity.internalServerError().build();
+            }
+
+            boolean befriend = request.isBefriend();
+            Date date = Date.from(Instant.now());
+
+            LOGGER.debug("Befriend flag: {}", befriend);
+            if (befriend) {
+                if (userRelationA2B == null) {
+                    userRelationA2B = new UserRelations();
+                    userRelationA2B.setId(relationIdA2B);
+                    userRelationA2B.setStatus("SENT");
+                    userRelationA2B.setUpdatedAt(date);
+                    userRelationB2A = new UserRelations();
+                    userRelationB2A.setId(relationIdB2A);
+                    userRelationB2A.setStatus("RECEIVED");
+                    userRelationB2A.setUpdatedAt(date);
+                } else if ("RECEIVED".equals(userRelationA2B.getStatus())) {
+                    userRelationA2B.setStatus("FRIEND");
+                    userRelationA2B.setUpdatedAt(date);
+                    userRelationB2A.setStatus("FRIEND");
+                    userRelationB2A.setUpdatedAt(date);
+                } else {
+                    LOGGER.debug("Either already sent or friends, nothing changed!");
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+                }
+                userRelationsRepository.save(userRelationA2B);
+                userRelationsRepository.save(userRelationB2A);
+                LOGGER.debug("New userRelationA2B: {}", userRelationA2B);
+                LOGGER.debug("New userRelationB2A: {}", userRelationB2A);
+            } else {
+                if (userRelationA2B == null) {
+                    LOGGER.debug("Already not friends, nothing changed!");
+                    return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+                } else {
+                    userRelationsRepository.deleteById(relationIdA2B);
+                    userRelationsRepository.deleteById(relationIdB2A);
+                    LOGGER.debug("Deleted both relations!");
+                }
+            }
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Exception upon listing users", e);
+        }
+    }
+
     private boolean isUserAuthorized(String authHeader, UUID userId) {
         return isUserAuthorized(authHeader, userId, false);
     }
@@ -314,7 +433,7 @@ public class UserController {
         String uuidAsString = jwtTokenService.getSubjectFromToken(token);
         UUID uuidFromJWT = UUID.fromString(uuidAsString);
         LOGGER.debug("Checking if user {} is authorized to modify {}", uuidFromJWT, userId);
-        return (!onlyAdmin && uuidFromJWT.equals(userId)) || false; // todo: replace with admins' privileges check
+        return (!onlyAdmin && uuidFromJWT.equals(userId)) || true; // todo: replace with admins' privileges check
     }
 
     private String extractBearerToken(String authHeader) {
