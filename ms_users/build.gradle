@@ -41,6 +41,9 @@ dependencies {
 	// Postgres
 	runtimeOnly 'org.postgresql:postgresql'
 
+	// Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
+
 	// Google API
 	implementation 'com.google.api-client:google-api-client:1.33.0'
 

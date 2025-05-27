@@ -18,6 +18,7 @@ import ru.nsu.geoapp.ms_users.repository.GoogleAuthRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRelationsRepository;
 import ru.nsu.geoapp.ms_users.repository.UserRepository;
 import ru.nsu.geoapp.ms_users.services.JwtTokenService;
+import ru.nsu.geoapp.ms_users.services.KafkaProducer;
 
 import java.time.Instant;
 import java.util.*;
@@ -30,17 +31,20 @@ public class UserController {
     private final GoogleAuthRepository googleAuthRepository;
     private final UserRelationsRepository userRelationsRepository;
     private final JwtTokenService jwtTokenService;
+    private final KafkaProducer kafkaProducer;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
     public UserController(UserRepository userRepository,
                           GoogleAuthRepository googleAuthRepository,
                           UserRelationsRepository userRelationsRepository,
-                          JwtTokenService jwtTokenService) {
+                          JwtTokenService jwtTokenService,
+                          KafkaProducer kafkaProducer) {
         this.userRepository = userRepository;
         this.googleAuthRepository = googleAuthRepository;
         this.userRelationsRepository = userRelationsRepository;
         this.jwtTokenService = jwtTokenService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @Operation(summary = "Create user with specified params")
@@ -196,7 +200,7 @@ public class UserController {
             LOGGER.debug("Searching for relations of {}", userId);
             List<UserRelations> relations = userRelationsRepository.findById_UserId(userId);
             for (UserRelations relation : relations) {
-                if (!relation.getStatus().equals("FRIEND")) {
+                if (!relation.getStatus().equals("friends")) {
                     continue;
                 }
                 LOGGER.debug("Found friend {}", relation.getId().getOtherId());
@@ -384,16 +388,16 @@ public class UserController {
                 if (userRelationA2B == null) {
                     userRelationA2B = new UserRelations();
                     userRelationA2B.setId(relationIdA2B);
-                    userRelationA2B.setStatus("SENT");
+                    userRelationA2B.setStatus("request_sent");
                     userRelationA2B.setUpdatedAt(date);
                     userRelationB2A = new UserRelations();
                     userRelationB2A.setId(relationIdB2A);
-                    userRelationB2A.setStatus("RECEIVED");
+                    userRelationB2A.setStatus("request_received");
                     userRelationB2A.setUpdatedAt(date);
-                } else if ("RECEIVED".equals(userRelationA2B.getStatus())) {
-                    userRelationA2B.setStatus("FRIEND");
+                } else if ("request_received".equals(userRelationA2B.getStatus())) {
+                    userRelationA2B.setStatus("friends");
                     userRelationA2B.setUpdatedAt(date);
-                    userRelationB2A.setStatus("FRIEND");
+                    userRelationB2A.setStatus("friends");
                     userRelationB2A.setUpdatedAt(date);
                 } else {
                     LOGGER.debug("Either already sent or friends, nothing changed!");
@@ -403,6 +407,23 @@ public class UserController {
                 userRelationsRepository.save(userRelationB2A);
                 LOGGER.debug("New userRelationA2B: {}", userRelationA2B);
                 LOGGER.debug("New userRelationB2A: {}", userRelationB2A);
+
+                kafkaProducer.send(
+                        new FriendResponseMessage(
+                                requestingUser,
+                                requestedUser,
+                                userRelationA2B.getStatus()
+                        )
+                );
+                LOGGER.debug("Sent kafka event A2B \"{}\"", userRelationA2B.getStatus());
+                kafkaProducer.send(
+                        new FriendResponseMessage(
+                                requestedUser,
+                                requestingUser,
+                                userRelationB2A.getStatus()
+                        )
+                );
+                LOGGER.debug("Sent kafka event B2A \"{}\"", userRelationB2A.getStatus());
             } else {
                 if (userRelationA2B == null) {
                     LOGGER.debug("Already not friends, nothing changed!");
@@ -411,6 +432,23 @@ public class UserController {
                     userRelationsRepository.deleteById(relationIdA2B);
                     userRelationsRepository.deleteById(relationIdB2A);
                     LOGGER.debug("Deleted both relations!");
+
+                    kafkaProducer.send(
+                            new FriendResponseMessage(
+                                    requestingUser,
+                                    requestedUser,
+                                    "none"
+                            )
+                    );
+                    LOGGER.debug("Sent kafka event A2B \"none\"");
+                    kafkaProducer.send(
+                            new FriendResponseMessage(
+                                    requestedUser,
+                                    requestingUser,
+                                    "none"
+                            )
+                    );
+                    LOGGER.debug("Sent kafka event B2A \"none\"");
                 }
             }
 
@@ -433,7 +471,7 @@ public class UserController {
         String uuidAsString = jwtTokenService.getSubjectFromToken(token);
         UUID uuidFromJWT = UUID.fromString(uuidAsString);
         LOGGER.debug("Checking if user {} is authorized to modify {}", uuidFromJWT, userId);
-        return (!onlyAdmin && uuidFromJWT.equals(userId)) || true; // todo: replace with admins' privileges check
+        return (!onlyAdmin && uuidFromJWT.equals(userId)) || false; // todo: replace with admins' privileges check
     }
 
     private String extractBearerToken(String authHeader) {

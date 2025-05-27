@@ -32,5 +32,5 @@ public class UserRelations {
     private Date updatedAt;
 
     @Column(nullable = false)
-    private String status; // "FRIEND", "SENT", "RECEIVED"
+    private String status; // "friend", "request_sent", "request_received"
 }
