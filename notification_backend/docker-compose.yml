@@ -25,7 +25,7 @@ services:
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-      - ./docker_volumes/pg_volume:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
     ports:
       - "5435:5432"
     restart: unless-stopped
@@ -38,7 +38,7 @@ services:
     ports:
       - '2181:2181'
     volumes:
-      - ./docker_volumes/zookeeper_data:/bitnami/zookeeper
+      - zookeeper_data:/bitnami/zookeeper
     restart: unless-stopped
 
   kafka:
@@ -55,7 +55,7 @@ services:
       - KAFKA_CFG_ALLOW_EVERYONE_IF_NO_ACL_FOUND=yes
       - KAFKA_CREATE_TOPICS=user.events:1:1,post.events:1:1,comments.events:1:1,notification.events:1:1
     volumes:
-      - ./docker_volumes/kafka_volume:/bitnami/kafka
+      - kafka_data:/bitnami/kafka
     ports:
       - '9092:9092'
       - '29092:29092'
@@ -91,6 +91,10 @@ services:
       - default
       - shared_network
 
+volumes:
+  kafka_data:
+  zookeeper_data:
+  pg_data:
 
 networks:
   shared_network:
