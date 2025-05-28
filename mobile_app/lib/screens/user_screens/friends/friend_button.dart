@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/style/colors.dart';
 
-enum FriendStatus { none, requestSent, requestReceived, friends }
+enum FriendStatus { none, request_sent, request_received, friends }
 
 class FriendButton extends StatefulWidget {
   final double size;
@@ -56,9 +56,9 @@ class _FriendButtonState extends State<FriendButton> {
   void _onPressed() async {
     switch (_status) {
       case FriendStatus.none:
-        notifier.value = FriendStatus.requestSent;
+        notifier.value = FriendStatus.request_sent;
         break;
-      case FriendStatus.requestSent:
+      case FriendStatus.request_sent:
         notifier.value = FriendStatus.none;
         break;
       case FriendStatus.friends:
@@ -74,7 +74,7 @@ class _FriendButtonState extends State<FriendButton> {
           notifier.value = FriendStatus.none;
         }
         break;
-      case FriendStatus.requestReceived:
+      case FriendStatus.request_received:
         bool? accept = await showGeneralDialog(
           context: context,
           transitionBuilder: transitionBuilder,
@@ -95,9 +95,9 @@ class _FriendButtonState extends State<FriendButton> {
     switch (_status) {
       case FriendStatus.none:
         return Icons.person_add;
-      case FriendStatus.requestSent:
+      case FriendStatus.request_sent:
         return Icons.hourglass_empty;
-      case FriendStatus.requestReceived:
+      case FriendStatus.request_received:
         return Icons.mark_email_read;
       case FriendStatus.friends:
         return Icons.check_circle;
@@ -108,9 +108,9 @@ class _FriendButtonState extends State<FriendButton> {
     switch (_status) {
       case FriendStatus.none:
         return gray;
-      case FriendStatus.requestSent:
+      case FriendStatus.request_sent:
         return brown;
-      case FriendStatus.requestReceived:
+      case FriendStatus.request_received:
         return purple;
       case FriendStatus.friends:
         return purple;
@@ -121,9 +121,9 @@ class _FriendButtonState extends State<FriendButton> {
     switch (_status) {
       case FriendStatus.none:
         return 'add to friends';
-      case FriendStatus.requestSent:
+      case FriendStatus.request_sent:
         return 'request sent';
-      case FriendStatus.requestReceived:
+      case FriendStatus.request_received:
         return 'answer to request';
       case FriendStatus.friends:
         return 'friends';

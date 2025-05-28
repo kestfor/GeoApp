@@ -1,7 +1,6 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mobile_app/geo_api/base_api.dart';
 import 'package:mobile_app/notifications/firebase_notifications.dart';
-import 'package:mobile_app/utils/mocks.dart';
 
 import '../../logger/logger.dart';
 import '../../types/user/user.dart';
@@ -14,7 +13,7 @@ import '../../types/user/user.dart';
 class GoogleAuthenticator {
   late final List<String> scopes;
   late final String clientId;
-  late final GoogleSignIn _googleSignIn;
+  late GoogleSignIn _googleSignIn;
   GoogleSignInAccount? _currentUser;
   User? _user;
 
@@ -41,10 +40,15 @@ class GoogleAuthenticator {
     final userData = await _verifyIdToken(auth);
 
     _user = User.fromJson(Map<String, dynamic>.from(userData));
-    _user!.onLogOut = () async {
+    registerOnLogOutFunction(_user!);
+  }
+
+  Future<void> registerOnLogOutFunction(User user) async {
+    user.onLogOut = () async {
       await signOut();
       await FirebaseNotificationService.instance.deleteToken();
     };
+    Logger().debug("On log out function registered");
   }
 
   Future<User> getUser() {
@@ -65,7 +69,7 @@ class GoogleAuthenticator {
       return _currentUser!;
     }
 
-    _currentUser = await _googleSignIn.signInSilently();
+    // _currentUser = await _googleSignIn.signInSilently();
 
     _currentUser ??= await _googleSignIn.signIn();
     if (_currentUser == null) {

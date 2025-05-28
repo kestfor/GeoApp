@@ -308,6 +308,11 @@ class ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final mainUser = Provider.of<MainUserController>(context, listen: false).user;
     this.mainUser = mainUser!.id;
+
+    if (_user != null && mainUserId == openedProfileUserId) {
+      _user!.onLogOut = mainUser.onLogOut;
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,

@@ -32,7 +32,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
   @override
   void initState() {
     super.initState();
-    googleAuth.signInSilently();
+    // googleAuth.signInSilently();
   }
 
   Future<void> _handleSignIn(context) async {
@@ -44,7 +44,6 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
 
       User user = await googleAuth.getUser(); // get user data
       Provider.of<MainUserController>(context, listen: false).user = user; // set user in provider
-
       Navigator.pushReplacementNamed(context, MyProfileScreen.routeName, arguments: user.id);
 
       //saving user data

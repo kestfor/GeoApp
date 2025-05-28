@@ -77,7 +77,7 @@ class UsersService {
     final Uri uri = Uri.parse("$baseUrl/users/relations");
     final body = {"id": userId, "befriend": true};
     final res = await baseApi.post(uri, body: body);
-    if (res.statusCode != 200 || res.statusCode != 304) {
+    if (res.statusCode != 200 && res.statusCode != 304) {
       throw Exception('Failed to sent friend request to user, ${res.reasonPhrase}');
     }
   }
@@ -86,7 +86,7 @@ class UsersService {
     final Uri uri = Uri.parse("$baseUrl/users/relations");
     final body = {"id": userId, "befriend": false};
     final res = await baseApi.post(uri, body: body);
-    if (res.statusCode != 200 || res.statusCode != 304) {
+    if (res.statusCode != 200 && res.statusCode != 304) {
       throw Exception('Failed to remove user from friends, ${res.reasonPhrase}');
     }
   }

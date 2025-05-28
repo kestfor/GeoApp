@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile_app/screens/map_screen/geolocator.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/events/events.dart';
+import 'package:mobile_app/utils/loading_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../types/user/user.dart';
@@ -90,6 +92,10 @@ class EventsScreenState extends State<EventsScreen> {
   }
 
   void _openMap(context, start) async {
+    final loadingScreen = LoadingScreen();
+    loadingScreen.showLoadingScreen(context);
+    LatLng? position = await getPosition();
+    position ??= start;
     StartAnimation animation = StartAnimation(
       curve: Curves.decelerate,
       duration: Duration(milliseconds: 1000),
@@ -103,11 +109,11 @@ class EventsScreenState extends State<EventsScreen> {
     }
 
     List<PureEvent> events = Provider.of<MainUserController>(context, listen: false).events;
-
+    loadingScreen.closeLoadingScreen(context);
     Navigator.pushNamed(
       context,
       MapScreen.routeName,
-      arguments: {"user": user, "startPosition": start, "startAnimation": animation, "events": events},
+      arguments: {"user": user, "startPosition": position, "startAnimation": animation, "events": events},
     );
   }
 
@@ -120,21 +126,24 @@ class EventsScreenState extends State<EventsScreen> {
   Widget buildEvents(context) {
     if (events.isEmpty) {
       return Card(
-        child: Padding(padding: EdgeInsets.all(8), child: Column(
-          children: [
-            Text("There is nothing here, but you can change it!", style: Theme.of(context).textTheme.headlineLarge),
-            SizedBox(height: 16),
-            MaterialButton(
-              onPressed: () {
-                _createEvent(context);
-              },
-              color: Theme.of(context).primaryColor,
-              textColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              child: Text("try out"),
-            ),
-          ],
-        )),
+        child: Padding(
+          padding: EdgeInsets.all(8),
+          child: Column(
+            children: [
+              Text("There is nothing here, but you can change it!", style: Theme.of(context).textTheme.headlineLarge),
+              SizedBox(height: 16),
+              MaterialButton(
+                onPressed: () {
+                  _createEvent(context);
+                },
+                color: Theme.of(context).primaryColor,
+                textColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                child: Text("try out"),
+              ),
+            ],
+          ),
+        ),
       );
     } else {
       return SingleChildScrollEventsParallax(

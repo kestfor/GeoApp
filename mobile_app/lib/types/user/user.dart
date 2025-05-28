@@ -55,6 +55,7 @@ class User extends PureUser {
   });
 
   static String convertRelationType(String type) {
+    print(type);
     return type.toLowerCase();
   }
 
@@ -119,6 +120,8 @@ class User extends PureUser {
     if (onLogOut != null) {
       Logger().debug("logging out user");
       await onLogOut!();
+    } else {
+      Logger().debug("log out function is null");
     }
   }
 }

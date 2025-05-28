@@ -123,12 +123,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
 
     Future.delayed(Duration(milliseconds: 300), () {
       if (widget.startAnimation != null) {
-        _animatedMapController.animateTo(
-          duration: widget.startAnimation!.duration,
-          curve: widget.startAnimation!.curve,
-          dest: widget.startAnimation!.pointTo,
-          zoom: widget.startAnimation!.zoomTo,
-        );
+        // _animatedMapController.animateTo(
+        //   duration: widget.startAnimation!.duration,
+        //   curve: widget.startAnimation!.curve,
+        //   dest: widget.startAnimation!.pointTo,
+        //   zoom: widget.startAnimation!.zoomTo,
+        // );
+        animateToFromEvent(widget.startAnimation!.pointTo!);
       }
     });
     _animatedMapController.mapController.mapEventStream.listen((event) {
@@ -146,6 +147,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     for (var l in widget.events) {
       res.add(
         Marker(
+          rotate: true,
           width: _markerSize,
           height: _markerSize,
           point: LatLng(l.point.lat, l.point.lon),
@@ -277,8 +279,6 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             ),
             MarkerClusterLayerWidget(
               options: MarkerClusterLayerOptions(
-                centerMarkerOnClick: false,
-                zoomToBoundsOnClick: false,
                 showPolygon: false,
                 computeSize: (s) => Size(_markerSize, _markerSize),
                 alignment: Alignment.center,

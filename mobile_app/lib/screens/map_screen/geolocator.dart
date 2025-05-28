@@ -1,59 +1,83 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
-Future<LatLng> determinePosition() async {
-  bool serviceEnabled;
-  LocationPermission permission;
+import '../../logger/logger.dart';
 
-  // Test if location services are enabled.
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    // Location services are not enabled don't continue
-    // accessing the position and request users of the
-    // App to enable the location services.
-    return Future.error('Location services are disabled.');
+/// Сначала проверяем сервис и разрешения
+Future<void> _checkPermissions() async {
+  if (!await Geolocator.isLocationServiceEnabled()) {
+    throw 'Location services are disabled.';
   }
 
-  permission = await Geolocator.checkPermission();
+  var permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
-      // Permissions are denied, next time you could try
-      // requesting permissions again (this is also where
-      // Android's shouldShowRequestPermissionRationale
-      // returned true. According to Android guidelines
-      // your App should show an explanatory UI now.
-      return Future.error('Location permissions are denied');
+      throw 'Location permissions are denied';
     }
   }
-
   if (permission == LocationPermission.deniedForever) {
-    // Permissions are denied forever, handle appropriately.
-    return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+    throw 'Location permissions are permanently denied, we cannot request permissions.';
   }
-
-  // When we reach here, permissions are granted and we can
-  // continue accessing the position of the device.
-  final pos = await Geolocator.getCurrentPosition();
-  return LatLng(pos.latitude, pos.longitude);
 }
 
+/// Получение самой точной позиции с таймаутом
+Future<Position> _getCurrentPositionWithTimeout({
+  LocationAccuracy accuracy = LocationAccuracy.high,
+  Duration timeout = const Duration(seconds: 5),
+}) =>
+    Geolocator.getCurrentPosition(
+      desiredAccuracy: accuracy,
+    ).timeout(timeout);
+
+/// Последняя известная позиция
 Future<LatLng?> getLastKnownPosition() async {
   final pos = await Geolocator.getLastKnownPosition();
-  if (pos == null) {
-    return null;
-  }
+  if (pos == null) return null;
   return LatLng(pos.latitude, pos.longitude);
 }
 
+/// Основная функция: пытаемся получить текущую позицию, иначе — последнюю известную
 Future<LatLng?> getPosition() async {
   try {
-    final position = await determinePosition();
-    return position;
-  } catch (e) {
-    log('Error getting  current position: $e');
-    return await getLastKnownPosition();
+    await _checkPermissions();
+  } catch (e, stack) {
+    return null;
   }
+  final last = await getLastKnownPosition();
+
+  try {
+    final pos = await _getCurrentPositionWithTimeout(
+      accuracy: LocationAccuracy.high,
+      timeout: const Duration(milliseconds: 300),
+    );
+    return LatLng(pos.latitude, pos.longitude);
+  } on TimeoutException catch (e) {
+    Logger().error('getCurrentPosition timed out: $e');
+  } catch (e) {
+    Logger().error('Error getting current position: $e');
+  }
+
+  if (last != null) {
+    return last;
+  }
+
+  throw 'Unable to determine position.';
 }
+
+/// Пример подписки на поток обновлений позиций
+// Stream<LatLng> positionStream({
+//   LocationAccuracy accuracy = LocationAccuracy.high,
+//   int distanceFilter = 10, // в метрах
+// }) {
+//   final settings = LocationSettings(
+//     accuracy: accuracy,
+//     distanceFilter: distanceFilter,
+//   );
+//   return Geolocator.getPositionStream(locationSettings: settings).map(
+//         (pos) => LatLng(pos.latitude, pos.longitude),
+//   );
+// }

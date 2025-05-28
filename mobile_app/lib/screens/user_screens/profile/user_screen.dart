@@ -32,39 +32,46 @@ class UserScreenState extends ProfileScreenState {
   final userService = UsersService();
 
   void handleRelationChange(oldStatus, newStatus) async {
-    try {
-      if (oldStatus == FriendStatus.none && newStatus == FriendStatus.requestSent) {
+    // try {
+      if (oldStatus == FriendStatus.none && newStatus == FriendStatus.request_sent) {
         await userService.sendRequestToFriendship(openedProfileUserId);
-      } else if (oldStatus == FriendStatus.requestReceived && newStatus == FriendStatus.friends) {
+        Logger().debug("request sent");
+      } else if (oldStatus == FriendStatus.request_received && newStatus == FriendStatus.friends) {
         await userService.sendRequestToFriendship(openedProfileUserId);
-      } else if (oldStatus == FriendStatus.requestSent && newStatus == FriendStatus.none) {
+        Logger().debug("request upproved");
+      } else if (oldStatus == FriendStatus.request_sent && newStatus == FriendStatus.none) {
         await userService.removeFriend(openedProfileUserId);
-      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.requestReceived) {
+        Logger().debug("friend removed");
+      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.request_received) {
         await userService.removeFriend(openedProfileUserId);
+        Logger().debug("friend removed");
       }
-    } catch (e, stack) {
-      Logger().error("error changing relation, $e");
-    }
+    // } catch (e, stack) {
+    //   Logger().error("error changing relation, $e");
+    // }
 
   }
 
   Widget _buildNameInfo() {
-    final name = Text(
-      "${user!.firstName} ${user!.lastName}",
-      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, overflow: TextOverflow.ellipsis),
-    );
-    final iconSize = name.style!.fontSize!;
+    final iconSize = 24.0; // можно подставить нужный размер или вычислить от темы
 
     return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            name,
+            // Ограничиваем ширину имени, чтобы текст обрезался и не выталкивал кнопку
+            Expanded(
+              child: Text(
+                "${user!.firstName} ${user!.lastName}",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             SizedBox(width: 8),
             FriendButton(
               status: FriendStatus.values.byName(user!.relationType!),
@@ -75,9 +82,14 @@ class UserScreenState extends ProfileScreenState {
             ),
           ],
         ),
+        SizedBox(height: 4),
         Text(
           "@${user!.username}",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, overflow: TextOverflow.ellipsis),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 16,
+          ),
         ),
       ],
     );

@@ -11,6 +11,7 @@ import 'package:mobile_app/screens/events_screen/detailed_event.dart';
 import 'package:mobile_app/screens/events_screen/events_screen.dart';
 import 'package:mobile_app/screens/map_screen/map.dart';
 import 'package:mobile_app/screens/oauth/auth_screen.dart';
+import 'package:mobile_app/screens/oauth/google_authenticator.dart';
 import 'package:mobile_app/screens/user_screens/edit_profile/edit_profile.dart';
 import 'package:mobile_app/screens/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
@@ -34,7 +35,6 @@ Future<Widget> getInitScreen(MainUserController controller) async {
       return GoogleSignInScreen();
     }
     initialScreen = MyProfileScreen(userId: user.id);
-
     await BaseApi.loadTokenData();
     Logger().debug("Token data loaded, skip login screen");
     controller.user = user;
