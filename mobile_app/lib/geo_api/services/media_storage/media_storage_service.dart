@@ -10,7 +10,7 @@ import 'models/models.dart';
 class MediaStorageService {
   static final BaseApi baseApi = BaseApi();
   //static final String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net/api/content_processor";
-  static final String baseUrl = "${BaseApi.baseUrl}/api/content_processor";
+  static final String baseUrl = "${BaseApi.url}/api/content_processor";
 
   // get presigned urls for uploading files to S3
   Future<Map<String, dynamic>> _getPresUrls(List<MediaFull> media) async {

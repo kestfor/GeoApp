@@ -41,6 +41,7 @@ class ProfileScreen extends StatefulWidget {
 
 class ProfileScreenState extends State<ProfileScreen> {
   User? _user;
+  late String mainUser;
   List<PureEvent>? _events;
   List<PureUser>? _friends;
   final UserRepository _usersService = UserRepository();
@@ -68,6 +69,10 @@ class ProfileScreenState extends State<ProfileScreen> {
   List<PureEvent>? get events => _events;
 
   List<PureUser>? get friends => _friends;
+
+  String get openedProfileUserId => widget.userId;
+
+  String get mainUserId => mainUser;
 
   void _fetchEvents() {
     _eventsService
@@ -301,6 +306,8 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mainUser = Provider.of<MainUserController>(context, listen: false).user;
+    this.mainUser = mainUser!.id;
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,

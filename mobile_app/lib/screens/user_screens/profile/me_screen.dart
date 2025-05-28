@@ -53,9 +53,11 @@ class MyProfileScreenState extends ProfileScreenState {
             setState(() {});
             break;
           case Actions.logOut:
-            user!.logOut();
-            Navigator.pushReplacementNamed(context, GoogleSignInScreen.routeName);
-            break;
+            {
+              await user!.logOut();
+              Navigator.pushReplacementNamed(context, GoogleSignInScreen.routeName);
+              break;
+            }
         }
       },
       //child: Icon(Icons.more_vert),

@@ -45,7 +45,7 @@ class _GoogleSignInScreenState extends State<GoogleSignInScreen> {
       User user = await googleAuth.getUser(); // get user data
       Provider.of<MainUserController>(context, listen: false).user = user; // set user in provider
 
-      await Navigator.pushReplacementNamed(context, MyProfileScreen.routeName, arguments: user.id);
+      Navigator.pushReplacementNamed(context, MyProfileScreen.routeName, arguments: user.id);
 
       //saving user data
       await user.saveToSharedPreferences();

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -28,18 +26,19 @@ import 'notifications/firebase_notifications.dart';
 
 Future<Widget> getInitScreen(MainUserController controller) async {
   WidgetsFlutterBinding.ensureInitialized();
-  User? user = await User.loadFromSharedPreferences();
-  if (user == null) {
-    Logger().debug("User is null, redirect to login screen");
-    return GoogleSignInScreen();
-  }
-  Widget initialScreen = MyProfileScreen(userId: user.id);
-
+  Widget initialScreen = Container(); // Default screen in case of errors
   try {
+    User? user = await User.loadFromSharedPreferences();
+    if (user == null) {
+      Logger().debug("User is null, redirect to login screen");
+      return GoogleSignInScreen();
+    }
+    initialScreen = MyProfileScreen(userId: user.id);
+
     await BaseApi.loadTokenData();
     Logger().debug("Token data loaded, skip login screen");
     controller.user = user;
-  } on Exception catch (e) {
+  } catch (e, stack) {
     Logger().debug("$e, redirect to login screen");
     initialScreen = GoogleSignInScreen();
   }

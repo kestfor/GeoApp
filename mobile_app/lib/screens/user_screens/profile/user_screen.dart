@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mobile_app/geo_api/services/users/users_service.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../logger/logger.dart';
 import '../friends/friend_button.dart';
 import 'base_profile_screen.dart';
 
@@ -27,6 +29,24 @@ class UserScreen extends ProfileScreen {
 
 class UserScreenState extends ProfileScreenState {
 
+  final userService = UsersService();
+
+  void handleRelationChange(oldStatus, newStatus) async {
+    try {
+      if (oldStatus == FriendStatus.none && newStatus == FriendStatus.requestSent) {
+        await userService.sendRequestToFriendship(openedProfileUserId);
+      } else if (oldStatus == FriendStatus.requestReceived && newStatus == FriendStatus.friends) {
+        await userService.sendRequestToFriendship(openedProfileUserId);
+      } else if (oldStatus == FriendStatus.requestSent && newStatus == FriendStatus.none) {
+        await userService.removeFriend(openedProfileUserId);
+      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.requestReceived) {
+        await userService.removeFriend(openedProfileUserId);
+      }
+    } catch (e, stack) {
+      Logger().error("error changing relation, $e");
+    }
+
+  }
 
   Widget _buildNameInfo() {
     final name = Text(
@@ -49,19 +69,8 @@ class UserScreenState extends ProfileScreenState {
             FriendButton(
               status: FriendStatus.values.byName(user!.relationType!),
               size: iconSize,
-              onStatusChanged: (oldStatus, newStatus) {
-                print("oldStatus: $oldStatus, newStatus: $newStatus");
-                switch (newStatus) {
-                  case FriendStatus.friends:
-                    showMessage(context, "You are friends now!");
-                    break;
-                  case FriendStatus.requestSent:
-                    print("here");
-                    showMessage(context, "Friend request sent!");
-                    break;
-                  default:
-                    break;
-                }
+              onStatusChanged: (oldStatus, newStatus) async {
+                handleRelationChange(oldStatus, newStatus);
               },
             ),
           ],

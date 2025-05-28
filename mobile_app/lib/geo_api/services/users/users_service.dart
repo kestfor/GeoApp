@@ -8,7 +8,7 @@ import '../../../types/user/user.dart';
 
 class UsersService {
   static final BaseApi baseApi = BaseApi();
-  final String baseUrl = "${BaseApi.url}:8003/api/users_service";
+  final String baseUrl = "${BaseApi.url}/api/users_service";
 
   List<PureUser> _parseUsersFromJson(Uint8List body) {
     List<dynamic> jsonList = jsonDecode(utf8.decode(body));
@@ -41,7 +41,6 @@ class UsersService {
       throw Exception('Failed to fetch user with id $userId, ${res.reasonPhrase}');
     }
 
-    print(res.body);
     final user = User.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
     return user;
   }
@@ -74,6 +73,24 @@ class UsersService {
     return _parseUsersFromJson(res.bodyBytes);
   }
 
+  Future<void> sendRequestToFriendship(String userId) async {
+    final Uri uri = Uri.parse("$baseUrl/users/relations");
+    final body = {"id": userId, "befriend": true};
+    final res = await baseApi.post(uri, body: body);
+    if (res.statusCode != 200 || res.statusCode != 304) {
+      throw Exception('Failed to sent friend request to user, ${res.reasonPhrase}');
+    }
+  }
+
+  Future<void> removeFriend(String userId) async {
+    final Uri uri = Uri.parse("$baseUrl/users/relations");
+    final body = {"id": userId, "befriend": false};
+    final res = await baseApi.post(uri, body: body);
+    if (res.statusCode != 200 || res.statusCode != 304) {
+      throw Exception('Failed to remove user from friends, ${res.reasonPhrase}');
+    }
+  }
+
   Future<List<PureUser>> fetchUsersFromQuery(String query) async {
     final Uri uri = Uri.parse('$baseUrl/users/search');
     Map<String, dynamic> body = {"text": query};
@@ -81,7 +98,6 @@ class UsersService {
     if (res.statusCode != 200) {
       throw Exception('Failed to get users, ${res.reasonPhrase}');
     }
-    print(res.body);
     return _parseUsersFromJson(res.bodyBytes);
   }
 }

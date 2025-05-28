@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../logger/logger.dart';
+
 class PureUser {
   String id;
   String username;
@@ -113,10 +115,10 @@ class User extends PureUser {
   //   );
   // }
 
-  void logOut() {
+  Future<void> logOut() async {
     if (onLogOut != null) {
-      print("Logging out user");
-      onLogOut!();
+      Logger().debug("logging out user");
+      await onLogOut!();
     }
   }
 }
