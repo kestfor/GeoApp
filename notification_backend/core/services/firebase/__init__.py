@@ -1,0 +1,1 @@
+from .service import FirebaseService, get_firebase_service
