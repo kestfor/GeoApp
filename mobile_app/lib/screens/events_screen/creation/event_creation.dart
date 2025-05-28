@@ -218,7 +218,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   Widget build(BuildContext context) {
     MainUserController controller = Provider.of<MainUserController>(context, listen: false);
 
-    friends = controller.friend.map((e) => e.id).toList()
+    friends = controller.friend.map((e) => e.id).toList();
     ownerId = controller.user!.id;
     return Scaffold(
       backgroundColor: lightGrayWithPurple,
