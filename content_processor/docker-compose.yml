@@ -2,86 +2,38 @@ version: "3.8"
 
 services:
 
-  fastapi:
+  content-processor:
     build: ./
-    container_name: fastapi
+    env_file:
+      - .env
     command: >
       sh -c "alembic upgrade head && python3 init_storages.py && uvicorn main:app --host 0.0.0.0 --port 8000"
     restart: always
-    env_file:
-      - docker.env
     ports:
       - "8001:8000"
     depends_on:
-      #      - redis
       - postgres
     networks:
-      - redis_network
-      - postgres_network
-
-  #  redis:
-  #    image: redis:latest
-  #    container_name: redis_container
-  #    environment:
-  #      - REDIS_PASSWORD=${REDIS_PASSWORD}
-  #    networks:
-  #      - redis_network
-  #    ports:
-  #      - "6379:6379"
-  #    volumes:
-  #      - ./docker_volumes/redis-data:/data
-  #    deploy:
-  #      resources:
-  #        limits:
-  #          cpus: '0.50'
-  #          memory: 256M
-  #        reservations:
-  #          cpus: '0.25'
-  #          memory: 128M
-  #    command: >
-  #      sh -c '
-  #        mkdir -p /usr/local/etc/redis &&
-  #        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
-  #        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
-  #        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
-  #        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
-  #        echo "maxmemory-policy volatile-ttl" >> /usr/local/etc/redis/redis.conf &&
-  #        redis-server /usr/local/etc/redis/redis.conf
-  #      '
-  #    healthcheck:
-  #      test: [ "CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping" ]
-  #      interval: 30s
-  #      timeout: 10s
-  #      retries: 5
-  #    restart: unless-stopped
-  #    tty: true
-  #    stdin_open: true
-
+      - default
+      - shared_network
 
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${PG_DATABASE}
       POSTGRES_USER: ${PG_USER}
       POSTGRES_PASSWORD: ${PG_PASSWORD}
       PGDATA: "/var/lib/postgresql/data/pgdata"
     volumes:
-      - ./docker_volumes/postgres-data:/var/lib/postgresql/data
-    networks:
-      - postgres_network
+      - pg_volume:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5432"
     restart: unless-stopped
 
 
 volumes:
-  postgres-data:
-  redis-data:
-
-
+  pg_volume:
 
 networks:
-  redis_network:
-    driver: bridge
-  postgres_network:
-    driver: bridge
+  shared_network:
+    external: true

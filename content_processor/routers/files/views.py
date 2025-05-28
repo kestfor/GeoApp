@@ -15,6 +15,9 @@ from .utils import get_medias, resolve_media_location
 if TYPE_CHECKING:
     from core.models import MediaRepresentation
     from sqlalchemy.ext.asyncio import AsyncSession
+    from core.services.s3 import S3Service
+
+
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -22,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get(
-    "/{file_id}/{size}",
+    "/s3/{file_id}/{size}",
     responses={
         200: {
             "description": "HTML preview of image (если preview=true)",

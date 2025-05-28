@@ -39,15 +39,6 @@ class PostgresSettings(BaseSettings):
             hide_password=False)
 
 
-class RedisSettings(BaseSettings):
-    HOST: str = Field(default='localhost', alias="REDIS_HOST")
-    PORT: int = Field(default=6379, alias="REDIS_PORT")
-    PASSWORD: str = Field(default='password', alias="REDIS_PASSWORD")
-    DB: int = Field(default=0, alias="REDIS_DB")
-
-    model_config = SettingsConfigDict(env_file="./.env", extra='ignore')
-
-
 class S3Settings(BaseSettings):
     BUCKET: str = Field(default='bucket-name', alias='S3_BUCKET')
     ENDPOINT_URL: str = Field(default='https://storage.yandexcloud.net', alias='S3_ENDPOINT_URL')
@@ -87,8 +78,6 @@ class Settings(BaseSettings):
     app_prefix: str = "/api/content_processor"
 
     postgres: PostgresSettings = PostgresSettings()
-
-    redis: RedisSettings = RedisSettings()
 
     secure_docs: SecureDocs = SecureDocs()
 

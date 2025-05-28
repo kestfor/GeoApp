@@ -158,5 +158,5 @@ class S3Service:
     def get_media_url(base_url: str, file_id: str, variant: Union["MediaVariant", str]) -> str:
         if isinstance(variant, Enum):
             variant = variant.value
-        res = f"{base_url}{settings.app_prefix}/files/{file_id}/{variant}"
+        res = f"{base_url}{settings.app_prefix}/files/s3/{file_id}/{variant}"
         return res
