@@ -56,7 +56,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   LatLng? location;
   bool _isTitleValid = true;
   bool _isLocationValid = true;
-  List<int> friends = [];
+  List<String> friends = [];
   late String ownerId;
 
   @override
@@ -95,8 +95,7 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       coverUrl: "",
       name: _eventNameController.text,
       authorId: ownerId,
-      // TODO user friends provider
-      membersId: [ownerId],
+      membersId: [ownerId] + friends,
       mediaIds: mediaIds,
       files: [],
       description: _eventDescriptionController.text,
@@ -217,8 +216,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    User? user = Provider.of<MainUserController>(context, listen: false).user;
-    ownerId = user!.id;
+    MainUserController controller = Provider.of<MainUserController>(context, listen: false);
+
+    friends = controller.friend.map((e) => e.id).toList()
+    ownerId = controller.user!.id;
     return Scaffold(
       backgroundColor: lightGrayWithPurple,
       appBar: AppBar(

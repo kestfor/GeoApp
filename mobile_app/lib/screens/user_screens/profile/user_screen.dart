@@ -42,7 +42,7 @@ class UserScreenState extends ProfileScreenState {
       } else if (oldStatus == FriendStatus.request_sent && newStatus == FriendStatus.none) {
         await userService.removeFriend(openedProfileUserId);
         Logger().debug("friend removed");
-      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.request_received) {
+      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.none) {
         await userService.removeFriend(openedProfileUserId);
         Logger().debug("friend removed");
       }
