@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8002:8080"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: ${DB_HOST_DOCKER}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - default
+      - shared_network
+
+  postgres:
+    image: postgres:17
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+
+networks:
+  shared_network:
+    external: true
