@@ -1,6 +1,7 @@
 package ru.nsu.geoapp.ms_events.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +27,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class EventService {
@@ -35,6 +37,12 @@ public class EventService {
     private final KafkaTemplate<String, PostCreatedMessage> kafkaTemplate;
 
     public EventDetailedResponseDTO createEvent(EventCreateRequestDTO requestDTO, HttpHeaders headers) {
+        log.info("Creating new event for owner: {}", requestDTO.getOwnerId());
+        log.debug("Event details - Name: {}, Description length: {}, Media count: {}",
+                requestDTO.getName(),
+                requestDTO.getDescription() != null ? requestDTO.getDescription().length() : 0,
+                requestDTO.getMediaIds() != null ? requestDTO.getMediaIds().size() : 0);
+
         Event event = new Event();
         event.setOwnerId(requestDTO.getOwnerId());
         event.setName(requestDTO.getName());
@@ -48,6 +56,7 @@ public class EventService {
         event.setUpdatedAt(LocalDateTime.now());
 
         Event savedEvent = eventRepository.save(event);
+        log.info("Event created successfully [ID: {}, Owner: {}]", savedEvent.getId(), savedEvent.getOwnerId());
 
         CompletableFuture<SendResult<String, PostCreatedMessage>> future = kafkaTemplate.send("post.events", savedEvent.getId().toString(), mapToPostCreatedMessage(event));
 
@@ -63,43 +72,64 @@ public class EventService {
     }
 
     public EventDetailedResponseDTO updateEvent(UUID eventId, EventUpdateRequestDTO requestDTO, HttpHeaders headers) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
+        log.info("Updating event: {}", eventId);
+        try {
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
 
-        if (requestDTO.getOwnerId() != null) {
-            event.setOwnerId(requestDTO.getOwnerId());
-        }
-        if (requestDTO.getName() != null) {
-            event.setName(requestDTO.getName());
-        }
-        if (requestDTO.getDescription() != null) {
-            event.setDescription(requestDTO.getDescription());
-        }
-        if (requestDTO.getTags() != null) {
-            event.setTags(requestDTO.getTags());
-        }
-        if (requestDTO.getLatitude() != null) {
-            event.setLatitude(requestDTO.getLatitude());
-        }
-        if (requestDTO.getLongitude() != null) {
-            event.setLongitude(requestDTO.getLongitude());
-        }
-        if (requestDTO.getMediaIds() != null) {
-            event.setMediaIds(requestDTO.getMediaIds());
-        }
-        if (requestDTO.getParticipantIds() != null) {
-            event.setParticipantIds(requestDTO.getParticipantIds());
-        }
-        event.setUpdatedAt(LocalDateTime.now());
+            if (requestDTO.getOwnerId() != null) {
+                event.setOwnerId(requestDTO.getOwnerId());
+            }
+            if (requestDTO.getName() != null) {
+                event.setName(requestDTO.getName());
+            }
+            if (requestDTO.getDescription() != null) {
+                event.setDescription(requestDTO.getDescription());
+            }
+            if (requestDTO.getTags() != null) {
+                event.setTags(requestDTO.getTags());
+            }
+            if (requestDTO.getLatitude() != null) {
+                event.setLatitude(requestDTO.getLatitude());
+            }
+            if (requestDTO.getLongitude() != null) {
+                event.setLongitude(requestDTO.getLongitude());
+            }
+            if (requestDTO.getMediaIds() != null) {
+                event.setMediaIds(requestDTO.getMediaIds());
+            }
+            if (requestDTO.getParticipantIds() != null) {
+                event.setParticipantIds(requestDTO.getParticipantIds());
+            }
+            event.setUpdatedAt(LocalDateTime.now());
 
-        Event updatedEvent = eventRepository.save(event);
-        return mapToDetailedResponseDTO(updatedEvent, headers);
+            Event updatedEvent = eventRepository.save(event);
+            log.info("Event updated [ID: {}]", eventId);
+            return mapToDetailedResponseDTO(updatedEvent, headers);
+
+        } catch (ObjectNotFoundException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Event update failed [{}]: {}", eventId, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     public EventDetailedResponseDTO getEventDetailed(UUID eventId, HttpHeaders headers) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectNotFoundException("Couldn't find event by" + eventId));
-        return mapToDetailedResponseDTO(event, headers);
+        log.debug("Fetching detailed event: {}", eventId);
+        try {
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> {
+                        log.warn("Event not found: {}", eventId);
+                        return new ObjectNotFoundException("Event not found: " + eventId);
+                    });
+
+            log.info("Returning detailed event [ID: {}, Name: {}]", eventId, event.getName());
+            return mapToDetailedResponseDTO(event, headers);
+        } catch (Exception ex) {
+            log.error("Failed to get event [{}]: {}", eventId, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     public List<EventPureResponseDTO> getPureEventsByOwnerId(
@@ -110,14 +140,19 @@ public class EventService {
             LocalDateTime createdBefore,
             HttpHeaders headers
     ) {
+        log.debug("Fetching pure events for owner: {}", ownerId);
+        log.trace("Filter params - name: {}, desc: {}, createdAfter: {}, createdBefore: {}",
+                name, description, createdAfter, createdBefore);
         Specification<Event> spec = Specification.where(EventSpecifications.hasOwnerId(ownerId))
                 .and(EventSpecifications.containsName(name))
                 .and(EventSpecifications.containsDescription(description))
                 .and(EventSpecifications.createdAfter(createdAfter))
                 .and(EventSpecifications.createdBefore(createdBefore));
 
-        return eventRepository.findAll(spec).stream()
-                .map(event -> mapToPureResponseDTO(event, headers)) // Передача заголовков
+        List<Event> events = eventRepository.findAll(spec);
+        log.info("Found {} events for owner {}", events.size(), ownerId);
+        return events.stream()
+                .map(event -> mapToPureResponseDTO(event, headers))
                 .collect(Collectors.toList());
     }
 
@@ -129,6 +164,7 @@ public class EventService {
             LocalDateTime createdBefore,
             HttpHeaders headers
     ) {
+        log.debug("Fetching events for user: {}", userId);
         Specification<Event> ownerSpec = EventSpecifications.hasOwnerId(userId);
         Specification<Event> participantSpec = EventSpecifications.hasParticipantId(userId);
 
@@ -138,13 +174,22 @@ public class EventService {
                 .and(EventSpecifications.createdAfter(createdAfter))
                 .and(EventSpecifications.createdBefore(createdBefore));
 
-        return eventRepository.findAll(combinedSpec).stream()
-                .map(event -> mapToPureResponseDTO(event, headers)) // Передача заголовков
+        List<Event> events = eventRepository.findAll(combinedSpec);
+        log.info("Found {} events related to user {}", events.size(), userId);
+        return events.stream()
+                .map(event -> mapToPureResponseDTO(event, headers))
                 .collect(Collectors.toList());
     }
 
     public void deleteEvent(UUID eventId) {
-        eventRepository.deleteById(eventId);
+        log.info("Deleting event: {}", eventId);
+        try {
+            eventRepository.deleteById(eventId);
+            log.info("Event deleted: {}", eventId);
+        } catch (Exception ex) {
+            log.error("Failed to delete event {}: {}", eventId, ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     private PostCreatedMessage mapToPostCreatedMessage(Event event) {
@@ -188,26 +233,51 @@ public class EventService {
     }
 
     private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds, HttpHeaders headers) {
-        if (mediaIds.isEmpty()) {
+        if (mediaIds == null || mediaIds.isEmpty()) {
+            log.debug("No media IDs provided for media fetch");
             return List.of();
         }
-        ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds, headers);
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            return response.getBody();
+
+        log.debug("Fetching media info for {} media IDs", mediaIds.size());
+        if (log.isTraceEnabled()) {
+            log.trace("Media IDs: {}", mediaIds);
         }
-        return List.of();
+
+        try {
+
+            ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds, headers);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                log.debug("Successfully fetched {} media items", response.getBody().size());
+                return response.getBody();
+            } else {
+                log.warn("Failed to fetch media. Status: {}, Response: {}",
+                        response.getStatusCode(), response.getBody());
+                return List.of();
+            }
+
+        } catch (Exception ex) {
+            log.error("Media fetch error: {}", ex.getMessage(), ex);
+            return List.of();
+        }
     }
 
     private MediaFileDTO getDisplayPhoto(Event event, HttpHeaders headers) {
+        log.debug("Finding display photo for event: {}", event.getId());
         if (event.getMediaIds() == null || event.getMediaIds().isEmpty()) {
+            log.debug("No media available for event: {}", event.getId());
             return null;
         }
+
         List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds(), headers);
         for (MediaFileDTO file : mediaFiles) {
             if ("photo".equals(file.getType())) {
+                log.debug("Selected display photo [ID: {}] for event {}", file.getMediaId(), event.getId());
                 return file;
             }
         }
+
+        log.debug("No suitable photo found for event: {}", event.getId());
         return null;
     }
 }

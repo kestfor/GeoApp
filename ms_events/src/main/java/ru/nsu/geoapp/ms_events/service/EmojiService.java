@@ -1,6 +1,7 @@
 package ru.nsu.geoapp.ms_events.service;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.nsu.geoapp.ms_events.dto.reaction.EmojiResponseDTO;
@@ -10,6 +11,7 @@ import ru.nsu.geoapp.ms_events.repository.EmojiRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class EmojiService {
 
@@ -37,9 +39,18 @@ public class EmojiService {
     }
 
     public List<EmojiResponseDTO> getAllAvailableEmojis() {
-        return emojiRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+        log.debug("Fetching all available emojis");
+        try {
+            List<Emoji> emojis = emojiRepository.findAll();
+            log.info("Returning {} available emojis", emojis.size());
+
+            return emojis.stream()
+                    .map(this::mapToResponseDTO)
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            log.error("Failed to retrieve emojis: {}", ex.getMessage(), ex);
+            throw ex;
+        }
     }
 
     private EmojiResponseDTO mapToResponseDTO(Emoji emoji) {
