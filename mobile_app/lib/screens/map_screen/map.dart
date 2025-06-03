@@ -10,6 +10,7 @@ import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mobile_app/screens/map_screen/cluster/node/marker_cluster_node.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/utils/mocks.dart';
 
@@ -175,7 +176,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   double calculateMarkerSize(double zoom) {
     double baseSize = 25; // Минимальный размер
     double maxSize = 200; // Максимальный размер
-    double z0 = 16.5; // Центр быстрого роста
+    double z0 = 18.5; // Центр быстрого роста
     double k = 1.2; // Степень сглаженности (чем выше, тем резче)
     // Сигмоидная функция для плавного увеличения
     double scale = 1 / (1 + exp(-k * (zoom - z0)));
@@ -280,10 +281,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             MarkerClusterLayerWidget(
               options: MarkerClusterLayerOptions(
                 showPolygon: false,
+                onClusterTap: (MarkerClusterNode cl) {
+
+                },
+                onMarkerTap: (Marker mr) {
+
+                },
+                onMarkerDoubleTap: (mr) {
+
+                },
                 computeSize: (s) => Size(_markerSize, _markerSize),
                 alignment: Alignment.center,
                 maxZoom: zoomPhysics.maxZoom,
-                disableClusteringAtZoom: zoomPhysics.maxZoom.toInt(),
+                disableClusteringAtZoom: zoomPhysics.maxZoom.toInt() - 1,
                 markers: getLandmarksMarkers(context),
                 builder: (context, markers) {
                   return markers[0].child;

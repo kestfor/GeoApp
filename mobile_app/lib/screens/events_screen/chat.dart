@@ -19,7 +19,7 @@ Map<String, types.User> chatUserFromPure(List<PureUser> users) {
 
   for (var user in users) {
     chatUsers[user.id] = types.User(
-      id: user.id.toString(),
+      id: user.id,
       firstName: user.firstName,
       lastName: user.lastName,
       imageUrl: user.pictureUrl,
@@ -88,6 +88,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _handleSendPressed(types.PartialText message, types.User author) {
+    print(author.id);
     final eventsApi = EventsService();
     eventsApi
         .sendComment(widget.eventId, author.id, message.text)

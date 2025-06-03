@@ -17,6 +17,6 @@ class EventsRepository {
   }
 
   Future<List<PureComment>> getCommentsForEvent(String eventId) async {
-    return await eventsService.getCommentsForEvent(eventId);
+    return await eventsService.fetchCommentsForEvent(eventId);
   }
 }

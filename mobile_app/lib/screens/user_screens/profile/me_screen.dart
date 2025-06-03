@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../style/colors.dart';
 import '../../../types/controllers/main_user_controller.dart';
+import '../../../types/events/events.dart';
 import '../../oauth/auth_screen.dart';
 import '../edit_profile/edit_profile.dart';
 import 'base_profile_screen.dart';

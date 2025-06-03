@@ -55,7 +55,6 @@ class User extends PureUser {
   });
 
   static String convertRelationType(String type) {
-    print(type);
     return type.toLowerCase();
   }
 

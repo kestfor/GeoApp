@@ -50,12 +50,12 @@ class MainUserController extends ChangeNotifier {
   }
 
   void addEvent(PureEvent event) {
-    _events.add(event);
+    _events.insert(0, event);
     notifyListeners();
   }
 
   void addEvents(List<PureEvent> events) {
-    _events.addAll(events);
+    _events.insertAll(0, events);
     notifyListeners();
   }
 

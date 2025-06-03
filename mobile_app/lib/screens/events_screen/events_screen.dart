@@ -91,7 +91,7 @@ class EventsScreenState extends State<EventsScreen> {
     Navigator.pushNamed(context, EventCreationScreen.routeName, arguments: {"user": user, "files": images});
   }
 
-  void _openMap(context, start) async {
+  void _openMap(context, start, MainUserController controller) async {
     final loadingScreen = LoadingScreen();
     loadingScreen.showLoadingScreen(context);
     LatLng? position = await getPosition();
@@ -103,17 +103,16 @@ class EventsScreenState extends State<EventsScreen> {
       zoomTo: 17,
     );
 
-    User? user = Provider.of<MainUserController>(context, listen: false).user;
-    if (user == null) {
-      throw Exception("unexpected nullable value");
-    }
-
-    List<PureEvent> events = Provider.of<MainUserController>(context, listen: false).events;
     loadingScreen.closeLoadingScreen(context);
     Navigator.pushNamed(
       context,
       MapScreen.routeName,
-      arguments: {"user": user, "startPosition": position, "startAnimation": animation, "events": events},
+      arguments: {
+        "user": controller.user,
+        "startPosition": position,
+        "startAnimation": animation,
+        "events": controller.events,
+      },
     );
   }
 
@@ -146,10 +145,14 @@ class EventsScreenState extends State<EventsScreen> {
         ),
       );
     } else {
-      return SingleChildScrollEventsParallax(
-        events: events,
-        onTap: (event) {
-          _openMap(context, LatLng(event.point.lat, event.point.lon));
+      return Consumer<MainUserController>(
+        builder: (context, data, child) {
+          return SingleChildScrollEventsParallax(
+            events: data.events,
+            onTap: (event) {
+              _openMap(context, LatLng(event.point.lat, event.point.lon), data);
+            },
+          );
         },
       );
     }

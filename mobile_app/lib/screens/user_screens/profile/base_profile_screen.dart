@@ -53,9 +53,9 @@ class ProfileScreenState extends State<ProfileScreen> {
         _friends = null;
         _events = null;
         _user = null;
-        _fetchUserData();
-        _fetchFriends();
-        _fetchEvents();
+        fetchUserData();
+        fetchFriends();
+        fetchEvents();
       });
     });
   }
@@ -74,7 +74,7 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   String get mainUserId => mainUser;
 
-  void _fetchEvents() {
+  void fetchEvents() {
     _eventsService
         .fetchEventsForUser()
         .then((events) {
@@ -92,25 +92,28 @@ class ProfileScreenState extends State<ProfileScreen> {
         });
   }
 
-  void _fetchUserData() {
-    _usersService.getDetailedUser(widget.userId).then((u) {
-      setState(() {
-        _user = u;
-      });
-    });
-    // .onError((error, stackTrace) {
-    //   setState(() {
-    //     _user = null;
-    //   });
-    //   showError(context, "Error while fetching user");
-    //   Logger().error("Error fetching user: $error");
-    // });
+  void fetchUserData() {
+    _usersService
+        .getDetailedUser(widget.userId)
+        .then((u) {
+          setState(() {
+            _user = u;
+          });
+        })
+        .onError((error, stackTrace) {
+          setState(() {
+            _user = null;
+          });
+          showError(context, "Error while fetching user");
+          Logger().error("Error fetching user: $error");
+        });
   }
 
-  void _fetchFriends() {
+  void fetchFriends() {
     _usersService
         .fetchFriendsForUser(widget.userId)
         .then((friends) {
+          setFriendsCallback(context, friends);
           setState(() {
             _friends = friends;
           });
@@ -127,9 +130,9 @@ class ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchFriends();
-    _fetchEvents();
-    _fetchUserData();
+    fetchFriends();
+    fetchEvents();
+    fetchUserData();
   }
 
   Widget _buildAvatar(double radius) {
@@ -195,16 +198,25 @@ class ProfileScreenState extends State<ProfileScreen> {
   }
 
   void checkIsfriendOrMain(context) {
-    final mainUser = Provider.of<MainUserController>(context, listen: false).user;
+    final mainUser = Provider.of<MainUserController>(context, listen: true).user;
     bool found = false;
     for (var friend in _friends!) {
       if (friend.id == mainUser!.id) {
         found = true;
+        final events = Provider.of<MainUserController>(context, listen: true).events;
+        _events = [];
+        for (var event in events) {
+          if (event.membersId.contains(widget.userId)) {
+            _events!.add(event);
+          }
+        }
       }
     }
 
     if (widget.userId == mainUser!.id) {
       found = true;
+      final events = Provider.of<MainUserController>(context, listen: true).events;
+      _events = events;
     }
 
     if (!found) {
@@ -306,7 +318,7 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mainUser = Provider.of<MainUserController>(context, listen: false).user;
+    final mainUser = Provider.of<MainUserController>(context, listen: true).user;
     this.mainUser = mainUser!.id;
 
     if (_user != null && mainUserId == openedProfileUserId) {

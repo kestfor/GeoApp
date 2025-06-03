@@ -39,9 +39,9 @@ class EventsService {
     return Event.fromJson(jsonDecode(utf8.decode(res.bodyBytes)));
   }
 
-  Future<List<PureComment>> getCommentsForEvent(String eventId) async {
-    return Future.delayed(Duration(milliseconds: 300), () => commentsMock);
-  }
+  // Future<List<PureComment>> getCommentsForEvent(String eventId) async {
+  //   return Future.delayed(Duration(milliseconds: 300), () => commentsMock);
+  // }
 
   Future<void> updateEvent(Event event) async {
     final Uri uri = Uri.parse("$baseUrl/events/${event.id}");

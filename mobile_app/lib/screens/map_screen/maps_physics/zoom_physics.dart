@@ -14,7 +14,7 @@ class ZoomPhysicsController {
   final Stopwatch _zoomStopWatch = Stopwatch();
   AnimatedMapController controller;
 
-  ZoomPhysicsController({required this.controller, zoomLevel = 11.0, minZoom = 2.0, maxZoom = 18.0}) {
+  ZoomPhysicsController({required this.controller, zoomLevel = 11.0, minZoom = 2.0, maxZoom = 21.0}) {
     _zoomLevel = zoomLevel;
     _maxZoom = maxZoom;
     _minZoom = minZoom;
