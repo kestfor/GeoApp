@@ -9,6 +9,7 @@ import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/screens/map_screen/cluster/node/marker_cluster_node.dart';
 import 'package:mobile_app/types/events/events.dart';
@@ -250,7 +251,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
               border: Border.all(color: Colors.grey.shade300),
             ),
             padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Row(children: [Icon(Icons.search, color: Colors.grey), SizedBox(width: 8)]),
+            child: Row(children: [Icon(Icons.search, color: Colors.grey), SizedBox(width: 8)], ),
           ),
         ),
       ),
@@ -369,32 +370,84 @@ class EventSearchDelegate extends SearchDelegate<PureEvent?> {
 
   Widget _buildResultList(BuildContext context, List<PureEvent> list) {
     if (list.isEmpty) {
-      return Center(child: Text('No results found'));
+      return Center(
+        child: Text(
+          'Ничего не найдено',
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
+      );
     }
 
-    return ListView.builder(
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: list.length,
+      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey.shade300),
       itemBuilder: (context, index) {
         final event = list[index];
-        return ListTile(
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: CachedNetworkImage(
-              imageUrl: event.coverUrl ?? '',
-              width: 40,
-              height: 40,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Icon(Icons.image_not_supported),
-            ),
-          ),
-          title: Text(event.name),
+        return InkWell(
           onTap: () {
             onEventSelected(event);
             close(context, event);
           },
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: CachedNetworkImage(
+                    imageUrl: event.coverUrl ?? '',
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 56,
+                      height: 56,
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.image, color: Colors.grey),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 56,
+                      height: 56,
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.broken_image, color: Colors.grey),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        event.name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Event • ${DateFormat.yMMMd().format(event.createdAt)}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+              ],
+            ),
+          ),
         );
       },
     );
   }
+
 }
