@@ -12,13 +12,11 @@ import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mobile_app/screens/map_screen/cluster/node/marker_cluster_node.dart';
 import 'package:mobile_app/types/events/events.dart';
-import 'package:mobile_app/utils/mocks.dart';
 
 import '../../style/colors.dart';
 import '../../types/user/user.dart';
 import '../events_screen/creation/event_creation.dart';
 import '../events_screen/detailed_event.dart';
-import '../user_screens/profile/me_screen.dart';
 import 'cluster/marker_cluster_layer_options.dart';
 import 'cluster/marker_cluster_layer_widget.dart';
 import 'event_card.dart';
@@ -46,7 +44,13 @@ class MapScreen extends StatefulWidget {
   final StartAnimation? startAnimation;
   final List<PureEvent> events;
 
-  const MapScreen({super.key, required this.user, required this.startPosition, required this.events, this.startAnimation});
+  const MapScreen({
+    super.key,
+    required this.user,
+    required this.startPosition,
+    required this.events,
+    this.startAnimation,
+  });
 
   static Route getMapRoute(RouteSettings settings) {
     Map<String, dynamic> args = settings.arguments as Map<String, dynamic>;
@@ -65,7 +69,9 @@ class MapScreen extends StatefulWidget {
     startPosition ??= const LatLng(55.7558, 37.6173);
 
     return CupertinoPageRoute(
-      builder: (context) => MapScreen(user: user, startPosition: startPosition!, startAnimation: startAnimation, events: events),
+      builder:
+          (context) =>
+              MapScreen(user: user, startPosition: startPosition!, startAnimation: startAnimation, events: events),
     );
   }
 
@@ -85,10 +91,11 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   late FlingPhysicsController flingPhysics = FlingPhysicsController(controller: _animatedMapController);
   late double _markerSize = calculateMarkerSize(zoomPhysics.zoom);
 
+  final TextEditingController _searchController = TextEditingController();
+
   Future<void> animateToFromEvent(LatLng event) async {
     if (zoomPhysics.zoom >= 15) {
       await _animatedMapController.animatedZoomTo(6, duration: Duration(milliseconds: 1000));
-      return;
     }
     await _animatedMapController.animateTo(
       duration: Duration(milliseconds: 1000),
@@ -155,18 +162,19 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-            onLongPress: () {
-              animateToFromEvent(LatLng(l.point.lat, l.point.lon));
-            },
+              onLongPress: () {
+                animateToFromEvent(LatLng(l.point.lat, l.point.lon));
+              },
 
-            child: CustomPopup(
-              arrowColor: lightGrayWithPurple,
-              backgroundColor: lightGrayWithPurple,
-              isLongPress: false,
-              content: eventPopUp(context, l),
-              child: EventCard(key: Key(l.id.toString()), event: l),
+              child: CustomPopup(
+                arrowColor: lightGrayWithPurple,
+                backgroundColor: lightGrayWithPurple,
+                isLongPress: false,
+                content: eventPopUp(context, l),
+                child: EventCard(key: Key(l.id.toString()), event: l),
+              ),
             ),
-            )),
+          ),
         ),
       );
     }
@@ -218,41 +226,41 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget buildSearchBar(context) {
+  Widget buildSearchBar(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       child: SizedBox(
         height: 50,
-        child: SearchBar(
-          backgroundColor: WidgetStatePropertyAll(Colors.white),
-          leading: IconButton(icon: Icon(Icons.pin_drop_rounded, color: black), onPressed: () {}),
-          trailing: [
-            Padding(
-              padding: EdgeInsets.all(5),
-              child: InkWell(
-                onTap: () {
-                  Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: widget.user.id);
+        child: GestureDetector(
+          onTap: () {
+            showSearch(
+              context: context,
+              delegate: EventSearchDelegate(
+                events: widget.events,
+                onEventSelected: (event) {
+                  animateToFromEvent(LatLng(event.point.lat, event.point.lon));
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(35),
-                  child: CachedNetworkImage(
-                    fit: BoxFit.cover,
-                    height: 35,
-                    width: 35,
-                    imageUrl: widget.user.pictureUrl,
-                    placeholder: (context, _) => Center(child: CircularProgressIndicator(color: purple)),
-                  ),
-                ),
               ),
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
             ),
-          ],
-          onTapOutside: (tr) => FocusScope.of(context).unfocus(),
-          elevation: WidgetStateProperty.resolveWith((callback) {
-            return 1;
-          }),
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            child: Row(children: [Icon(Icons.search, color: Colors.grey), SizedBox(width: 8)]),
+          ),
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -281,15 +289,9 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
             MarkerClusterLayerWidget(
               options: MarkerClusterLayerOptions(
                 showPolygon: false,
-                onClusterTap: (MarkerClusterNode cl) {
-
-                },
-                onMarkerTap: (Marker mr) {
-
-                },
-                onMarkerDoubleTap: (mr) {
-
-                },
+                onClusterTap: (MarkerClusterNode cl) {},
+                onMarkerTap: (Marker mr) {},
+                onMarkerDoubleTap: (mr) {},
                 computeSize: (s) => Size(_markerSize, _markerSize),
                 alignment: Alignment.center,
                 maxZoom: zoomPhysics.maxZoom,
@@ -300,6 +302,7 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 },
               ),
             ),
+            CurrentLocationLayer(),
             SafeArea(child: buildSearchBar(context)),
             Align(
               alignment: Alignment.bottomCenter,
@@ -312,10 +315,86 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
                 child: Icon(Icons.add, color: Theme.of(context).primaryColor),
               ),
             ),
-            CurrentLocationLayer(),
           ],
         ),
       ],
+    );
+  }
+}
+
+class EventSearchDelegate extends SearchDelegate<PureEvent?> {
+  final List<PureEvent> events;
+  final void Function(PureEvent event) onEventSelected;
+
+  EventSearchDelegate({required this.events, required this.onEventSelected});
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final ThemeData baseTheme = Theme.of(context);
+    return baseTheme.copyWith(
+      appBarTheme: AppBarTheme(
+        backgroundColor: baseTheme.scaffoldBackgroundColor, // делаем как у Scaffold
+        foregroundColor: baseTheme.textTheme.bodyLarge?.color, // цвет текста/иконок
+        elevation: 0,
+        iconTheme: baseTheme.iconTheme,
+      ),
+      inputDecorationTheme: baseTheme.inputDecorationTheme,
+      textTheme: baseTheme.textTheme,
+    );
+  }
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [if (query.isNotEmpty) IconButton(icon: Icon(Icons.clear), onPressed: () => query = '')];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(icon: Icon(Icons.arrow_back), onPressed: () => close(context, null));
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = events.where((e) => e.name.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return _buildResultList(context, results);
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final suggestions = events.where((e) => e.name.toLowerCase().contains(query.toLowerCase())).toList();
+
+    return _buildResultList(context, suggestions);
+  }
+
+  Widget _buildResultList(BuildContext context, List<PureEvent> list) {
+    if (list.isEmpty) {
+      return Center(child: Text('No results found'));
+    }
+
+    return ListView.builder(
+      itemCount: list.length,
+      itemBuilder: (context, index) {
+        final event = list[index];
+        return ListTile(
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: event.coverUrl ?? '',
+              width: 40,
+              height: 40,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Icon(Icons.image_not_supported),
+            ),
+          ),
+          title: Text(event.name),
+          onTap: () {
+            onEventSelected(event);
+            close(context, event);
+          },
+        );
+      },
     );
   }
 }
