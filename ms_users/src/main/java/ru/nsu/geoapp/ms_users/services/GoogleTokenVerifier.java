@@ -18,40 +18,57 @@ import java.util.Collections;
 public class GoogleTokenVerifier {
 
     private static final String GOOGLE_CLIENT_ID = "659561258557-7vnkeva48n8oga6s07bpaoob4pecbdgg.apps.googleusercontent.com";
+    private static final String GOOGLE_CLIENT_ID_IOS = "659561258557-fmdull5cmmshmbvsk5u25p4c4pgncvu6.apps.googleusercontent.com";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GoogleTokenVerifier.class);
 
     public GoogleIdToken.Payload verify(String idTokenString) throws Exception {
-
-        /*
-        Clock customClock = new Clock() {
-            @Override
-            public long currentTimeMillis() {
-                return 1746872680L * 1000;  // Время, когда токен ещё был жив
-            }
-        };
-        */
-
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+        // Первый верификатор с Android-клиентом
+        GoogleIdTokenVerifier androidVerifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance())
                 .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID))
-                //.setClock(customClock)
+                .build();
+
+        GoogleIdToken idToken = null;
+
+        try {
+            idToken = androidVerifier.verify(idTokenString);
+            if (idToken != null) {
+                // Успешно верифицировано Android-client_id
+                return idToken.getPayload();
+            } else {
+                LOGGER.debug("Android verifier returned null (token not valid for Android client).");
+            }
+        } catch (Exception e) {
+            LOGGER.error("Android client ID verification failed: {}", e.getMessage());
+        }
+
+        // Если мы дошли сюда, значит верификация с Android-client_id не прошла
+        LOGGER.debug("Attempting verification with iOS client ID...");
+
+        GoogleIdTokenVerifier iosVerifier = new GoogleIdTokenVerifier.Builder(
+                new NetHttpTransport(),
+                GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(GOOGLE_CLIENT_ID_IOS))
                 .build();
 
         try {
-            GoogleIdToken idToken = verifier.verify(idTokenString);
-            if (idToken == null) {
-                LOGGER.debug("GoogleIdTokenVerifier returned null.");
-                this.inspectFailedToken(verifier, idTokenString);
-                throw new RuntimeException("Invalid Google ID token");
+            idToken = iosVerifier.verify(idTokenString);
+            if (idToken != null) {
+                // Успешно верифицировано iOS-client_id
+                return idToken.getPayload();
+            } else {
+                LOGGER.debug("iOS verifier returned null (token not valid for iOS client).");
+                this.inspectFailedToken(iosVerifier, idTokenString);
+                throw new RuntimeException("Invalid Google ID token for both Android and iOS client IDs");
             }
-            return idToken.getPayload();
         } catch (Exception e) {
-            LOGGER.error("Verification of token has failed: {}", e.getMessage());
+            LOGGER.error("iOS client ID verification failed: {}", e.getMessage());
             throw e;
         }
     }
+
 
     private void inspectFailedToken(GoogleIdTokenVerifier verifier, String idTokenString) throws IOException, GeneralSecurityException {
         GoogleIdToken unsignedToken = GoogleIdToken.parse(
