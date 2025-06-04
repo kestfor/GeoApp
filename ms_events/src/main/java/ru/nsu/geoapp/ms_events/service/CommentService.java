@@ -30,7 +30,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final EventRepository eventRepository;
     private final ValidationService validationService;
-    private final KafkaTemplate<String, PostCreatedMessage> kafkaTemplate;
+    private final KafkaTemplate<String, NewCommentMessage> kafkaTemplate;
 
     @Transactional
     public CommentResponseDTO createComment(UUID eventId, CommentCreateRequestDTO requestDTO) {
