@@ -132,7 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
           _handleSendPressed(message, chatUser);
         },
         onAvatarTap: (types.User user) {
-          Navigator.pushNamed(context, ProfileScreen.routeName, arguments: int.parse(user.id));
+          Navigator.pushNamed(context, ProfileScreen.routeName, arguments: user.id);
         },
         showUserAvatars: true,
         showUserNames: true,

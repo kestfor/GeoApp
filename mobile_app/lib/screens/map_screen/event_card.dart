@@ -38,8 +38,8 @@ class EventCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: CachedNetworkImage(
-                errorWidget: (context, _, __) => Icon(Icons.pin_drop_rounded, color: purple),
-                placeholder: (context, url) => Icon(Icons.pin_drop_rounded, color: purple),
+                errorWidget: (context, _, __) => Icon(Icons.image),
+                placeholder: (context, url) => Icon(Icons.broken_image_sharp),
                 imageUrl: event.coverUrl,
                 fit: BoxFit.cover,
                 height: imgSize - 9,
@@ -61,8 +61,8 @@ class EventCard extends StatelessWidget {
         child: CachedNetworkImage(
           width: size,
           height: size,
-          errorWidget: (context, _, __) => Icon(Icons.pin_drop_rounded, color: purple),
-          placeholder: (context, url) => Icon(Icons.pin_drop_rounded, color: purple),
+          errorWidget: (context, _, __) => Icon(Icons.image),
+          placeholder: (context, url) => Icon(Icons.broken_image_sharp),
           imageUrl: event.coverUrl,
           fit: BoxFit.cover,
         ),

@@ -12,30 +12,37 @@ class FullScreenMediaViewer extends StatefulWidget {
   final int initialIndex;
   final CarouselSliderController controller;
 
-  const FullScreenMediaViewer({super.key, required this.media, required this.controller, this.initialIndex = 0});
+  const FullScreenMediaViewer({
+    super.key,
+    required this.media,
+    required this.controller,
+    this.initialIndex = 0,
+  });
 
   @override
   _FullScreenMediaViewerState createState() => _FullScreenMediaViewerState();
 }
 
 class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
-  final CachedVideoControllerService controllerService = CachedVideoControllerService(DefaultCacheManager());
+  final CachedVideoControllerService controllerService =
+  CachedVideoControllerService(DefaultCacheManager());
   late final PageController _pageController;
   final Map<int, ChewieController> _chewieControllers = {};
+
+  // Track which pages are zoomed (images)
+  final Map<int, bool> _zoomed = {};
+  int _currentPage = 0;
 
   void _initializeVideoControllers() {
     for (int i = 0; i < widget.media.length; i++) {
       if (widget.media[i].type == MediaContentType.video) {
-        final controllerFuture = controllerService.getControllerForVideo((widget.media[i] as VideoContent));
+        final controllerFuture =
+        controllerService.getControllerForVideo((widget.media[i] as VideoContent));
 
         controllerFuture.then((controller) async {
-          if (!mounted) {
-            return;
-          }
+          if (!mounted) return;
           await controller.initialize();
-          if (!mounted) {
-            return;
-          }
+          if (!mounted) return;
           setState(() {
             _chewieControllers[i] = ChewieController(
               progressIndicatorDelay: const Duration(days: 100),
@@ -53,10 +60,19 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   @override
   void initState() {
     super.initState();
+    _currentPage = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
+
     _pageController.addListener(() {
-      widget.controller.jumpToPage(_pageController.page!.round());
+      int newPage = _pageController.page!.round();
+      if (newPage != _currentPage) {
+        setState(() {
+          _currentPage = newPage;
+        });
+        widget.controller.jumpToPage(newPage);
+      }
     });
+
     _initializeVideoControllers();
   }
 
@@ -70,14 +86,24 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     super.dispose();
   }
 
-  Widget _buildImgContent(MediaContent media, index) {
+  Widget _buildImgContent(MediaContent media, int index) {
     return PhotoView(
       heroAttributes: PhotoViewHeroAttributes(
         transitionOnUserGestures: true,
-        tag: (media as ImgContent).images["medium"]!.url + index.toString(),
+        tag: (media as ImgContent).images["original"]!.url + index.toString(),
       ),
-      imageProvider: CachedNetworkImageProvider(media.images["medium"]!.url),
+      minScale: PhotoViewComputedScale.contained,
+      imageProvider: CachedNetworkImageProvider(media.images["original"]!.url),
       backgroundDecoration: const BoxDecoration(color: Colors.black),
+      // When the scale state changes, update whether this page is considered "zoomed"
+      scaleStateChangedCallback: (scaleState) {
+        final bool isZoomed = scaleState != PhotoViewScaleState.initial;
+        if ((_zoomed[index] ?? false) != isZoomed) {
+          setState(() {
+            _zoomed[index] = isZoomed;
+          });
+        }
+      },
     );
   }
 
@@ -105,12 +131,21 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine if the current page is zoomed (only meaningful for images)
+    final bool isCurrentZoomed = _zoomed[_currentPage] ?? false;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.transparent, iconTheme: const IconThemeData(color: Colors.white)),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: PageView.builder(
         controller: _pageController,
+        physics: isCurrentZoomed
+            ? const NeverScrollableScrollPhysics()
+            : const BouncingScrollPhysics(),
         itemCount: widget.media.length,
         itemBuilder: (context, index) {
           return _buildMediaItem(widget.media[index], index);

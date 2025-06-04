@@ -56,8 +56,8 @@ class EventListItem extends StatelessWidget {
       ),
       children: [
         CachedNetworkImage(
-          errorWidget: (_, _, _) => Icon(Icons.error),
-          placeholder: (context, _) => Center(child: CircularProgressIndicator(color: purple)),
+          errorWidget: (_, _, _) => Icon(Icons.broken_image_sharp),
+          placeholder: (context, _) => Icon(Icons.image),
           imageUrl: imageUrl,
           fit: BoxFit.fitWidth,
           key: _backgroundImageKey,

@@ -19,7 +19,6 @@ class PureComment {
   factory PureComment.fromJson(Map<String, dynamic> json) {
     DateTime cr = DateTime.parse(json["createdAt"]);
     DateTime up = DateTime.parse(json["createdAt"]);
-    print(json);
     return PureComment(
       eventId: json["eventId"],
       createdAt: cr,

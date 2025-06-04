@@ -149,8 +149,8 @@ class ProfileScreenState extends State<ProfileScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.all(Radius.circular(radius)),
       child: CachedNetworkImage(
-        placeholder: (context, url) => CircularProgressIndicator(color: purpleGradient[1]),
         errorWidget: (context, _, _) => Icon(Icons.account_circle_rounded, color: black, size: radius * 2),
+        placeholder: (_, _) => Icon(Icons.account_circle_rounded, color: Colors.grey, size: radius * 2),
         imageUrl: url,
         fit: BoxFit.cover,
         width: radius * 2,

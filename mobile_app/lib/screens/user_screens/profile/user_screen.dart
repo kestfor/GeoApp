@@ -1,14 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/geo_api/services/users/users_service.dart';
-import 'package:mobile_app/toast_notifications/notifications.dart';
-import 'package:uuid/uuid.dart';
+import 'package:mobile_app/types/controllers/main_user_controller.dart';
+import 'package:mobile_app/types/user/user.dart';
+import 'package:provider/provider.dart';
 
 import '../../../logger/logger.dart';
 import '../friends/friend_button.dart';
 import 'base_profile_screen.dart';
 
 class UserScreen extends ProfileScreen {
-
   static const String routeName = "/user_profile";
 
   static Route getUserRoute(RouteSettings settings) {
@@ -28,28 +28,31 @@ class UserScreen extends ProfileScreen {
 }
 
 class UserScreenState extends ProfileScreenState {
-
   final userService = UsersService();
 
-  void handleRelationChange(oldStatus, newStatus) async {
+  void handleRelationChange(context, oldStatus, newStatus) async {
     // try {
-      if (oldStatus == FriendStatus.none && newStatus == FriendStatus.request_sent) {
-        await userService.sendRequestToFriendship(openedProfileUserId);
-        Logger().debug("request sent");
-      } else if (oldStatus == FriendStatus.request_received && newStatus == FriendStatus.friends) {
-        await userService.sendRequestToFriendship(openedProfileUserId);
-        Logger().debug("request upproved");
-      } else if (oldStatus == FriendStatus.request_sent && newStatus == FriendStatus.none) {
-        await userService.removeFriend(openedProfileUserId);
-        Logger().debug("friend removed");
-      } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.none) {
-        await userService.removeFriend(openedProfileUserId);
-        Logger().debug("friend removed");
-      }
+    final controller = Provider.of<MainUserController>(context, listen: true);
+
+    if (oldStatus == FriendStatus.none && newStatus == FriendStatus.request_sent) {
+      await userService.sendRequestToFriendship(openedProfileUserId);
+      Logger().debug("request sent");
+    } else if (oldStatus == FriendStatus.request_received && newStatus == FriendStatus.friends) {
+      await userService.sendRequestToFriendship(openedProfileUserId);
+      controller.addFriend(PureUser.fromUser(user!));
+      Logger().debug("request upproved");
+    } else if (oldStatus == FriendStatus.request_sent && newStatus == FriendStatus.none) {
+      await userService.removeFriend(openedProfileUserId);
+      controller.removeFriend(PureUser.fromUser(user!));
+      Logger().debug("friend removed");
+    } else if (oldStatus == FriendStatus.friends && newStatus == FriendStatus.none) {
+      await userService.removeFriend(openedProfileUserId);
+      controller.removeFriend(PureUser.fromUser(user!));
+      Logger().debug("friend removed");
+    }
     // } catch (e, stack) {
     //   Logger().error("error changing relation, $e");
     // }
-
   }
 
   Widget _buildNameInfo() {
@@ -66,10 +69,7 @@ class UserScreenState extends ProfileScreenState {
                 "${user!.firstName} ${user!.lastName}",
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             SizedBox(width: 8),
@@ -77,20 +77,13 @@ class UserScreenState extends ProfileScreenState {
               status: FriendStatus.values.byName(user!.relationType!),
               size: iconSize,
               onStatusChanged: (oldStatus, newStatus) async {
-                handleRelationChange(oldStatus, newStatus);
+                handleRelationChange(context, oldStatus, newStatus);
               },
             ),
           ],
         ),
         SizedBox(height: 4),
-        Text(
-          "@${user!.username}",
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 16,
-          ),
-        ),
+        Text("@${user!.username}", maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 16)),
       ],
     );
   }

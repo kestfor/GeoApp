@@ -16,7 +16,6 @@ import 'package:mobile_app/types/events/comments.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/media/media.dart';
 import 'package:mobile_app/types/user/user.dart';
-import 'package:mobile_app/utils/mocks.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
 
 import '../../style/shimmer.dart';
@@ -139,7 +138,10 @@ class DetailedEventState extends State<DetailedEvent> {
     final messages = messagesFromComments(comments, users);
 
     ls.closeLoadingScreen(context);
-    Navigator.push(context, CupertinoPageRoute(builder: (context) => ChatScreen(messages: messages, eventId: pureEvent.id)));
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (context) => ChatScreen(messages: messages, eventId: pureEvent.id)),
+    );
   }
 
   Widget buildOpenChatButton(context) {
@@ -319,7 +321,7 @@ class MediaBlock extends StatelessWidget {
     for (int i = 0; i < media.length; i++) {
       if (media[i] is ImgContent) {
         items.add(
-          _buildImg(context, (media[i] as ImgContent).images["medium"]!.url, media, i, buttonCarouselController),
+          _buildImg(context, (media[i] as ImgContent).images["original"]!.url, media, i, buttonCarouselController),
         );
       } else if (media[i] is VideoContent) {
         items.add(_buildImg(context, (media[i] as VideoContent).thumbnailUrl, media, i, buttonCarouselController));
@@ -347,7 +349,6 @@ class MediaBlock extends StatelessWidget {
     );
 
     return carousel;
-
   }
 
   @override
@@ -450,7 +451,7 @@ class UserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final avatarSize = MediaQuery.of(context).size.width * 0.1;
-    final containerSize = MediaQuery.of(context).size.width / 2;
+    final containerSize = MediaQuery.of(context).size.width / 3 * 2;
 
     return Container(
       width: containerSize,
@@ -466,8 +467,8 @@ class UserTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(avatarSize / 2),
           child: CachedNetworkImage(fit: BoxFit.cover, width: avatarSize, height: avatarSize, imageUrl: avatarUrl),
         ),
-        title: Text(name),
-        subtitle: Text("@$userName"),
+        title: Text(name, overflow: TextOverflow.ellipsis),
+        subtitle: Text("@$userName", overflow: TextOverflow.ellipsis),
         onTap: () {
           if (onTap != null) {
             onTap!();

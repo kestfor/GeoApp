@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../logger/logger.dart';
 
@@ -25,8 +24,18 @@ class PureUser {
       id: json['id'],
       username: json['username'],
       firstName: json['firstName'],
-      lastName: json['lastName'],
-      pictureUrl: json['pictureUrl']?? "",
+      lastName: json['lastName'] ?? "",
+      pictureUrl: json['pictureUrl'] ?? "",
+    );
+  }
+
+  factory PureUser.fromUser(User user) {
+    return PureUser(
+      id: user.id,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      pictureUrl: user.pictureUrl,
     );
   }
 
@@ -59,15 +68,13 @@ class User extends PureUser {
   }
 
   factory User.fromJson(Map<String, dynamic> json) {
-    DateTime? birthDate = json['birthDate'] != null
-        ? DateTime.tryParse(json['birthDate'])
-        : null;
+    DateTime? birthDate = json['birthDate'] != null ? DateTime.tryParse(json['birthDate']) : null;
     return User(
       id: json['id'],
       username: json['username'],
       firstName: json['firstName'],
       lastName: json['lastName'],
-      pictureUrl: json['pictureUrl']?? "",
+      pictureUrl: json['pictureUrl'] ?? "",
       bio: json['bio'],
       birthDate: birthDate,
       relationType: convertRelationType(json["relationType"]),

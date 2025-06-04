@@ -39,8 +39,8 @@ class EventsGrid extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
                 child: CachedNetworkImage(
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => CircularProgressIndicator(color: purpleGradient[1]),
-                  errorWidget: (context, _, _) => Icon(Icons.error, color: black),
+                  errorWidget: (_, _, _) => Icon(Icons.broken_image_sharp),
+                  placeholder: (context, _) => Icon(Icons.image),
                   imageUrl: imageUrls[index],
                 ),
               );

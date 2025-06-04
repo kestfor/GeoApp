@@ -111,7 +111,7 @@ class EventsScreenState extends State<EventsScreen> {
         "user": controller.user,
         "startPosition": position,
         "startAnimation": animation,
-        "events": controller.events,
+        "events": events,
       },
     );
   }
@@ -148,7 +148,7 @@ class EventsScreenState extends State<EventsScreen> {
       return Consumer<MainUserController>(
         builder: (context, data, child) {
           return SingleChildScrollEventsParallax(
-            events: data.events,
+            events: events,
             onTap: (event) {
               _openMap(context, LatLng(event.point.lat, event.point.lon), data);
             },
