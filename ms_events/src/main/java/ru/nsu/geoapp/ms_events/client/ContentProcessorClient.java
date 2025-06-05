@@ -38,7 +38,7 @@ public class ContentProcessorClient {
                 url,
                 HttpMethod.POST,
                 requestEntity,
-                new ParameterizedTypeReference<List<MediaFileDTO>>() {
+                new ParameterizedTypeReference<List<Map<String, Object>>>() {
                 }
         );
     }
