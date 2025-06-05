@@ -204,9 +204,7 @@ public class EventService {
         }
         List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds(), headers);
         for (MediaFileDTO file : mediaFiles) {
-            if ("photo".equals(file.getType())) {
-                return file;
-            }
+            return file;
         }
         return null;
     }
