@@ -187,24 +187,24 @@ public class EventService {
         return dto;
     }
 
-    private List<MediaFileDTO> getMediaObjects(List<UUID> mediaIds, HttpHeaders headers) {
-        if (mediaIds.isEmpty()) {
+    private List<Map<String, Object>> getMediaObjects(List<UUID> mediaIds, HttpHeaders headers) { // Изменен тип
+        if (mediaIds == null || mediaIds.isEmpty()) {
             return List.of();
         }
-        ResponseEntity<List<MediaFileDTO>> response = contentProcessorClient.getMediaInfo(mediaIds, headers);
+        ResponseEntity<List<Map<String, Object>>> response = contentProcessorClient.getMediaInfo(mediaIds, headers); // Изменен тип
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             return response.getBody();
         }
         return List.of();
     }
 
-    private MediaFileDTO getDisplayPhoto(Event event, HttpHeaders headers) {
+    private Map<String, Object> getDisplayPhoto(Event event, HttpHeaders headers) { // Изменен тип
         if (event.getMediaIds() == null || event.getMediaIds().isEmpty()) {
             return null;
         }
-        List<MediaFileDTO> mediaFiles = getMediaObjects(event.getMediaIds(), headers);
-        for (MediaFileDTO file : mediaFiles) {
-            return file;
+        List<Map<String, Object>> mediaFiles = getMediaObjects(event.getMediaIds(), headers); // Изменен тип
+        if (!mediaFiles.isEmpty()) {
+            return mediaFiles.get(0); // Берем первый элемент
         }
         return null;
     }

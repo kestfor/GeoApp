@@ -24,7 +24,7 @@ public class ContentProcessorClient {
         this.contentProcessorUrl = contentProcessorUrl;
     }
 
-    public ResponseEntity<List<MediaFileDTO>> getMediaInfo(List<UUID> mediaIds, HttpHeaders headers) {
+    public ResponseEntity<List<Map<String, Object>>> getMediaInfo(List<UUID> mediaIds, HttpHeaders headers) { // Изменен тип возврата
         String url = contentProcessorUrl + "/files/info";
         HttpHeaders newHeaders = new HttpHeaders();
         newHeaders.putAll(headers);

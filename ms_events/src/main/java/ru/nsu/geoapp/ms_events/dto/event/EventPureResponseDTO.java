@@ -23,8 +23,11 @@ public class EventPureResponseDTO {
     @Schema(description = "First 50 chars of description", example = "Description for my first post")
     private String descriptionShort;
 
-    @Schema(description = "First photo from event", implementation = MediaFileDTO.class)
-    private MediaFileDTO displayPhoto;
+//    @Schema(description = "First photo from event", implementation = MediaFileDTO.class)
+//    private MediaFileDTO displayPhoto;
+
+    @Schema(description = "First photo from event")
+    private Map<String, Object> displayPhoto; // Изменено на Map
 
     @Schema(description = "Timestamp when event was created", example = "2024-12-03T10:15:30.")
     private LocalDateTime createdAt;
