@@ -6,6 +6,7 @@ import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Data

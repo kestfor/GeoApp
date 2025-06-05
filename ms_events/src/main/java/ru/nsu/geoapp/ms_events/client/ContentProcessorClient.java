@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import ru.nsu.geoapp.ms_events.dto.media.MediaFileDTO;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
