@@ -290,15 +290,16 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   Widget get moreButton => SizedBox();
 
-  Widget get nameInfo {
+
+  Widget nameInfo(context) {
     if (_user == null) {
       return nameInfoShimmer;
     } else {
-      return _buildNameInfo();
+      return _buildNameInfo(context);
     }
   }
 
-  Widget _buildNameInfo() {
+  Widget _buildNameInfo(context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -345,7 +346,7 @@ class ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       _buildAvatar(75),
                       SizedBox(height: 32),
-                      nameInfo,
+                      nameInfo(context),
                       SizedBox(height: 32),
                       _buildBioBlock(),
                       SizedBox(height: 8),

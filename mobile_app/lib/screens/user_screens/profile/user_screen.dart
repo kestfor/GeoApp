@@ -55,7 +55,7 @@ class UserScreenState extends ProfileScreenState {
     // }
   }
 
-  Widget _buildNameInfo() {
+  Widget _buildNameInfo(context) {
     final iconSize = 24.0; // можно подставить нужный размер или вычислить от темы
 
     return Column(
@@ -89,11 +89,11 @@ class UserScreenState extends ProfileScreenState {
   }
 
   @override
-  Widget get nameInfo {
+  Widget nameInfo(context) {
     if (user == null) {
       return nameInfoShimmer;
     } else {
-      return _buildNameInfo();
+      return _buildNameInfo(context);
     }
   }
 }

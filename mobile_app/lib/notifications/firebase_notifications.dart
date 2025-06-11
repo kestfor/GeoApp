@@ -13,6 +13,7 @@ import 'package:mobile_app/screens/events_screen/detailed_event.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/user/user.dart';
+import 'package:provider/provider.dart';
 
 import '../logger/logger.dart';
 import '../screens/user_screens/profile/user_screen.dart';
@@ -223,7 +224,7 @@ class FirebaseNotificationService {
   Future<PureUser> _getUserFromNotification(Map<String, dynamic> data) async {
     Logger().debug("Handling friendship notification with data: $data");
     final apiInstance = UsersService();
-    String? userId = data["user_id"];
+    String? userId = data["from_user_id"];
     if (userId == null) {
       throw Exception("User ID is missing in notification data");
     }
@@ -234,7 +235,7 @@ class FirebaseNotificationService {
 
   Future<void> _handleEventNotification(Map<String, dynamic> data) async {
     final pure = await _getEventFromNotification(data);
-    MainUserController.instance.addEvent(pure);
+    Provider.of<MainUserController>(navigatorKey.currentContext!, listen: false).addEvent(pure);
     Logger().debug("added event in background");
   }
 
@@ -270,7 +271,7 @@ class FirebaseNotificationService {
       return;
     }
 
-    final MainUserController controller = MainUserController.instance;
+    final MainUserController controller = Provider.of<MainUserController>(navigatorKey.currentContext!, listen: false);
     if (controller.user == null || controller.user!.id != toUserId) {
       Logger().debug("Current user is not involved in this friendship notification");
       return;
@@ -281,7 +282,9 @@ class FirebaseNotificationService {
 
     if (status == "friends") {
       PureUser newFriend = await _getUserFromNotification(data);
-      controller.addFriend(newFriend);
+      if (!controller.friend.contains(newFriend)) {
+        Provider.of<MainUserController>(navigatorKey.currentContext!, listen: false).addFriend(newFriend);
+      }
       Logger().debug("Added new friend in background: ${newFriend.id}");
     }
 

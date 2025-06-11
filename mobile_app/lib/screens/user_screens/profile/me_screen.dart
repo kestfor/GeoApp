@@ -65,7 +65,7 @@ class MyProfileScreenState extends ProfileScreenState {
     );
   }
 
-  Widget _buildNameInfo() {
+  Widget _buildNameInfo(context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.start,
@@ -104,11 +104,11 @@ class MyProfileScreenState extends ProfileScreenState {
   }
 
   @override
-  Widget get nameInfo {
+  Widget nameInfo(context) {
     if (user == null) {
       return nameInfoShimmer;
     } else {
-      return _buildNameInfo();
+      return _buildNameInfo(context);
     }
   }
 }
