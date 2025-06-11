@@ -34,6 +34,7 @@ async def handle_friend_response_message(
 
     # Send notification to target user
     to_tokens = user_tokens_map.get(msg.to_user_id, [])
+    logging.info(f"{msg.to_username} tokens: {to_tokens}")
     if to_tokens:
         notification = render_friend_message(msg)
         message = MulticastMessage(tokens=to_tokens, notification=notification, data=msg.model_dump())
