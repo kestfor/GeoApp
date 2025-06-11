@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
@@ -56,11 +58,15 @@ void main() async {
   logger.debug("Logger initialized");
 
   await PermissionHandler.handle();
-  await FirebaseNotificationService.initFirebase();
-  await FirebaseNotificationService.instance.init();
-  GlobalKey<NavigatorState> navigatorKey = FirebaseNotificationService.instance.navigatorKey;
-  navigatorKey ??= GlobalKey<NavigatorState>();
+  GlobalKey<NavigatorState> navigatorKey;
 
+  if (Platform.isAndroid) {
+    await FirebaseNotificationService.initFirebase();
+    await FirebaseNotificationService.instance.init();
+    navigatorKey = FirebaseNotificationService.instance.navigatorKey;
+  } else {
+    navigatorKey = GlobalKey<NavigatorState>();
+  }
   MainUserController controller = MainUserController.instance;
   var initialScreen = await getInitScreen(controller);
 
