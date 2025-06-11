@@ -30,7 +30,7 @@ class DeviceTokenRepository:
         records = await self.session.execute(statement)
         res_dict = defaultdict(list)
         for record in records.scalars():
-            res_dict[record.user_id].append(record.token)
+            res_dict[record.user_id].append(str(record.token))
         return res_dict
 
     async def list_by_user(
