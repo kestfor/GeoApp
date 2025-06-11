@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'geoapp-74e28.firebasestorage.app',
     iosBundleId: 'com.example.mobileApp',
   );
+
 }
