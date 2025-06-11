@@ -36,7 +36,7 @@ async def handle_friend_response_message(
     to_tokens = user_tokens_map.get(msg.to_user_id, [])
     if to_tokens:
         notification = render_friend_message(msg)
-        message = MulticastMessage(tokens=to_tokens, notification=notification)
+        message = MulticastMessage(tokens=to_tokens, notification=notification, data=msg.model_dump())
         await firebase_service.send_multicast(message=message)
 
 
@@ -54,7 +54,7 @@ async def handle_post_created_message(
     all_tokens = [t for tokens in user_tokens_map.values() for t in tokens]
     if all_tokens:
         notification = render_post_message(msg)
-        message = MulticastMessage(tokens=all_tokens, notification=notification)
+        message = MulticastMessage(tokens=all_tokens, notification=notification, data=msg.model_dump())
         await firebase_service.send_multicast(message=message)
 
 
@@ -72,5 +72,5 @@ async def handle_new_comment_message(
     all_tokens = [t for tokens in user_tokens_map.values() for t in tokens]
     if all_tokens:
         notification = render_comment_message(msg)
-        message = MulticastMessage(tokens=all_tokens, notification=notification)
+        message = MulticastMessage(tokens=all_tokens, notification=notification, data=msg.model_dump())
         await firebase_service.send_multicast(message=message)
