@@ -1,8 +1,8 @@
 name: Запуск start.sh
 
 on:
-  push:
-    branches: [main, dev]
+  #push:
+  #  branches: [main, dev]
   workflow_dispatch:
     inputs:
         logLevel:
