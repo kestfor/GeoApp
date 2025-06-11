@@ -50,7 +50,7 @@ class DeviceTokenRepository:
         records = await self.session.execute(statement)
         res_dict = defaultdict(list)
         for record in records.scalars():
-            res_dict[record.user_id].append(str(record.token))
+            res_dict[str(record.user_id)].append(str(record.token))
         self.logger.info("get_tokens_by_user_ids result: %s", res_dict)
         return res_dict
 
