@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/repositories/event_repository/event_repository.dart';
 import 'package:mobile_app/repositories/user_repository/user_repository.dart';
 import 'package:mobile_app/screens/events_screen/creation/event_editing.dart';
-import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
+import 'package:mobile_app/screens/user_screens/profile/me_screen.dart';
+import 'package:mobile_app/screens/user_screens/profile/user_screen.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/style/theme/theme.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
@@ -17,8 +18,10 @@ import 'package:mobile_app/types/events/events.dart';
 import 'package:mobile_app/types/media/media.dart';
 import 'package:mobile_app/types/user/user.dart';
 import 'package:mobile_app/utils/placeholders/placeholders.dart';
+import 'package:provider/provider.dart';
 
 import '../../style/shimmer.dart';
+import '../../types/controllers/main_user_controller.dart';
 import '../../utils/loading_screen.dart';
 import '../../utils/user_colors.dart';
 import 'chat.dart';
@@ -411,8 +414,11 @@ class ListOfConnectedUsers extends StatelessWidget {
                     name: user.firstName,
                     avatarUrl: user.pictureUrl,
                     onTap: () {
-                      //TODO handle your own card or maybe not all friends in event
-                      Navigator.pushNamed(context, ProfileScreen.routeName, arguments: user.id);
+                      if (user.id == Provider.of<MainUserController>(context, listen: false).user!.id) {
+                        Navigator.pushNamed(context, MyProfileScreen.routeName, arguments: user.id);
+                      } else {
+                        Navigator.pushNamed(context, UserScreen.routeName, arguments: {"user": user.id});
+                      }
                     },
                   ),
                 ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
+import 'package:mobile_app/screens/user_screens/profile/user_screen.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
@@ -132,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> {
           _handleSendPressed(message, chatUser);
         },
         onAvatarTap: (types.User user) {
-          Navigator.pushNamed(context, ProfileScreen.routeName, arguments: user.id);
+          Navigator.pushNamed(context, UserScreen.routeName, arguments: {"user": user.id});
         },
         showUserAvatars: true,
         showUserNames: true,
