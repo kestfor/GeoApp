@@ -8,7 +8,7 @@ class VideoContent implements MediaContent {
   final String videoUrl;
   final String thumbnailUrl;
   final String fileId;
-  final String authorId;
+  final int authorId;
 
   const VideoContent({
     required this.videoUrl,
@@ -18,9 +18,10 @@ class VideoContent implements MediaContent {
   });
 
   factory VideoContent.fromJson(Map<String, dynamic> json) {
+    print(json);
     return VideoContent(
-      videoUrl: json["video_url"],
-      thumbnailUrl: json["thumbnail_url"],
+      videoUrl: json["url"],
+      thumbnailUrl: json["thumbnail"],
       fileId: json["media_id"],
       authorId: json["author_id"],
     );
@@ -33,12 +34,13 @@ class VideoContent implements MediaContent {
 class ImgData {
   final String type;
   final String url;
-  final int size;
+  final int? size;
   final Map<String, dynamic> metadata;
 
   const ImgData({required this.type, required this.url, required this.size, required this.metadata});
 
   factory ImgData.fromJson(Map<String, dynamic> json) {
+    print(json);
     return ImgData(type: json["variant"], url: json["url"], size: json["fileSizeBytes"], metadata: {});
   }
 }

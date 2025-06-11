@@ -32,7 +32,7 @@ class UserScreenState extends ProfileScreenState {
 
   void handleRelationChange(context, oldStatus, newStatus) async {
     // try {
-    final controller = Provider.of<MainUserController>(context, listen: true);
+    final controller = Provider.of<MainUserController>(context, listen: false);
 
     if (oldStatus == FriendStatus.none && newStatus == FriendStatus.request_sent) {
       await userService.sendRequestToFriendship(openedProfileUserId);

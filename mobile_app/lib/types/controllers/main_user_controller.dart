@@ -8,6 +8,21 @@ class MainUserController extends ChangeNotifier {
   final List<PureUser> _friends = [];
   final List<PureEvent> _events = [];
 
+  /// Singleton instance of MainUserController
+  /// This is a global controller that manages the main user state, events, and friends.
+  /// It is used throughout the app to access the current user, their events, and friends.
+  /// This controller is initialized in the main.dart file and is available to all widgets in the app.
+  /// It is recommended to use this controller instead of creating new instances of User, EventsController, or FriendsController.
+  /// This controller is used to manage the main user state, events, and friends.
+  /// It is a singleton, so it can be accessed from anywhere in the app.
+  ///
+
+  static final MainUserController instance = MainUserController._internal();
+
+  MainUserController._internal();
+
+
+
   set user(User? user) {
     _user = user;
     notifyListeners();
@@ -18,8 +33,8 @@ class MainUserController extends ChangeNotifier {
   bool get isLoggedIn => _user != null;
 
   List<PureEvent> get events => _events;
-  List<PureUser> get friend => _friends;
 
+  List<PureUser> get friend => _friends;
 
   void logOut() {
     if (_user != null) {
@@ -68,5 +83,4 @@ class MainUserController extends ChangeNotifier {
     _events.clear();
     notifyListeners();
   }
-
 }

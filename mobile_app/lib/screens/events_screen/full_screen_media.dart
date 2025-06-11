@@ -24,38 +24,17 @@ class FullScreenMediaViewer extends StatefulWidget {
 }
 
 class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
-  final CachedVideoControllerService controllerService =
+  final CachedVideoControllerService _controllerService =
   CachedVideoControllerService(DefaultCacheManager());
-  late final PageController _pageController;
-  final Map<int, ChewieController> _chewieControllers = {};
 
-  // Track which pages are zoomed (images)
-  final Map<int, bool> _zoomed = {};
+  late final PageController _pageController;
   int _currentPage = 0;
 
-  void _initializeVideoControllers() {
-    for (int i = 0; i < widget.media.length; i++) {
-      if (widget.media[i].type == MediaContentType.video) {
-        final controllerFuture =
-        controllerService.getControllerForVideo((widget.media[i] as VideoContent));
+  // В этом словаре мы будем хранить только те контроллеры, которые реально инициализированы.
+  final Map<int, ChewieController> _chewieControllers = {};
 
-        controllerFuture.then((controller) async {
-          if (!mounted) return;
-          await controller.initialize();
-          if (!mounted) return;
-          setState(() {
-            _chewieControllers[i] = ChewieController(
-              progressIndicatorDelay: const Duration(days: 100),
-              videoPlayerController: controller,
-              autoPlay: false,
-              looping: false,
-              autoInitialize: true,
-            );
-          });
-        });
-      }
-    }
-  }
+  // Отметка о том, что текущая страница «зумнута» (для отключения свайпа у зумнутых картинок).
+  final Map<int, bool> _zoomed = {};
 
   @override
   void initState() {
@@ -63,26 +42,74 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     _currentPage = widget.initialIndex;
     _pageController = PageController(initialPage: widget.initialIndex);
 
-    _pageController.addListener(() {
-      int newPage = _pageController.page!.round();
-      if (newPage != _currentPage) {
-        setState(() {
-          _currentPage = newPage;
-        });
-        widget.controller.jumpToPage(newPage);
-      }
-    });
+    // Слушаем смену страницы, чтобы подгружать видео «лениво» и отслеживать зум
+    _pageController.addListener(_onPageChanged);
 
-    _initializeVideoControllers();
+    // Инициализируем контроллер только для стартового индекса (если это видео).
+    _initializeControllerIfNeeded(_currentPage);
+  }
+
+  void _onPageChanged() {
+    final int newPage = _pageController.page!.round();
+    if (newPage != _currentPage) {
+      setState(() {
+        _currentPage = newPage;
+      });
+      _initializeControllerIfNeeded(newPage);
+    }
+  }
+
+  /// Если по переданному индексу media[index] — видео, и у нас ещё нет
+  /// ChewieController в словаре, то создаём его и добавляем.
+  void _initializeControllerIfNeeded(int index) {
+    final item = widget.media[index];
+    if (item.type == MediaContentType.video && !_chewieControllers.containsKey(index)) {
+      // Получаем VideoPlayerController (либо из кэша, либо через network)
+      final futureController =
+      _controllerService.getControllerForVideo(item as VideoContent);
+
+      futureController.then((videoController) async {
+        // Ещё раз проверяем, что State всё ещё « mounted » (чтобы не делать setState на уже удалённом экране).
+        if (!mounted) {
+          // Если экран уже закрыт, то сразу же вызовем dispose у этого VideoPlayerController,
+          // иначе он висит и занимает ресурсы.
+          videoController.dispose();
+          return;
+        }
+        try {
+          await videoController.initialize();
+        } catch (e) {
+          // Если при инициализации видео произошёл сбой, просто отпишемся.
+          videoController.dispose();
+          return;
+        }
+        if (!mounted) {
+          videoController.dispose();
+          return;
+        }
+        final chewieCtrl = ChewieController(
+          videoPlayerController: videoController,
+          autoPlay: false,
+          looping: false,
+          progressIndicatorDelay: const Duration(days: 100),
+          autoInitialize: true,
+        );
+        setState(() {
+          _chewieControllers[index] = chewieCtrl;
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _chewieControllers.forEach((key, controller) {
-      controller.videoPlayerController.dispose();
-      controller.dispose();
-    });
+    // Корректно освобождаем все ChewieController + связанные с ними VideoPlayerController.
+    for (final chewieCtrl in _chewieControllers.values) {
+      chewieCtrl.videoPlayerController.dispose();
+      chewieCtrl.dispose();
+    }
+    _chewieControllers.clear();
     super.dispose();
   }
 
@@ -95,7 +122,6 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
       minScale: PhotoViewComputedScale.contained,
       imageProvider: CachedNetworkImageProvider(media.images["original"]!.url),
       backgroundDecoration: const BoxDecoration(color: Colors.black),
-      // When the scale state changes, update whether this page is considered "zoomed"
       scaleStateChangedCallback: (scaleState) {
         final bool isZoomed = scaleState != PhotoViewScaleState.initial;
         if ((_zoomed[index] ?? false) != isZoomed) {
@@ -108,30 +134,27 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   }
 
   Widget _buildVideoContent(MediaContent media, int index) {
-    final controller = _chewieControllers[index];
-    if (controller != null) {
+    final chewieCtrl = _chewieControllers[index];
+    if (chewieCtrl != null) {
       return Hero(
         transitionOnUserGestures: true,
         tag: (media as VideoContent).videoUrl + index.toString(),
-        child: Chewie(controller: controller),
+        child: Chewie(controller: chewieCtrl),
       );
     } else {
+      // Если ещё не инициализировали контроллер, показываем индикатор
       return const Center(child: CircularProgressIndicator());
     }
   }
 
   Widget _buildMediaItem(MediaContent media, int index) {
-    if (media.type == MediaContentType.img) {
-      return _buildImgContent(media, index);
-    } else if (media.type == MediaContentType.video) {
-      return _buildVideoContent(media, index);
-    }
-    return const SizedBox();
+    return media.type == MediaContentType.img
+        ? _buildImgContent(media, index)
+        : _buildVideoContent(media, index);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Determine if the current page is zoomed (only meaningful for images)
     final bool isCurrentZoomed = _zoomed[_currentPage] ?? false;
 
     return Scaffold(

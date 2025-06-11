@@ -11,7 +11,6 @@ import 'package:mobile_app/screens/events_screen/detailed_event.dart';
 import 'package:mobile_app/screens/events_screen/events_screen.dart';
 import 'package:mobile_app/screens/map_screen/map.dart';
 import 'package:mobile_app/screens/oauth/auth_screen.dart';
-import 'package:mobile_app/screens/oauth/google_authenticator.dart';
 import 'package:mobile_app/screens/user_screens/edit_profile/edit_profile.dart';
 import 'package:mobile_app/screens/user_screens/friends/friends_screen.dart';
 import 'package:mobile_app/screens/user_screens/profile/base_profile_screen.dart';
@@ -59,8 +58,10 @@ void main() async {
   await PermissionHandler.handle();
   await FirebaseNotificationService.initFirebase();
   await FirebaseNotificationService.instance.init();
+  GlobalKey<NavigatorState> navigatorKey = FirebaseNotificationService.instance.navigatorKey;
+  navigatorKey ??= GlobalKey<NavigatorState>();
 
-  MainUserController controller = MainUserController();
+  MainUserController controller = MainUserController.instance;
   var initialScreen = await getInitScreen(controller);
 
   runApp(
@@ -69,15 +70,16 @@ void main() async {
         ChangeNotifierProvider(create: (context) => controller),
         Provider(create: (context) => GlobalKey<ScaffoldMessengerState>()),
       ],
-      child: ToastificationWrapper(child: MyApp(initialScreen: initialScreen)),
+      child: ToastificationWrapper(child: MyApp(navigatorKey: navigatorKey, initialScreen: initialScreen)),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
   final Widget initialScreen;
+  final GlobalKey<NavigatorState> navigatorKey;
 
-  const MyApp({super.key, required this.initialScreen});
+  const MyApp({super.key, required this.initialScreen, required this.navigatorKey});
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +90,7 @@ class MyApp extends StatelessWidget {
       scaffoldMessengerKey: Provider.of<GlobalKey<ScaffoldMessengerState>>(context, listen: false),
       debugShowCheckedModeBanner: false,
       initialRoute: "/",
+      navigatorKey: navigatorKey,
       routes: {"/": (context) => initialScreen, GoogleSignInScreen.routeName: (context) => GoogleSignInScreen()},
       onGenerateRoute: (settings) {
         if (settings.name == ProfileScreen.routeName) {

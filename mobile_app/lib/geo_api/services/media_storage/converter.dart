@@ -1,6 +1,7 @@
 import 'package:hl_image_picker/hl_image_picker.dart';
 import 'package:mobile_app/file_processing/image_processing.dart';
 import 'package:mobile_app/file_processing/video_processing.dart';
+import 'package:mobile_app/logger/logger.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 
 import '../../../file_processing/types.dart';
@@ -61,6 +62,9 @@ class Converter {
         final task = ImageProcessor.processImage(file.path);
         tasks.add(task);
         task.then((res) {
+          Logger().debug("metadata: ${res.exifMetadata}");
+
+
           tr.MediaFull media = tr.MediaFull(
             mediaType: tr.MediaType.photo,
             exifMetadata: res.exifMetadata,

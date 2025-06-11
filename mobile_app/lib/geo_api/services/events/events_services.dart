@@ -23,6 +23,13 @@ class EventsService {
       throw Exception("can't fetch events for user, ${res.reasonPhrase} with url: $uri");
     }
 
+    // final tmp = (jsonDecode(utf8.decode(res.bodyBytes)) as List);
+    // print(tmp);
+    // for (var item in tmp) {
+    //   if (item["name"] == 'видео тест') {
+    //     print(item);
+    //   }
+    // }
     List<PureEvent> items = (jsonDecode(utf8.decode(res.bodyBytes)) as List).map((e) => PureEvent.fromJson(e)).toList();
     if (sort) {
       items.sort((a, b) => b.createdAt.millisecondsSinceEpoch - a.createdAt.millisecondsSinceEpoch);

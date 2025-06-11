@@ -95,14 +95,14 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
 
   Future<void> animateToFromEvent(LatLng event) async {
-    if (zoomPhysics.zoom >= 15) {
+    if (zoomPhysics.zoom >= 16) {
       await _animatedMapController.animatedZoomTo(6, duration: Duration(milliseconds: 1000));
     }
     await _animatedMapController.animateTo(
       duration: Duration(milliseconds: 1000),
       dest: LatLng(event.latitude, event.longitude),
     );
-    await _animatedMapController.animatedZoomTo(17, duration: Duration(milliseconds: 1000));
+    await _animatedMapController.animatedZoomTo(18, duration: Duration(milliseconds: 1000));
   }
 
   Widget eventPopUp(context, PureEvent event) {

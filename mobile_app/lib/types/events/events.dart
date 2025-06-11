@@ -41,17 +41,25 @@ class PureEvent {
   });
 
   factory PureEvent.fromJson(Map<String, dynamic> json) {
-
     DateTime cr = DateTime.parse(json["createdAt"]);
     return PureEvent(
       point: Point(lat: json["latitude"], lon: json["longitude"]),
       id: json['id'],
-      coverUrl: json["displayPhoto"]["representations"]["medium"]["url"],
+      coverUrl: getCover(json["displayPhoto"]),
       name: json['name'],
       authorId: json['ownerId'],
       membersId: List<String>.from(json['participantIds']),
       createdAt: cr,
     );
+  }
+
+  static String getCover(Map<String, dynamic> dto) {
+    if (dto["type"] == "photo") {
+      return dto["representations"]["medium"]["url"];
+    } else if (dto["type"] == "video") {
+      return dto["thumbnail"];
+    }
+    return "";
   }
 
   Map<String, dynamic> toJson() {

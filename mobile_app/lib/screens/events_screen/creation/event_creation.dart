@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:exif/exif.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hl_image_picker/hl_image_picker.dart';
@@ -12,6 +13,7 @@ import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
 import 'package:mobile_app/utils/loading_screen.dart';
+import 'package:native_exif/native_exif.dart';
 import 'package:provider/provider.dart';
 
 import '../../../geo_api/services/media_storage/models/models.dart';
@@ -62,6 +64,11 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   @override
   void initState() {
     super.initState();
+    getAverageLatLng(widget.files).then((LatLng? value) {
+      setState(() {
+        location = value;
+      });
+    });
     preprocessFiles();
   }
 
@@ -157,6 +164,10 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
     );
 
     LatLng? pos = await getPosition();
+    if (location != null) {
+      pos = location;
+    }
+
     Navigator.pop(context);
     Navigator.pushNamed(context, MapPositionPicker.routeName, arguments: {"startPosition": pos}).then((val) {
       setState(() {
@@ -213,6 +224,62 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
   //     trailing: Icon(Icons.arrow_forward_ios, color: gray),
   //   );
   // }
+
+  /// Парсит GPS-теги в градусы.
+  double _rationalListToDouble(List values) {
+    // Каждый элемент — это тип Rational из пакета exif.
+    final num deg = values[0].numerator / values[0].denominator;
+    final num min = values[1].numerator / values[1].denominator;
+    final num sec = values[2].numerator / values[2].denominator;
+    return deg + min / 60 + sec / 3600;
+  }
+
+  /// Извлекает LatLng из EXIF-данных, или null, если тегов нет.
+  LatLng? _latLngFromExif(Map<String, IfdTag> tags) {
+    if (!tags.containsKey('GPS GPSLatitude') || !tags.containsKey('GPS GPSLongitude')) {
+      return null;
+    }
+
+    final latValues = tags['GPS GPSLatitude']!.values;
+    final lonValues = tags['GPS GPSLongitude']!.values;
+
+    double lat = _rationalListToDouble(latValues.toList());
+    double lon = _rationalListToDouble(lonValues.toList());
+
+    // Учёт направления
+    final latRef = tags['GPS GPSLatitudeRef']?.printable ?? 'N';
+    final lonRef = tags['GPS GPSLongitudeRef']?.printable ?? 'E';
+    if (latRef.trim() == 'S') lat = -lat;
+    if (lonRef.trim() == 'W') lon = -lon;
+
+    return LatLng(lat, lon);
+  }
+
+  Future<LatLng?> _latLngFromFile(filePath) async {
+    final exif = await Exif.fromPath(filePath);
+    // вернёт null, если нет ни Lat ни Long
+    final coords = await exif.getLatLong();
+    if (coords == null) return null;
+    return LatLng(coords.latitude, coords.longitude);
+  }
+
+  /// Пробегает по файлам, берёт оригиналы из галереи и усредняет координаты.
+  Future<LatLng?> getAverageLatLng(List<HLPickerItem> items) async {
+    double sumLat = 0, sumLon = 0;
+    int count = 0;
+
+    for (final item in items) {
+      final ll = await _latLngFromFile(item.path);
+      if (ll != null) {
+        sumLat += ll.latitude;
+        sumLon += ll.longitude;
+        count++;
+      }
+    }
+
+    if (count == 0) return null;
+    return LatLng(sumLat / count, sumLon / count);
+  }
 
   @override
   Widget build(BuildContext context) {

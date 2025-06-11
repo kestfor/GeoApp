@@ -94,13 +94,11 @@ class EventsScreenState extends State<EventsScreen> {
   void _openMap(context, start, MainUserController controller) async {
     final loadingScreen = LoadingScreen();
     loadingScreen.showLoadingScreen(context);
-    LatLng? position = await getPosition();
-    position ??= start;
     StartAnimation animation = StartAnimation(
       curve: Curves.decelerate,
-      duration: Duration(milliseconds: 1000),
+      duration: Duration(milliseconds: 2000),
       pointTo: start,
-      zoomTo: 17,
+      zoomTo: 19,
     );
 
     loadingScreen.closeLoadingScreen(context);
@@ -109,7 +107,7 @@ class EventsScreenState extends State<EventsScreen> {
       MapScreen.routeName,
       arguments: {
         "user": controller.user,
-        "startPosition": position,
+        "startPosition": start,
         "startAnimation": animation,
         "events": events,
       },

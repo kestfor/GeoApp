@@ -1,3 +1,5 @@
+import 'package:latlong2/latlong.dart';
+
 enum SizeType { thumb, medium, original }
 
 class Size {
@@ -19,6 +21,16 @@ class ProcessedResult {
   final Map<SizeType, FileInfo> files;
   final Map<String, dynamic> exifMetadata;
 
+
+  LatLng? extractLatLng() {;
+    if (exifMetadata.containsKey('latitude') && exifMetadata.containsKey('longitude')) {
+      return LatLng(
+        exifMetadata['latitude'] as double,
+        exifMetadata['longitude'] as double,
+      );
+    }
+    return null;
+  }
 
   ProcessedResult({required this.files, required this.exifMetadata});
 }

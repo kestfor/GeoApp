@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:latlong2/latlong.dart';
 
 part 'models.g.dart';
 
@@ -33,6 +34,16 @@ class MediaFull {
   final List<MediaRepresentation> representations;
 
   MediaFull({required this.mediaType, required this.exifMetadata, required this.representations});
+
+  LatLng? extractLatLng() {;
+  if (exifMetadata.containsKey('latitude') && exifMetadata.containsKey('longitude')) {
+    return LatLng(
+      exifMetadata['latitude'] as double,
+      exifMetadata['longitude'] as double,
+    );
+  }
+  return null;
+  }
 
   factory MediaFull.fromJson(Map<String, dynamic> json) => _$MediaFullFromJson(json);
 
