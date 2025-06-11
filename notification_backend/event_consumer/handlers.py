@@ -25,7 +25,7 @@ async def handle_friend_response_message(
 ):
     # Logging
     action = msg.status.value
-    logging.debug(f"[FRIEND RESPONSE] {msg.from_username} → {msg.to_username}: {action}")
+    logging.info(f"[FRIEND RESPONSE] {msg.from_username} → {msg.to_username}: {action}")
 
     # Fetch device tokens
     user_ids = {msg.from_user_id, msg.to_user_id}
@@ -46,7 +46,7 @@ async def handle_post_created_message(
         firebase_service: FirebaseService = Depends(get_firebase_service),
         session: AsyncSession = Depends(get_session)
 ):
-    logging.debug(f"[NEW POST] {msg.author_username} in event '{msg.event_name}'")
+    logging.info(f"[NEW POST] {msg.author_username} in event '{msg.event_name}'")
 
     # Notify all participants
     rep = DeviceTokenRepository(session)
@@ -64,7 +64,7 @@ async def handle_new_comment_message(
         firebase_service: FirebaseService = Depends(get_firebase_service),
         session: AsyncSession = Depends(get_session)
 ):
-    logging.debug(f"[COMMENT] {msg.from_username} commented on '{msg.event_name}': {msg.comment}")
+    logging.info(f"[COMMENT] {msg.from_username} commented on '{msg.event_name}': {msg.comment}")
 
     # Notify all participants
     rep = DeviceTokenRepository(session)

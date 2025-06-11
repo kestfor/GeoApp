@@ -55,7 +55,7 @@ class FirebaseService:
         """
         Asynchronously send a notification to a single device token.
         """
-        logger.debug("Preparing to send message to token: %s", getattr(message, 'token', '<unknown>'))
+        logger.info("Preparing to send message to token: %s", getattr(message, 'token', '<unknown>'))
         client = await self._init_client()
         response = await client.send(message=message)
         logger.info("Message sent to token %s, response: %s", getattr(message, 'token', '<unknown>'), response)
@@ -68,7 +68,7 @@ class FirebaseService:
         """
         Asynchronously send one message to multiple device tokens.
         """
-        logger.debug("Preparing to send multicast message to tokens: %s", message.tokens)
+        logger.info("Preparing to send multicast message to tokens: %s", message.tokens)
         client = await self._init_client()
         batch_response = await client.send_each_for_multicast(multicast_message=message)
         logger.info(
@@ -87,7 +87,7 @@ class FirebaseService:
         """
         Asynchronously subscribe a list of registration tokens to a topic.
         """
-        logger.debug("Subscribing tokens to topic '%s': %s", topic, tokens)
+        logger.info("Subscribing tokens to topic '%s': %s", topic, tokens)
         client = await self._init_client()
         result = await client.subscribe_devices_to_topic(device_tokens=tokens, topic_name=topic)
         logger.info(
@@ -104,7 +104,7 @@ class FirebaseService:
         """
         Asynchronously unsubscribe a list of registration tokens from a topic.
         """
-        logger.debug("Unsubscribing tokens from topic '%s': %s", topic, tokens)
+        logger.info("Unsubscribing tokens from topic '%s': %s", topic, tokens)
         client = await self._init_client()
         result = await client.unsubscribe_devices_from_topic(device_tokens=tokens, topic_name=topic)
         logger.info(

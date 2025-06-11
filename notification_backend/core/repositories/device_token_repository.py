@@ -26,7 +26,7 @@ class DeviceTokenRepository:
 
     async def get_tokens_by_user_ids(self, user_ids: Set[str]) -> dict[str, List[str]]:
         statement = select(DeviceToken).where(DeviceToken.user_id.in_(user_ids),
-                                              DeviceToken.is_active.is_(True))
+                                              DeviceToken.is_active.is_(True)).order_by(DeviceToken.created_at, DeviceToken.updated_at)
         records = await self.session.execute(statement)
         res_dict = defaultdict(list)
         for record in records.scalars():
