@@ -125,7 +125,11 @@ class User extends PureUser {
   Future<void> logOut() async {
     if (onLogOut != null) {
       Logger().debug("logging out user");
-      await onLogOut!();
+      try {
+        await onLogOut!();
+      } catch (e) {
+        Logger().error(e.toString());
+      }
     } else {
       Logger().debug("log out function is null");
     }
