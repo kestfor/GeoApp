@@ -5,8 +5,8 @@ import '../user/user.dart';
 
 class MainUserController extends ChangeNotifier {
   User? _user;
-  final List<PureUser> _friends = [];
-  final List<PureEvent> _events = [];
+  final Map<String, PureUser> _friends = {};
+  final Map<String, PureEvent> _events = {};
 
   /// Singleton instance of MainUserController
   /// This is a global controller that manages the main user state, events, and friends.
@@ -21,8 +21,6 @@ class MainUserController extends ChangeNotifier {
 
   MainUserController._internal();
 
-
-
   set user(User? user) {
     _user = user;
     notifyListeners();
@@ -32,9 +30,11 @@ class MainUserController extends ChangeNotifier {
 
   bool get isLoggedIn => _user != null;
 
-  List<PureEvent> get events => _events;
-
-  List<PureUser> get friend => _friends;
+  List<PureEvent> get events {
+    final res = _events.values.toList();
+    res.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return res;
+  }
 
   void logOut() {
     if (_user != null) {
@@ -45,17 +45,19 @@ class MainUserController extends ChangeNotifier {
   }
 
   void addFriend(PureUser friend) {
-    _friends.add(friend);
+    _friends[friend.id] = friend;
     notifyListeners();
   }
 
   void addFriends(List<PureUser> friends) {
-    _friends.addAll(friends);
+    for (var friend in friends) {
+      _friends[friend.id] = friend;
+    }
     notifyListeners();
   }
 
   void removeFriend(PureUser friend) {
-    _friends.remove(friend);
+    _friends.remove(friend.id);
     notifyListeners();
   }
 
@@ -65,18 +67,34 @@ class MainUserController extends ChangeNotifier {
   }
 
   void addEvent(PureEvent event) {
-    _events.insert(0, event);
+    _events[event.id] = event;
     notifyListeners();
   }
 
   void addEvents(List<PureEvent> events) {
-    _events.insertAll(0, events);
+    for (var event in events) {
+      _events[event.id] = event;
+    }
     notifyListeners();
   }
 
   void removeEvent(PureEvent event) {
-    _events.remove(event);
+    _events.remove(event.id);
     notifyListeners();
+  }
+
+  List<PureUser> get friends {
+    final res = _friends.values.toList();
+    res.sort((a, b) => a.firstName.compareTo(b.firstName));
+    return res;
+  }
+
+  PureUser? getFriendById(String id) {
+    return _friends[id];
+  }
+
+  PureEvent? getEventById(String id) {
+    return _events[id];
   }
 
   void clearEvents() {

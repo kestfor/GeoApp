@@ -169,7 +169,7 @@ class ProfileScreenState extends State<ProfileScreen> {
       return shimmer;
     }
 
-    _friends = Provider.of<MainUserController>(context, listen: true).friend;
+    _friends = Provider.of<MainUserController>(context, listen: true).friends;
     textWidget = Text("${_friends!.length} friends", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
     final images = _friends!.map((user) => _buildImage(15, user.pictureUrl)).toList();
     stackImg = SizedBox(height: 30, width: 60, child: OverlappingImages(shift: 15, children: images));

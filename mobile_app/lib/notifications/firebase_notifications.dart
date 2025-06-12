@@ -282,7 +282,7 @@ class FirebaseNotificationService {
 
     if (status == "friends") {
       PureUser newFriend = await _getUserFromNotification(data);
-      if (!controller.friend.contains(newFriend)) {
+      if (!controller.friends.contains(newFriend)) {
         Provider.of<MainUserController>(navigatorKey.currentContext!, listen: false).addFriend(newFriend);
       }
       Logger().debug("Added new friend in background: ${newFriend.id}");
