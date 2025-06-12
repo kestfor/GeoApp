@@ -54,7 +54,11 @@ class FirebaseNotificationService {
     }
 
     final service = NotificationService();
-    await service.registerToken(token);
+    try {
+      await service.registerToken(token);
+    } catch (e) {
+      Logger().error("Error registering token: $e");
+    }
   }
 
   Future<void> deleteToken() async {

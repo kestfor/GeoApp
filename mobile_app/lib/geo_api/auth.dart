@@ -78,7 +78,6 @@ class ThroughGoogleAuthenticator implements Authenticator {
       "user": receivedData["user"],
     };
 
-    Logger().debug("Google Authenticator: received data: $data");
     return data;
   }
 }
