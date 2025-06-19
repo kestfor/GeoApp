@@ -1,0 +1,15 @@
+services:
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - ./configs/.env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - ./internal/repository/postgres/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./postgres_data:/var/lib/postgresql/data

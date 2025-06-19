@@ -1,0 +1,35 @@
+create table if not exists event
+(
+    id          uuid primary key,
+    owner_id    uuid not null,
+    name        text not null,
+    description text,
+    latitude    numeric(10, 6),
+    longitude   numeric(10, 6),
+    created_at  timestamptz default now(),
+    updated_at  timestamptz default now()
+);
+
+create table if not exists event_participant
+(
+    event_id       uuid primary key references event (id) on delete cascade,
+    participant_id uuid not null
+);
+
+create index if not exists idx_event_participant_participant_id on event_participant (participant_id);
+
+create table if not exists event_media
+(
+    event_id uuid primary key references event (id) on delete cascade,
+    media_id uuid not null
+);
+
+create table if not exists comment
+(
+    id         uuid primary key,
+    event_id   uuid not null references event (id) on delete cascade,
+    author_id  uuid not null,
+    text       text not null,
+    created_at timestamptz default now(),
+    updated_at timestamptz default now()
+);
