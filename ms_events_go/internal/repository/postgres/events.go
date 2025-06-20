@@ -33,7 +33,7 @@ func argsFromEvent(event *Event) pgx.NamedArgs {
 		"owner_id":     event.OwnerId,
 		"name":         event.Name,
 		"description":  event.Description,
-		"cover_url":    event.CoverUrl,
+		"cover_url":    event.CoverMedia,
 		"latitude":     event.Latitude,
 		"longitude":    event.Longitude,
 		"created_at":   event.CreatedAt,
@@ -51,8 +51,8 @@ func rollbackUnlessCommitted(ctx context.Context, tx pgx.Tx) {
 }
 
 func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, error) {
-	queryEvent := `INSERT INTO event (id, owner_id, name, description, latitude, longitude, created_at)
-		VALUES (@id, @owner_id, @name, @description, @latitude, @longitude, now())
+	queryEvent := `INSERT INTO event (owner_id, name, description, latitude, longitude, created_at)
+		VALUES (@owner_id, @name, @description, @latitude, @longitude, now())
 			  RETURNING id`
 
 	tx, err := r.db.Begin(ctx)
@@ -64,13 +64,23 @@ func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, er
 
 	args := argsFromEvent(event)
 
-	if err := r.db.QueryRow(context.Background(), queryEvent, args).Scan(&event.Id); err != nil {
-		return nil, err
+	if err := r.db.QueryRow(context.Background(), queryEvent, args).Scan(&(event.Id)); err != nil {
+		return nil, errors.Join(errors.New("failed to scan of new event"), err)
 	}
 
 	participantsRows := make([][]any, len(event.Participants))
+
+	// Ensure the owner is included in the participants
+	isWithOwner := false
+
 	for i := range event.Participants {
+		if event.Participants[i] == event.OwnerId {
+			isWithOwner = true
+		}
 		participantsRows[i] = []any{event.Id, event.Participants[i]}
+	}
+	if !isWithOwner {
+		participantsRows = append(participantsRows, []any{event.Id, event.OwnerId})
 	}
 
 	mediaRows := make([][]any, len(event.Media))
@@ -85,7 +95,7 @@ func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, er
 		pgx.CopyFromRows(participantsRows),
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(err, errors.New("failed to copy participants"))
 	}
 
 	_, err = tx.CopyFrom(
@@ -95,7 +105,7 @@ func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, er
 		pgx.CopyFromRows(mediaRows),
 	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Join(err, errors.New("failed to copy media"))
 	}
 
 	return event, tx.Commit(ctx)
@@ -132,7 +142,7 @@ func (r *EventsRepository) Update(ctx context.Context, event *Event) (*Event, er
 		participantsRows[i] = []any{event.Id, event.Participants[i]}
 	}
 
-	mediaRows := make([][]any, len(event.Media))
+	mediaRows := make([][]any, len(event.MediaIds))
 	for i := range event.MediaIds {
 		mediaRows[i] = []any{event.Id, event.MediaIds[i]}
 	}
@@ -185,12 +195,15 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 	args := pgx.NamedArgs{"id": eventId}
 
 	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
 	defer rollbackUnlessCommitted(ctx, tx)
 
 	row := tx.QueryRow(ctx, query, args)
 
 	var event Event
-	err = row.Scan(&event.Id, &event.OwnerId, &event.Name, &event.Description, &event.CoverUrl,
+	err = row.Scan(&event.Id, &event.OwnerId, &event.Name, &event.Description,
 		&event.Latitude, &event.Longitude, &event.CreatedAt, &event.UpdatedAt)
 
 	if err != nil {
@@ -236,9 +249,35 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 }
 
 func (r *EventsRepository) GetByUserId(ctx context.Context, userId string) ([]PureEvent, error) {
-
-	eventsWhereUserIsParticipant := `select distinct on (e.id) e.id, e.owner_id, e.name, e.description, event_media.media_id, e.latitude, e.longitude, e.created_at from (select event_id from event_participant where participant_id = @user_id) as t inner join event e on t.event_id = e.id inner join event_media on e.id = event_media.event_id order by e.created_at desc, event_media.media_id`
 	args := pgx.NamedArgs{"user_id": userId}
+	eventsWhereUserIsParticipant := `SELECT id,
+       owner_id,
+       name,
+       description,
+       media_id,
+       latitude,
+       longitude,
+       created_at
+FROM (SELECT e.id,
+             e.owner_id,
+             e.name,
+             e.description,
+             em.media_id,
+             e.latitude,
+             e.longitude,
+             e.created_at,
+             ROW_NUMBER() OVER (
+                 PARTITION BY e.id
+                 ORDER BY e.created_at DESC, em.media_id
+                 ) AS rn
+      FROM event_participant ep
+               JOIN event e
+                    ON ep.event_id = e.id
+               JOIN event_media em
+                    ON e.id = em.event_id
+      WHERE ep.participant_id = @user_id) sub
+WHERE rn = 1;
+`
 
 	rows, err := r.db.Query(ctx, eventsWhereUserIsParticipant, args)
 

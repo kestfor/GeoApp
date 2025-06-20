@@ -1,6 +1,8 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 create table if not exists event
 (
-    id          uuid primary key,
+    id          uuid primary key default uuid_generate_v4(),
     owner_id    uuid not null,
     name        text not null,
     description text,
@@ -26,7 +28,7 @@ create table if not exists event_media
 
 create table if not exists comment
 (
-    id         uuid primary key,
+    id         uuid primary key default uuid_generate_v4(),
     event_id   uuid not null references event (id) on delete cascade,
     author_id  uuid not null,
     text       text not null,

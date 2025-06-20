@@ -33,16 +33,22 @@ func Run(configPath string) {
 	}
 
 	// Initialize services
-	NewEventsService(eventsRepository)
+	eventsService := NewEventsService(eventsRepository)
 	commentsService := NewCommentsService(commentsRepository)
 
 	router := gin.Default()
-	api := router.Group("/events_service")
+	api := router.Group("api/events_service")
 
 	// Initialize handlers
 	http.NewCommentsHandler(api, *commentsService)
+	http.NewEventsHandler(api, *eventsService)
 
-	if err := router.Run(); err != nil {
+	servicePort := os.Getenv("SERVICE_PORT")
+	if servicePort == "" {
+		panic("SERVICE_PORT environment variable is not set")
+	}
+
+	if err := router.Run(":" + servicePort); err != nil {
 		panic("Error starting server: " + err.Error())
 	}
 

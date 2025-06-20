@@ -3,15 +3,15 @@ package models
 import "time"
 
 type PureEvent struct {
-	Id           string    `json:"id"`
-	OwnerId      string    `json:"owner_id"`
-	Name         string    `json:"name"`
-	Description  string    `json:"description"`
-	CoverMediaId string    `json:"cover_media_id"`
-	CoverUrl     string    `json:"cover_url"`
-	Latitude     float64   `json:"latitude"`
-	Longitude    float64   `json:"longitude"`
-	CreatedAt    time.Time `json:"created_at"`
+	Id           string         `json:"id"`
+	OwnerId      string         `json:"owner_id"`
+	Name         string         `json:"name"`
+	Description  string         `json:"description"`
+	CoverMediaId string         `json:"cover_media_id"`
+	CoverMedia   map[string]any `json:"cover_url"`
+	Latitude     float64        `json:"latitude"`
+	Longitude    float64        `json:"longitude"`
+	CreatedAt    time.Time      `json:"created_at"`
 }
 
 type Event struct {

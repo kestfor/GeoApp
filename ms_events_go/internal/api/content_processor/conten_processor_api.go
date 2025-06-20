@@ -13,10 +13,10 @@ type ContentProcessorApi struct {
 }
 
 func NewContentProcessorApi(url string) *ContentProcessorApi {
-	return &ContentProcessorApi{ApiUrl: url}
+	return &ContentProcessorApi{ApiUrl: url, headers: make(map[string]string)}
 }
 
-func SetHeaders(c *ContentProcessorApi, headers map[string]string) {
+func (c *ContentProcessorApi) SetHeaders(headers map[string]string) {
 	for key, value := range headers {
 		c.headers[key] = value
 	}

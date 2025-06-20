@@ -37,14 +37,6 @@ func (r *CommentsRepository) Close() {
 	}
 }
 
-func startTransaction(ctx context.Context, db *pgxpool.Pool) (pgx.Tx, error) {
-	tx, err := db.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return tx, nil
-}
-
 func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId string) ([]Comment, error) {
 	query := `SELECT id, event_id, author_id, text, created_at, updated_at FROM comment WHERE event_id = @event_id`
 	args := pgx.NamedArgs{
