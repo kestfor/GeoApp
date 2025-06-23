@@ -23,7 +23,14 @@ func NewEventsService(eventsRepository EventsRepository) *EventsService {
 }
 
 func (s *EventsService) GetDetailed(ctx context.Context, eventId string) (*Event, error) {
-	return s.eventsRepository.GetDetailed(ctx, eventId)
+	event, err := s.eventsRepository.GetDetailed(ctx, eventId)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.setMedia(ctx, event); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
 
 func (s *EventsService) Create(ctx context.Context, event *Event) (*Event, error) {
@@ -68,10 +75,10 @@ func (s *EventsService) GetByUserId(ctx context.Context, userId string) ([]PureE
 		return nil, err
 	}
 
-	for _, event := range events {
-		event.CoverMedia = medias[event.CoverMediaId]
-		if event.CoverMedia == nil {
-			return nil, errors.New(fmt.Sprintf("cover media with id [%s] not found", event.CoverMediaId))
+	for i := range events {
+		events[i].CoverMedia = medias[events[i].CoverMediaId]
+		if events[i].CoverMedia == nil {
+			return nil, errors.New(fmt.Sprintf("cover media with id [%s] not found", events[i].CoverMediaId))
 		}
 	}
 
@@ -99,6 +106,7 @@ func (s *EventsService) setMedia(ctx context.Context, event *Event) error {
 		return errors.New(fmt.Sprintf("no media found for the provided mediaIds: [%v]", event.MediaIds))
 	}
 
+	event.CoverMediaId = media[0]["media_id"].(string)
 	event.Media = media
 	return s.setCoverMediaFromJson(event, media)
 }

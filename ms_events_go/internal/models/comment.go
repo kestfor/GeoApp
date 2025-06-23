@@ -11,7 +11,7 @@ type Comment struct {
 	EventId  string `json:"eventId"`
 	AuthorId string `json:"authorId"`
 	// Body text of the comment
-	Text string `json:"content"`
+	Text string `json:"text"`
 	// When created
 	CreatedAt time.Time `json:"createdAt"`
 	// When last updated

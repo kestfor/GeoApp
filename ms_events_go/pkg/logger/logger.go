@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"log/slog"
+	time2 "time"
 )
 
 type Logger interface {
@@ -33,7 +34,7 @@ type DefaultLogger struct {
 
 func NewDefaultLogger(prefix string, out io.Writer, logLevel slog.Level) *DefaultLogger {
 	return &DefaultLogger{
-		logger:   log.New(out, prefix, log.LstdFlags),
+		logger:   log.New(out, "", 0),
 		logLevel: logLevel,
 		prefix:   prefix,
 	}
@@ -63,8 +64,10 @@ func (logger *DefaultLogger) Log(level slog.Level, message string) {
 		return
 	}
 	color := getColor(level)
+	time := time2.Now()
+	time.Format("2006-01-02 15:04:05")
 	// Prefix from l.logger will include date/time and any custom prefix
-	logger.logger.Printf("%s[%s][%s] %s%s", color, logger.prefix, level.String(), message, colorReset)
+	logger.logger.Printf("%s[%s][%s][%s] %s%s", color, logger.prefix, time.String(), level.String(), message, colorReset)
 }
 
 func (logger *DefaultLogger) Info(message string) {

@@ -2,7 +2,9 @@ package postgres
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
@@ -83,7 +85,7 @@ func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, er
 		participantsRows = append(participantsRows, []any{event.Id, event.OwnerId})
 	}
 
-	mediaRows := make([][]any, len(event.Media))
+	mediaRows := make([][]any, len(event.MediaIds))
 	for i := range event.MediaIds {
 		mediaRows[i] = []any{event.Id, event.MediaIds[i]}
 	}
@@ -250,34 +252,34 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 
 func (r *EventsRepository) GetByUserId(ctx context.Context, userId string) ([]PureEvent, error) {
 	args := pgx.NamedArgs{"user_id": userId}
-	eventsWhereUserIsParticipant := `SELECT id,
-       owner_id,
-       name,
-       description,
-       media_id,
-       latitude,
-       longitude,
-       created_at
-FROM (SELECT e.id,
-             e.owner_id,
-             e.name,
-             e.description,
-             em.media_id,
-             e.latitude,
-             e.longitude,
-             e.created_at,
-             ROW_NUMBER() OVER (
-                 PARTITION BY e.id
-                 ORDER BY e.created_at DESC, em.media_id
-                 ) AS rn
-      FROM event_participant ep
-               JOIN event e
-                    ON ep.event_id = e.id
-               JOIN event_media em
-                    ON e.id = em.event_id
-      WHERE ep.participant_id = @user_id) sub
-WHERE rn = 1;
-`
+	eventsWhereUserIsParticipant :=
+		`SELECT e.id,
+			   e.owner_id,
+			   e.name,
+			   e.description,
+			   COALESCE(
+					   (SELECT jsonb_agg(em.media_id)
+						FROM event_media em
+						WHERE em.event_id = e.id), '[]'
+			   ) AS mediaIds,
+			   e.latitude,
+			   e.longitude,
+			   e.created_at,
+			   COALESCE(
+					   (SELECT jsonb_agg(ep.participant_id)
+						FROM event_participant ep
+						WHERE ep.event_id = e.id), '[]'
+			   ) AS participants
+		FROM event e
+		WHERE e.owner_id = @user_id
+		   OR EXISTS (
+			 SELECT 1
+			 FROM event_participant ep
+			 WHERE ep.event_id       = e.id
+			   AND ep.participant_id = @user_id
+		   )
+		ORDER BY e.created_at DESC;
+		`
 
 	rows, err := r.db.Query(ctx, eventsWhereUserIsParticipant, args)
 
@@ -288,18 +290,37 @@ WHERE rn = 1;
 	defer rows.Close()
 	events := make([]PureEvent, 0)
 	scanEvent := PureEvent{}
-	coverId := ""
-	_, err = pgx.ForEachRow(rows, []any{&scanEvent.Id, &scanEvent.OwnerId, &scanEvent.Name, &scanEvent.Description, &coverId, &scanEvent.Latitude, &scanEvent.Longitude, &scanEvent.CreatedAt}, func() error {
+	var coverMediaJSON []byte
+	var participantsJSON []byte
+	_, err = pgx.ForEachRow(rows, []any{&scanEvent.Id, &scanEvent.OwnerId, &scanEvent.Name, &scanEvent.Description, &coverMediaJSON, &scanEvent.Latitude, &scanEvent.Longitude, &scanEvent.CreatedAt, &participantsJSON}, func() error {
 		event := PureEvent{
-			Id:           scanEvent.Id,
-			OwnerId:      scanEvent.OwnerId,
-			Name:         scanEvent.Name,
-			Description:  scanEvent.Description,
-			CoverMediaId: coverId,
-			Latitude:     scanEvent.Latitude,
-			Longitude:    scanEvent.Longitude,
-			CreatedAt:    scanEvent.CreatedAt,
+			Id:          scanEvent.Id,
+			OwnerId:     scanEvent.OwnerId,
+			Name:        scanEvent.Name,
+			Description: scanEvent.Description,
+			Latitude:    scanEvent.Latitude,
+			Longitude:   scanEvent.Longitude,
+			CreatedAt:   scanEvent.CreatedAt,
 		}
+
+		if coverMediaJSON != nil {
+			var medias []string
+			if err := json.Unmarshal(coverMediaJSON, &medias); err != nil {
+				return fmt.Errorf("unmarshal coverMedia: %w", err.Error())
+			}
+			if len(medias) > 0 {
+				event.CoverMediaId = medias[0] // Предполагаем, что первый элемент - это cover
+			} else {
+				event.CoverMediaId = ""
+			}
+		} else {
+			event.CoverMediaId = ""
+		}
+
+		if err := json.Unmarshal(participantsJSON, &event.Participants); err != nil {
+			return fmt.Errorf("unmarshal participants: %w", err)
+		}
+
 		events = append(events, event)
 		return nil
 	})

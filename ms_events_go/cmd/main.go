@@ -1,6 +1,8 @@
 package main
 
-import "ms_events_go/internal/app/events_app"
+import (
+	"ms_events_go/internal/app/events_app"
+)
 
 const configFilePath = "./configs/.env"
 
