@@ -14,7 +14,7 @@ fi
 services=(
   gateway
   content_processor
-  ms_events
+  ms_events_go
   ms_users
   notification_backend
   observability
