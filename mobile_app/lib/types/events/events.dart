@@ -45,10 +45,10 @@ class PureEvent {
     return PureEvent(
       point: Point(lat: json["latitude"], lon: json["longitude"]),
       id: json['id'],
-      coverUrl: getCover(json["displayPhoto"]),
+      coverUrl: getCover(json["coverMedia"]),
       name: json['name'],
       authorId: json['ownerId'],
-      membersId: List<String>.from(json['participantIds']),
+      membersId: List<String>.from(json['participants']),
       createdAt: cr,
     );
   }
@@ -68,7 +68,7 @@ class PureEvent {
       'displayPhoto': coverUrl,
       'name': name,
       'ownerId': authorId,
-      'participantIds': membersId,
+      'participants': membersId,
       'longitude': point.lon,
       "latitude": point.lat,
     };
@@ -117,14 +117,14 @@ class Event extends PureEvent {
     final res = Event(
       createdAt: cr,
       point: Point(lat: json["latitude"], lon: json["longitude"]),
-      id: json['eventId'],
+      id: json['id'],
       coverUrl: "",
       name: json['name'],
       authorId: json['ownerId'],
-      membersId: List<String>.from(json['participantIds']),
+      membersId: List<String>.from(json['participants']),
       description: json['description'],
       //members: (json['members'] as List).map((e) => PureUser.fromJson(e)).toList(),
-      files: (json['media'] as List).map((e) => resolveFromJson(e)).toList(),
+      files: (json['media']as List).map((e) => resolveFromJson(e)).toList(),
     );
     res.coverUrl = getCover(res.files);
     return res;
@@ -153,7 +153,7 @@ class Event extends PureEvent {
       "eventId": id,
       'name': name,
       'ownerId': authorId,
-      'participantIds': membersId,
+      'participants': membersId,
       'description': description,
       'mediaIds': files.isNotEmpty ? files.map((file) => getId(file)).toList() : mediaIds,
       //'members': members.map((e) => e.toJson()).toList(),

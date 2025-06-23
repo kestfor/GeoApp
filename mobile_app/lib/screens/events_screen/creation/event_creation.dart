@@ -9,6 +9,7 @@ import 'package:mobile_app/demo/widgets/media_preview.dart';
 import 'package:mobile_app/geo_api/services/events/events_services.dart';
 import 'package:mobile_app/geo_api/services/media_storage/converter.dart';
 import 'package:mobile_app/geo_api/services/media_storage/media_storage_service.dart';
+import 'package:mobile_app/logger/logger.dart';
 import 'package:mobile_app/style/colors.dart';
 import 'package:mobile_app/toast_notifications/notifications.dart';
 import 'package:mobile_app/types/controllers/main_user_controller.dart';
@@ -107,6 +108,8 @@ class _EventCreationScreenState extends State<EventCreationScreen> {
       files: [],
       description: _eventDescriptionController.text,
     );
+
+    Logger().debug(event.toJson().toString());
 
     final eventsService = EventsService();
     event = await eventsService.createEvent(event);

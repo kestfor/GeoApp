@@ -9,11 +9,11 @@ enum AuthType { google }
 class BaseApi {
   //static const String baseUrl = "https://d5d4vtbtvlgjp2bmr1pb.yl4tuxdu.apigw.yandexcloud.net";
   static const String baseUrl = "http://192.168.0.18";
-  static const String mobileNetUrl = "http://192.168.197.192";
+  static const String mobileNetUrl = "http://192.168.0.187";
   static const String wifiNetUrl = "http://192.168.0.18";
   static const String remoteUrl = "http://138.124.50.226";
 
-  static final String url = remoteUrl;
+  static final String url = mobileNetUrl;
 
   static final Encoding defaultEncoding = Encoding.getByName('utf-8')!;
   static final Map<String, String> _defaultHeaders = <String, String>{

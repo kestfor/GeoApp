@@ -12,8 +12,8 @@ class EventsRepository {
     return await eventsService.getDetailedEvent(id);
   }
 
-  Future<List<PureEvent>> fetchEventsForUser() async {
-    return await eventsService.fetchAllEvents();
+  Future<List<PureEvent>> fetchEventsForUser(userId) async {
+    return await eventsService.fetchAllEvents(userId);
   }
 
   Future<List<PureComment>> getCommentsForEvent(String eventId) async {

@@ -76,7 +76,7 @@ class DetailedEventState extends State<DetailedEvent> {
                 return Container();
               } else if (snapshot.hasError) {
                 log(snapshot.error.toString());
-                return SizedBox();
+                return Container();
               }
               final event = snapshot.data as Event;
               return IconButton(
@@ -235,7 +235,7 @@ class TitleBlock extends StatelessWidget {
         } else if (snapshot.hasError) {
           log(snapshot.toString());
           showError(context, "something went wrong");
-          return SizedBox();
+          return Container();;
         }
 
         final event = snapshot.data![0] as Event;
@@ -270,7 +270,7 @@ class DescriptionBlock extends StatelessWidget {
         } else if (snapshot.hasError) {
           showError(context, "something went wrong");
           log(snapshot.toString());
-          return SizedBox();
+          return Container();
         }
         final event = snapshot.data as Event;
         return buildDescription(context, event);
@@ -362,9 +362,8 @@ class MediaBlock extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return getShimmer();
         } else if (snapshot.hasError) {
-          showError(context, "something went wrong");
           log(snapshot.toString());
-          return SizedBox();
+          return Container();
         }
         final event = snapshot.data as Event;
         return buildMedia(context, event.files);

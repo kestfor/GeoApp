@@ -76,7 +76,7 @@ class ProfileScreenState extends State<ProfileScreen> {
 
   void fetchEvents() {
     _eventsService
-        .fetchEventsForUser()
+        .fetchEventsForUser(widget.userId)
         .then((events) {
           setState(() {
             this._events = events;

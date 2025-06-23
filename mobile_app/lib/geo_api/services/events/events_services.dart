@@ -2,22 +2,24 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:mobile_app/geo_api/base_api.dart';
+import 'package:mobile_app/logger/logger.dart';
 
 import '../../../types/events/comments.dart';
 import '../../../types/events/events.dart';
-import '../../../utils/mocks.dart';
 
 class EventsService {
   final BaseApi baseApi = BaseApi();
+
   final String baseUrl = "${BaseApi.url}/api/events_service";
+  //final String baseUrl = "http://192.168.0.187:8080/api/events_service";
 
   // Future<List<PureEvent>> fetchEventsForUser(EventFilter filter) async {
   //   Map<String, dynamic> body = {"limit": 20, "offset": 0, "filter": filter};
   //   return Future.delayed(Duration(milliseconds: 300), () => pureEventsMock);
   // }
 
-  Future<List<PureEvent>> fetchAllEvents({bool sort = true}) async {
-    final Uri uri = Uri.parse("$baseUrl/events/available");
+  Future<List<PureEvent>> fetchAllEvents(userId, {bool sort = true}) async {
+    final Uri uri = Uri.parse("$baseUrl/events/list/$userId");
     var res = await baseApi.get(uri);
     if (res.statusCode != HttpStatus.ok) {
       throw Exception("can't fetch events for user, ${res.reasonPhrase} with url: $uri");
@@ -34,6 +36,7 @@ class EventsService {
     if (sort) {
       items.sort((a, b) => b.createdAt.millisecondsSinceEpoch - a.createdAt.millisecondsSinceEpoch);
     }
+    Logger().debug("Fetched ${items.length} events for user with id $userId");
     return items;
   }
 
@@ -121,5 +124,4 @@ class EventsService {
       throw Exception("can't delete comment for event with id ${eventId} for user, ${res.reasonPhrase}");
     }
   }
-
 }
