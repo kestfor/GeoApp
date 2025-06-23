@@ -15,8 +15,8 @@ create table if not exists event
 create table if not exists event_participant
 (
     event_id       uuid references event (id) on delete cascade,
-    participant_id uuid not null
-        primary key (event_id, participant_id)
+    participant_id uuid not null,
+    primary key (event_id, participant_id)
 );
 
 create index if not exists idx_event_participant_participant_id on event_participant (participant_id);
