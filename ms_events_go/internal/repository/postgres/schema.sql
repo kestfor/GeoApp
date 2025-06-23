@@ -8,22 +8,24 @@ create table if not exists event
     description text,
     latitude    numeric(10, 6),
     longitude   numeric(10, 6),
-    created_at  timestamptz default now(),
-    updated_at  timestamptz default now()
+    created_at  timestamptz      default now(),
+    updated_at  timestamptz      default now()
 );
 
 create table if not exists event_participant
 (
-    event_id       uuid primary key references event (id) on delete cascade,
+    event_id       uuid references event (id) on delete cascade,
     participant_id uuid not null
+        primary key (event_id, participant_id)
 );
 
 create index if not exists idx_event_participant_participant_id on event_participant (participant_id);
 
 create table if not exists event_media
 (
-    event_id uuid primary key references event (id) on delete cascade,
-    media_id uuid not null
+    event_id uuid references event (id) on delete cascade,
+    media_id uuid not null,
+    primary key (event_id, media_id)
 );
 
 create table if not exists comment
@@ -32,6 +34,6 @@ create table if not exists comment
     event_id   uuid not null references event (id) on delete cascade,
     author_id  uuid not null,
     text       text not null,
-    created_at timestamptz default now(),
-    updated_at timestamptz default now()
+    created_at timestamptz      default now(),
+    updated_at timestamptz      default now()
 );
