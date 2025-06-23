@@ -27,7 +27,7 @@ func NewEventsHandler(router *gin.RouterGroup, service EventsService) *EventsHan
 
 func setForwardedHost(c *gin.Context) context.Context {
 	headers := make(map[string]string)
-	headers["X-Forwarded-For"] = c.Request.Host
+	headers["X-Forwarded-Host"] = c.Request.Host
 	ctx := context.WithValue(c.Request.Context(), "headers", headers)
 	return ctx
 }
