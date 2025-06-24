@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -30,7 +31,7 @@ func addHeaders(request *http.Request, headers map[string]string) {
 	//TODO add X-Forwarded-Host header
 }
 
-func (c *ContentProcessorApi) GetMedia(ids []string) ([]map[string]any, error) {
+func (c *ContentProcessorApi) GetMedia(ids []uuid.UUID) ([]map[string]any, error) {
 	// This method should interact with the content processor service to retrieve media details.
 	// For now, we return an empty slice and nil error to indicate no media found.
 

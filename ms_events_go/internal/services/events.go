@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"ms_events_go/internal/api/content_processor"
 	. "ms_events_go/internal/models"
 	. "ms_events_go/internal/repository"
@@ -22,7 +23,7 @@ func NewEventsService(eventsRepository EventsRepository) *EventsService {
 	}
 }
 
-func (s *EventsService) GetDetailed(ctx context.Context, eventId string) (*Event, error) {
+func (s *EventsService) GetDetailed(ctx context.Context, eventId uuid.UUID) (*Event, error) {
 	event, err := s.eventsRepository.GetDetailed(ctx, eventId)
 	if err != nil {
 		return nil, err
@@ -55,17 +56,17 @@ func (s *EventsService) Update(ctx context.Context, event *Event) (*Event, error
 	return event, err
 }
 
-func (s *EventsService) Delete(ctx context.Context, eventId string) error {
+func (s *EventsService) Delete(ctx context.Context, eventId uuid.UUID) error {
 	return s.eventsRepository.Delete(ctx, eventId)
 }
 
-func (s *EventsService) GetByUserId(ctx context.Context, userId string) ([]PureEvent, error) {
+func (s *EventsService) GetByUserId(ctx context.Context, userId uuid.UUID) ([]PureEvent, error) {
 	events, err := s.eventsRepository.GetByUserId(ctx, userId)
 	if err != nil {
 		return nil, err
 
 	}
-	covers := make([]string, 0, len(events))
+	covers := make([]uuid.UUID, 0, len(events))
 	for _, event := range events {
 		covers = append(covers, event.CoverMediaId)
 	}
@@ -106,7 +107,7 @@ func (s *EventsService) setMedia(ctx context.Context, event *Event) error {
 		return errors.New(fmt.Sprintf("no media found for the provided mediaIds: [%v]", event.MediaIds))
 	}
 
-	event.CoverMediaId = media[0]["media_id"].(string)
+	event.CoverMediaId = media[0]["media_id"].(uuid.UUID)
 	event.Media = media
 	return s.setCoverMediaFromJson(event, media)
 }
@@ -132,7 +133,7 @@ func (s *EventsService) setCoverMediaFromJson(event *Event, json []map[string]an
 
 }
 
-func (s *EventsService) getMedia(ctx context.Context, ids []string) (map[string]map[string]any, error) {
+func (s *EventsService) getMedia(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]map[string]any, error) {
 	headers, ok := ctx.Value("headers").(map[string]string)
 	if !ok {
 		return nil, errors.New("context does not contain headers")
@@ -145,12 +146,12 @@ func (s *EventsService) getMedia(ctx context.Context, ids []string) (map[string]
 		return nil, err
 	}
 
-	res := make(map[string]map[string]any)
+	res := make(map[uuid.UUID]map[string]any)
 	for _, m := range media {
 		if m["media_id"] == nil {
 			return nil, errors.New("media item does not have a media_id field")
 		}
-		res[m["media_id"].(string)] = m
+		res[m["media_id"].(uuid.UUID)] = m
 	}
 	return res, nil
 }

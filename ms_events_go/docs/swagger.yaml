@@ -1,0 +1,381 @@
+definitions:
+  models.Comment:
+    properties:
+      authorId:
+        description: Author of the comment
+        format: uuid
+        type: string
+      createdAt:
+        description: When created
+        format: date-time
+        type: string
+      eventId:
+        description: Event this comment belongs to
+        format: uuid
+        type: string
+      id:
+        description: Unique identifier
+        format: uuid
+        type: string
+      text:
+        description: Body text of the comment
+        type: string
+      updatedAt:
+        description: When last updated
+        format: date-time
+        type: string
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.Event:
+    properties:
+      coverMedia:
+        additionalProperties: {}
+        description: CoverMedia contains full cover media information for the event
+        type: object
+      coverMediaId:
+        description: CoverMediaId is the uuid4 ID of the cover media for the event
+        format: uuid
+        type: string
+      createdAt:
+        description: CreatedAt is the timestamp when the event was created
+        format: date-time
+        type: string
+      description:
+        description: Description of the event
+        type: string
+      id:
+        description: Unique identifier for the event
+        format: uuid
+        type: string
+      latitude:
+        description: Latitude and Longitude of the event location
+        type: number
+      longitude:
+        type: number
+      media:
+        description: Media contains full media information for the event
+        items:
+          additionalProperties: {}
+          type: object
+        type: array
+      mediaIds:
+        description: MediaIds is a list of media IDs associated with the event
+        items:
+          type: string
+        type: array
+      name:
+        description: Name of the event
+        type: string
+      ownerId:
+        description: Owner of the event
+        format: uuid
+        type: string
+      participants:
+        description: Participants is a list of user IDs who are participants in the
+          event
+        items:
+          type: string
+        type: array
+      updatedAt:
+        description: UpdatedAt is the timestamp when the event was last updated
+        format: date-time
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /events:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт новое событие.
+      parameters:
+      - description: Event payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/models.Event'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create event
+      tags:
+      - events
+  /events/{event_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет событие.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete event
+      tags:
+      - events
+    get:
+      consumes:
+      - application/json
+      description: Возвращает расширенную информацию по событию.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get event details
+      tags:
+      - events
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные существующего события.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Updated event payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/models.Event'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Event'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update event
+      tags:
+      - events
+  /events/{event_id}/comments:
+    get:
+      consumes:
+      - application/json
+      description: Получает все комментарии для указанного события.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Comment'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: List comments by event ID
+      tags:
+      - comments
+    post:
+      consumes:
+      - application/json
+      description: Добавляет комментарий к событию.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Comment payload
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Comment'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Create comment
+      tags:
+      - comments
+  /events/{event_id}/comments/{comment_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет комментарий.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Delete comment
+      tags:
+      - comments
+    put:
+      consumes:
+      - application/json
+      description: Обновляет комментарий по ID.
+      parameters:
+      - description: Event ID
+        in: path
+        name: event_id
+        required: true
+        type: string
+      - description: Comment ID
+        in: path
+        name: comment_id
+        required: true
+        type: string
+      - description: Updated comment payload
+        in: body
+        name: comment
+        required: true
+        schema:
+          $ref: '#/definitions/models.Comment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Comment'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Update comment
+      tags:
+      - comments
+  /events/list/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список событий, принадлежащих указанному пользователю.
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Event'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get events by user ID
+      tags:
+      - events
+swagger: "2.0"

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"log/slog"
 	. "ms_events_go/internal/models"
 	. "ms_events_go/internal/services"
@@ -25,7 +26,6 @@ func NewCommentsHandler(router *gin.RouterGroup, service CommentsService) *Comme
 	return res
 }
 
-// @BasePath /api/v1
 func (h *CommentsHandler) registerRoutes(r *gin.RouterGroup) {
 	r.GET("events/:event_id/comments", h.getByEventId)
 	r.POST("events/:event_id/comments", h.createComment)
@@ -33,15 +33,25 @@ func (h *CommentsHandler) registerRoutes(r *gin.RouterGroup) {
 	r.DELETE("events/:event_id/comments/:comment_id", h.deleteComment)
 }
 
-// @Summary   List comments for an event
-// @Tags      comments
-// @Accept    json
-// @Produce   json
-// @Param     event_id  path      string  true  "Event ID"
-// @Success   200       {array}   models.Comment
-// @Router	  /events/{event_id}/comments [get]
+// getByEventId возвращает комментарии для события.
+// @Summary      List comments by event ID
+// @Description  Получает все комментарии для указанного события.
+// @Tags         comments
+// @Accept       json
+// @Produce      json
+// @Param        event_id  path      string           true  "Event ID"
+// @Success      200       {array}   models.Comment
+// @Failure      400       {object}  models.ErrorResponse
+// @Failure      500       {object}  models.ErrorResponse
+// @Router       /events/{event_id}/comments [get]
 func (h *CommentsHandler) getByEventId(c *gin.Context) {
-	eventId := c.Param("event_id")
+	eventId, err := uuid.Parse(c.Param("event_id"))
+	if err != nil {
+		h.logger.Error("Invalid event ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
 	comments, err := h.commentsService.GetByEventId(c.Request.Context(), eventId)
 
 	if err != nil {
@@ -53,8 +63,26 @@ func (h *CommentsHandler) getByEventId(c *gin.Context) {
 	c.JSON(http.StatusOK, comments)
 }
 
+// createComment добавляет новый комментарий к событию.
+// @Summary      Create comment
+// @Description  Добавляет комментарий к событию.
+// @Tags         comments
+// @Accept       json
+// @Produce      json
+// @Param        event_id  path      string           true  "Event ID"
+// @Param        comment   body      models.Comment   true  "Comment payload"
+// @Success      201       {object}  models.Comment
+// @Failure      400       {object}  models.ErrorResponse
+// @Failure      500       {object}  models.ErrorResponse
+// @Router       /events/{event_id}/comments [post]
 func (h *CommentsHandler) createComment(c *gin.Context) {
-	eventId := c.Param("event_id")
+	eventId, err := uuid.Parse(c.Param("event_id"))
+	if err != nil {
+		h.logger.Error("Invalid event ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+
 	var comment Comment
 	if err := c.ShouldBindJSON(&comment); err != nil {
 		h.logger.Error("Failed to bind JSON" + err.Error())
@@ -74,9 +102,32 @@ func (h *CommentsHandler) createComment(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdComment)
 }
 
+// updateComment изменяет существующий комментарий.
+// @Summary      Update comment
+// @Description  Обновляет комментарий по ID.
+// @Tags         comments
+// @Accept       json
+// @Produce      json
+// @Param        event_id    path      string           true  "Event ID"
+// @Param        comment_id  path      string           true  "Comment ID"
+// @Param        comment     body      models.Comment   true  "Updated comment payload"
+// @Success      200         {object}  models.Comment
+// @Failure      400         {object}  models.ErrorResponse
+// @Failure      500         {object}  models.ErrorResponse
+// @Router       /events/{event_id}/comments/{comment_id} [put]
 func (h *CommentsHandler) updateComment(c *gin.Context) {
-	eventId := c.Param("event_id")
-	commentId := c.Param("comment_id")
+	eventId, err := uuid.Parse(c.Param("event_id"))
+	if err != nil {
+		h.logger.Error("Invalid event ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
+	commentId, err := uuid.Parse(c.Param("comment_id"))
+	if err != nil {
+		h.logger.Error("Invalid comment ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		return
+	}
 
 	var comment Comment
 
@@ -100,11 +151,34 @@ func (h *CommentsHandler) updateComment(c *gin.Context) {
 	c.JSON(http.StatusOK, updatedComment)
 }
 
+// deleteComment удаляет комментарий по ID.
+// @Summary      Delete comment
+// @Description  Удаляет комментарий.
+// @Tags         comments
+// @Accept       json
+// @Produce      json
+// @Param        event_id    path  string  true  "Event ID"
+// @Param        comment_id  path  string  true  "Comment ID"
+// @Success      204         {string}  string  "No Content"
+// @Failure      500         {object}  models.ErrorResponse
+// @Failure      400         {object}  models.ErrorResponse
+// @Router       /events/{event_id}/comments/{comment_id} [delete]
 func (h *CommentsHandler) deleteComment(c *gin.Context) {
-	eventId := c.Param("event_id")
-	commentId := c.Param("comment_id")
+	eventId, err := uuid.Parse(c.Param("event_id"))
+	if err != nil {
+		h.logger.Error("Invalid event ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid event ID"})
+		return
+	}
 
-	err := h.commentsService.Delete(c.Request.Context(), commentId)
+	commentId, err := uuid.Parse(c.Param("comment_id"))
+	if err != nil {
+		h.logger.Error("Invalid comment ID: " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid comment ID"})
+		return
+	}
+
+	err = h.commentsService.Delete(c.Request.Context(), commentId)
 	if err != nil {
 		h.logger.Error("Failed to delete comment: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete comment"})
