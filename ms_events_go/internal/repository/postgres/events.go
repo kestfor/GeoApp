@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
@@ -174,7 +175,7 @@ func (r *EventsRepository) Update(ctx context.Context, event *Event) (*Event, er
 	return event, tx.Commit(ctx)
 }
 
-func (r *EventsRepository) Delete(ctx context.Context, eventId string) error {
+func (r *EventsRepository) Delete(ctx context.Context, eventId uuid.UUID) error {
 	query := `DELETE FROM event WHERE id = @id`
 	args := pgx.NamedArgs{"id": eventId}
 
@@ -192,7 +193,7 @@ func (r *EventsRepository) Delete(ctx context.Context, eventId string) error {
 	return tx.Commit(ctx)
 }
 
-func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Event, error) {
+func (r *EventsRepository) GetDetailed(ctx context.Context, eventId uuid.UUID) (*Event, error) {
 	query := `SELECT id, owner_id, name, description, latitude, longitude, created_at, updated_at FROM event WHERE id = @id`
 	args := pgx.NamedArgs{"id": eventId}
 
@@ -224,7 +225,7 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 	defer rows.Close()
 
 	for rows.Next() {
-		var participantId string
+		var participantId uuid.UUID
 		if err := rows.Scan(&participantId); err != nil {
 			return nil, err
 		}
@@ -240,7 +241,7 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 	defer rowsMedia.Close()
 
 	for rowsMedia.Next() {
-		var mediaId string
+		var mediaId uuid.UUID
 		if err := rowsMedia.Scan(&mediaId); err != nil {
 			return nil, err
 		}
@@ -250,7 +251,7 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId string) (*Ev
 	return &event, tx.Commit(ctx)
 }
 
-func (r *EventsRepository) GetByUserId(ctx context.Context, userId string) ([]PureEvent, error) {
+func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([]PureEvent, error) {
 	args := pgx.NamedArgs{"user_id": userId}
 	eventsWhereUserIsParticipant :=
 		`SELECT e.id,
@@ -304,17 +305,13 @@ func (r *EventsRepository) GetByUserId(ctx context.Context, userId string) ([]Pu
 		}
 
 		if coverMediaJSON != nil {
-			var medias []string
+			var medias []uuid.UUID
 			if err := json.Unmarshal(coverMediaJSON, &medias); err != nil {
 				return fmt.Errorf("unmarshal coverMedia: %w", err.Error())
 			}
 			if len(medias) > 0 {
-				event.CoverMediaId = medias[0] // Предполагаем, что первый элемент - это cover
-			} else {
-				event.CoverMediaId = ""
+				event.CoverMediaId = medias[0]
 			}
-		} else {
-			event.CoverMediaId = ""
 		}
 
 		if err := json.Unmarshal(participantsJSON, &event.Participants); err != nil {

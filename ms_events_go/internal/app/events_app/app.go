@@ -4,10 +4,18 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"ms_events_go/docs"
 	"ms_events_go/internal/delivery/http"
 	. "ms_events_go/internal/repository/postgres"
 	. "ms_events_go/internal/services"
+	net "net/http"
 	"os"
+)
+
+const (
+	basePath = "/api/events_service"
 )
 
 func Run(configPath string) {
@@ -37,7 +45,14 @@ func Run(configPath string) {
 	commentsService := NewCommentsService(commentsRepository)
 
 	router := gin.Default()
-	api := router.Group("api/events_service")
+	api := router.Group(basePath)
+
+	// Set up Swagger documentation
+	docs.SwaggerInfo.BasePath = basePath
+	api.GET("/docs/", func(c *gin.Context) {
+		c.Redirect(net.StatusMovedPermanently, basePath+"/swagger/index.html")
+	})
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Initialize handlers
 	http.NewCommentsHandler(api, *commentsService)

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"github.com/google/uuid"
 	. "ms_events_go/internal/models"
 	. "ms_events_go/internal/repository"
 )
@@ -16,7 +17,7 @@ func NewCommentsService(commentsRepository CommentsRepository) *CommentsService 
 	}
 }
 
-func (s *CommentsService) GetByEventId(ctx context.Context, eventId string) ([]Comment, error) {
+func (s *CommentsService) GetByEventId(ctx context.Context, eventId uuid.UUID) ([]Comment, error) {
 	return s.commentsRepository.GetByEventId(ctx, eventId)
 }
 
@@ -28,10 +29,10 @@ func (s *CommentsService) Update(ctx context.Context, comment *Comment) (*Commen
 	return s.commentsRepository.Update(ctx, comment)
 }
 
-func (s *CommentsService) Delete(ctx context.Context, commentId string) error {
+func (s *CommentsService) Delete(ctx context.Context, commentId uuid.UUID) error {
 	return s.commentsRepository.Delete(ctx, commentId)
 }
 
-func (s *CommentsService) GetById(ctx context.Context, commentId string) (*Comment, error) {
+func (s *CommentsService) GetById(ctx context.Context, commentId uuid.UUID) (*Comment, error) {
 	return s.commentsRepository.GetById(ctx, commentId)
 }

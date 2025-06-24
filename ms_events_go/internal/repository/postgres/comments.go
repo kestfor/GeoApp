@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	. "ms_events_go/internal/models"
@@ -37,7 +38,7 @@ func (r *CommentsRepository) Close() {
 	}
 }
 
-func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId string) ([]Comment, error) {
+func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId uuid.UUID) ([]Comment, error) {
 	query := `SELECT id, event_id, author_id, text, created_at, updated_at FROM comment WHERE event_id = @event_id`
 	args := pgx.NamedArgs{
 		"event_id": eventId,
@@ -69,7 +70,7 @@ func (r *CommentsRepository) Create(ctx context.Context, comment *Comment) (*Com
 	query := `insert into comment (event_id, author_id, text, created_at) values (@event_id, @author_id, @text, now()) returning id`
 	args := argsFromComment(comment)
 
-	var newId string
+	var newId uuid.UUID
 	err := r.db.QueryRow(ctx, query, args).Scan(&newId)
 	if err != nil {
 		return nil, err
@@ -89,7 +90,7 @@ func (r *CommentsRepository) Update(ctx context.Context, comment *Comment) (*Com
 	return comment, nil
 }
 
-func (r *CommentsRepository) Delete(ctx context.Context, commentId string) error {
+func (r *CommentsRepository) Delete(ctx context.Context, commentId uuid.UUID) error {
 	query := `delete from comment where id = @id`
 	args := pgx.NamedArgs{
 		"id": commentId,
@@ -102,7 +103,7 @@ func (r *CommentsRepository) Delete(ctx context.Context, commentId string) error
 	return nil
 }
 
-func (r *CommentsRepository) GetById(ctx context.Context, commentId string) (*Comment, error) {
+func (r *CommentsRepository) GetById(ctx context.Context, commentId uuid.UUID) (*Comment, error) {
 	query := `SELECT id, event_id, author_id, text, created_at, updated_at FROM comment WHERE id = @id`
 	args := pgx.NamedArgs{
 		"id": commentId,
