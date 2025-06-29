@@ -307,7 +307,7 @@ func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([
 		if coverMediaJSON != nil {
 			var medias []uuid.UUID
 			if err := json.Unmarshal(coverMediaJSON, &medias); err != nil {
-				return fmt.Errorf("unmarshal coverMedia: %w", err.Error())
+				return fmt.Errorf("unmarshal coverMedia: %s", err.Error())
 			}
 			if len(medias) > 0 {
 				event.CoverMediaId = medias[0]
@@ -315,7 +315,7 @@ func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([
 		}
 
 		if err := json.Unmarshal(participantsJSON, &event.Participants); err != nil {
-			return fmt.Errorf("unmarshal participants: %w", err)
+			return fmt.Errorf("unmarshal participants: %s", err.Error())
 		}
 
 		events = append(events, event)
