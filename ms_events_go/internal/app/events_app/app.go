@@ -7,6 +7,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"ms_events_go/docs"
+	"ms_events_go/internal/api/content_processor"
 	"ms_events_go/internal/delivery/http"
 	. "ms_events_go/internal/repository/postgres"
 	. "ms_events_go/internal/services"
@@ -26,6 +27,7 @@ func Run(configPath string) {
 
 	user, password, db_name := os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")
 	postgresHost, postgresPort := os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_PORT")
+	cpApi := os.Getenv("CONTENT_PROCESSOR_URL")
 
 	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, db_name)
 	var err error
@@ -41,7 +43,8 @@ func Run(configPath string) {
 	}
 
 	// Initialize services
-	eventsService := NewEventsService(eventsRepository)
+	contentProcessor := content_processor.NewContentProcessorApi(cpApi)
+	eventsService := NewEventsService(eventsRepository, contentProcessor)
 	commentsService := NewCommentsService(commentsRepository)
 
 	router := gin.Default()

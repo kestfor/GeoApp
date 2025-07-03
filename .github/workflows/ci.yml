@@ -26,13 +26,10 @@ jobs:
         run: go mod tidy
 
       - name: Generate mocks
-        run: |
-          go tool mockgen -source=internal/repository/comments_repository.go \
-                  -destination=internal/repository/mocks/comments_repository_mock.go \
-                  -package=mocks
+        run: make build_mocks
 
       - name: Run tests
-        run: go test -v ./...
+        run: make test
 
   content-processor:
     runs-on: ubuntu-latest
