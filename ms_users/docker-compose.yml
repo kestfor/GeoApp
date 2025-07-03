@@ -1,0 +1,42 @@
+services:
+
+  ms_users_postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
+    command: postgres -p ${POSTGRES_PORT} -c datestyle='ISO, DMY'
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pg_volume:/var/lib/postgresql/data
+
+  ms_users_web:
+    build: .
+    depends_on:
+      - ms_users_postgres
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://ms_users_postgres:${POSTGRES_PORT}/${POSTGRES_DB}"
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SERVER_SERVLET_CONTEXT_PATH: "/api/users_service"
+    env_file:
+      - .env
+    ports:
+      - "${API_PORT}:8080"
+    restart: always
+    networks:
+      - default
+      - shared_network
+
+
+volumes:
+  pg_volume:
+
+networks:
+  shared_network:
+    external: true
