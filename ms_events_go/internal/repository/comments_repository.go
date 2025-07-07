@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 	"github.com/google/uuid"
-	models "ms_events_go/internal/models"
+	"ms_events_go/internal/models"
 )
 
 type CommentsRepository interface {

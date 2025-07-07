@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	. "ms_events_go/internal/models"
+	"ms_events_go/internal/models"
 )
 
 type CommentsRepository struct {
@@ -21,7 +21,7 @@ func NewCommentsRepository(connString string) (*CommentsRepository, error) {
 	return &CommentsRepository{db: pool}, nil
 }
 
-func argsFromComment(comment *Comment) pgx.NamedArgs {
+func argsFromComment(comment *models.Comment) pgx.NamedArgs {
 	return pgx.NamedArgs{
 		"id":         comment.Id,
 		"event_id":   comment.EventId,
@@ -38,7 +38,7 @@ func (r *CommentsRepository) Close() {
 	}
 }
 
-func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId uuid.UUID) ([]Comment, error) {
+func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId uuid.UUID) ([]models.Comment, error) {
 	query := `SELECT id, event_id, author_id, text, created_at, updated_at FROM comment WHERE event_id = @event_id`
 	args := pgx.NamedArgs{
 		"event_id": eventId,
@@ -49,10 +49,10 @@ func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId uuid.UUID
 		return nil, err
 	}
 	defer rows.Close()
-	comments := make([]Comment, 0)
-	scanComment := Comment{}
+	comments := make([]models.Comment, 0)
+	scanComment := models.Comment{}
 	_, err = pgx.ForEachRow(rows, []any{&scanComment.Id, &scanComment.EventId, &scanComment.AuthorId, &scanComment.Text, &scanComment.CreatedAt, &scanComment.UpdatedAt}, func() error {
-		newComment := Comment{
+		newComment := models.Comment{
 			Id:        scanComment.Id,
 			EventId:   scanComment.EventId,
 			AuthorId:  scanComment.AuthorId,
@@ -66,7 +66,7 @@ func (r *CommentsRepository) GetByEventId(ctx context.Context, eventId uuid.UUID
 	return comments, err
 }
 
-func (r *CommentsRepository) Create(ctx context.Context, comment *Comment) (*Comment, error) {
+func (r *CommentsRepository) Create(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
 	query := `insert into comment (event_id, author_id, text, created_at) values (@event_id, @author_id, @text, now()) returning id`
 	args := argsFromComment(comment)
 
@@ -80,7 +80,7 @@ func (r *CommentsRepository) Create(ctx context.Context, comment *Comment) (*Com
 	return comment, nil
 }
 
-func (r *CommentsRepository) Update(ctx context.Context, comment *Comment) (*Comment, error) {
+func (r *CommentsRepository) Update(ctx context.Context, comment *models.Comment) (*models.Comment, error) {
 	query := `update comment set event_id = @event_id, author_id = @author_id, text = @text, created_at = @created_at, updated_at = @updated_at where id = @id`
 	args := argsFromComment(comment)
 	_, err := r.db.Exec(ctx, query, args)
@@ -103,14 +103,14 @@ func (r *CommentsRepository) Delete(ctx context.Context, commentId uuid.UUID) er
 	return nil
 }
 
-func (r *CommentsRepository) GetById(ctx context.Context, commentId uuid.UUID) (*Comment, error) {
+func (r *CommentsRepository) GetById(ctx context.Context, commentId uuid.UUID) (*models.Comment, error) {
 	query := `SELECT id, event_id, author_id, text, created_at, updated_at FROM comment WHERE id = @id`
 	args := pgx.NamedArgs{
 		"id": commentId,
 	}
 
 	row := r.db.QueryRow(ctx, query, args)
-	comment := &Comment{}
+	comment := &models.Comment{}
 	err := row.Scan(&comment.Id, &comment.EventId, &comment.AuthorId, &comment.Text, &comment.CreatedAt, &comment.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

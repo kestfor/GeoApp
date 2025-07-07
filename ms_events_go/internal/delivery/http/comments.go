@@ -6,19 +6,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log/slog"
-	. "ms_events_go/internal/models"
-	. "ms_events_go/internal/services"
+	"ms_events_go/internal/models"
+	"ms_events_go/internal/services"
 	"ms_events_go/pkg/logger"
 	"net/http"
 	"os"
 )
 
 type CommentsHandler struct {
-	commentsService CommentsService
+	commentsService services.CommentsService
 	logger          logger.Logger
 }
 
-func NewCommentsHandler(router *gin.RouterGroup, service CommentsService) *CommentsHandler {
+func NewCommentsHandler(router *gin.RouterGroup, service services.CommentsService) *CommentsHandler {
 	res := &CommentsHandler{}
 	res.registerRoutes(router)
 	res.commentsService = service
@@ -83,7 +83,7 @@ func (h *CommentsHandler) createComment(c *gin.Context) {
 		return
 	}
 
-	var comment Comment
+	var comment models.Comment
 	if err := c.ShouldBindJSON(&comment); err != nil {
 		h.logger.Error("Failed to bind JSON" + err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -129,7 +129,7 @@ func (h *CommentsHandler) updateComment(c *gin.Context) {
 		return
 	}
 
-	var comment Comment
+	var comment models.Comment
 
 	if err := json.NewDecoder(c.Request.Body).Decode(&comment); err != nil {
 		h.logger.Error("Failed to bind JSON: " + err.Error())
