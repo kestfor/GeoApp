@@ -1,4 +1,4 @@
-package services
+package services_test
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"ms_events_go/internal/delivery/http"
 	"ms_events_go/internal/models"
 	"ms_events_go/internal/repository/mocks"
+	"ms_events_go/internal/services"
 	"testing"
 )
 
@@ -28,7 +29,7 @@ func TestEventsService_Create(t *testing.T) {
 
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
-	service := NewEventsService(mockRepo, mockCont)
+	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
 
@@ -57,7 +58,7 @@ func TestEventsService_Update(t *testing.T) {
 
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
-	service := NewEventsService(mockRepo, mockCont)
+	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
 	eventID := uuid.New()
@@ -84,7 +85,7 @@ func TestEventsService_Delete(t *testing.T) {
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
-	service := NewEventsService(mockRepo, mockCont)
+	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
 	eventID := uuid.New()
@@ -100,7 +101,7 @@ func TestEventsService_GetByUserId(t *testing.T) {
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
-	service := NewEventsService(mockRepo, mockCont)
+	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
 	eventID := uuid.New()
