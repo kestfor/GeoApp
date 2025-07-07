@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/google/uuid"
+	"io"
 	"net/http"
 )
 
@@ -75,7 +76,11 @@ func (c *ContentProcessorApi) GetMedia(ctx context.Context, ids []uuid.UUID) (Re
 		return nil, err
 	}
 
-	defer response.Body.Close()
+	defer func(Body io.ReadCloser) {
+		if er := Body.Close(); er != nil {
+			err = er
+		}
+	}(response.Body)
 
 	if response.StatusCode != http.StatusOK {
 		return nil, errors.New("failed to get media from content processor with status: " + response.Status)

@@ -86,7 +86,7 @@ func (s *EventsService) GetByUserId(ctx context.Context, userId uuid.UUID) ([]mo
 		coverId := events[i].CoverMediaId
 		cover := medias.GetMediaById(coverId)
 		if cover == nil {
-			return nil, errors.New(fmt.Sprintf("cover media with id [%s] not found", events[i].CoverMediaId))
+			return nil, fmt.Errorf("cover media with id [%s] not found", events[i].CoverMediaId)
 		}
 		events[i].CoverMedia = cover
 	}
