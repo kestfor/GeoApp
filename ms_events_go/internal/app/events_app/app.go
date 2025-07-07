@@ -9,8 +9,8 @@ import (
 	"ms_events_go/docs"
 	"ms_events_go/internal/api/content_processor"
 	"ms_events_go/internal/delivery/http"
-	. "ms_events_go/internal/repository/postgres"
-	. "ms_events_go/internal/services"
+	"ms_events_go/internal/repository/postgres"
+	"ms_events_go/internal/services"
 	net "net/http"
 	"os"
 )
@@ -32,20 +32,20 @@ func Run(configPath string) {
 	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, dbName)
 	var err error
 
-	eventsRepository, err := NewEventsRepository(connStringPostgres)
+	eventsRepository, err := postgres.NewEventsRepository(connStringPostgres)
 	if err != nil {
 		panic("Error initializing events repository: " + err.Error())
 	}
 
-	commentsRepository, err := NewCommentsRepository(connStringPostgres)
+	commentsRepository, err := postgres.NewCommentsRepository(connStringPostgres)
 	if err != nil {
 		panic("Error initializing comments repository: " + err.Error())
 	}
 
 	// Initialize services
 	contentProcessor := content_processor.NewContentProcessorApi(cpApi)
-	eventsService := NewEventsService(eventsRepository, contentProcessor)
-	commentsService := NewCommentsService(commentsRepository)
+	eventsService := services.NewEventsService(eventsRepository, contentProcessor)
+	commentsService := services.NewCommentsService(commentsRepository)
 
 	router := gin.Default()
 	api := router.Group(basePath)
