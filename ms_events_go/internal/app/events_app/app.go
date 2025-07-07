@@ -25,11 +25,11 @@ func Run(configPath string) {
 		panic("Error loading .env file: " + err.Error())
 	}
 
-	user, password, db_name := os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")
+	user, password, dbName := os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")
 	postgresHost, postgresPort := os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_PORT")
 	cpApi := os.Getenv("CONTENT_PROCESSOR_URL")
 
-	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, db_name)
+	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, dbName)
 	var err error
 
 	eventsRepository, err := NewEventsRepository(connStringPostgres)

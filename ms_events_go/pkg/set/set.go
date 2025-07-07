@@ -1,8 +1,10 @@
 package set
 
 type emptyStruct struct{}
-
 type Set[T comparable] map[T]emptyStruct
+type IntSet = Set[int]
+type FloatSet = Set[float64]
+type StringSet = Set[string]
 
 func NewSet[T comparable]() Set[T] {
 	return make(Set[T])

@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"ms_events_go/internal/api/content_processor"
-	cp_mock "ms_events_go/internal/api/content_processor/mocks"
+	cpMock "ms_events_go/internal/api/content_processor/mocks"
 	"ms_events_go/internal/models"
 	"ms_events_go/internal/repository/mocks"
 	"testing"
@@ -26,7 +26,7 @@ func TestEventsService_Create(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
-	mockCont := cp_mock.NewMockContentProcessor(ctrl)
+	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "headers", headers)
@@ -55,7 +55,7 @@ func TestEventsService_Update(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
-	mockCont := cp_mock.NewMockContentProcessor(ctrl)
+	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "headers", headers)
@@ -82,7 +82,7 @@ func TestEventsService_Delete(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
-	mockCont := cp_mock.NewMockContentProcessor(ctrl)
+	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "headers", headers)
@@ -98,7 +98,7 @@ func TestEventsService_GetByUserId(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockRepo := mocks.NewMockEventsRepository(ctrl)
-	mockCont := cp_mock.NewMockContentProcessor(ctrl)
+	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "headers", headers)

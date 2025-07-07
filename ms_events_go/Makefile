@@ -6,4 +6,5 @@ build_mocks:
 test:
 	go test -v ./...
 
-
+linter:
+	golangci-lint run
