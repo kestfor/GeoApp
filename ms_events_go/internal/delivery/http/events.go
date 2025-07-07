@@ -6,14 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log/slog"
+	"ms_events_go/internal/api/content_processor"
 	"ms_events_go/internal/models"
 	"ms_events_go/internal/services"
 	"ms_events_go/pkg/logger"
 	"net/http"
 	"os"
 )
-
-type HeadersKey string
 
 type EventsHandler struct {
 	eventsService services.EventsService
@@ -32,7 +31,7 @@ func NewEventsHandler(router *gin.RouterGroup, service services.EventsService) *
 func setForwardedHost(c *gin.Context) context.Context {
 	headers := make(map[string]string)
 	headers["X-Forwarded-Host"] = c.Request.Host
-	ctx := context.WithValue(c.Request.Context(), HeadersKey("headers"), headers)
+	ctx := context.WithValue(c.Request.Context(), content_processor.HeadersContextKey("headers"), headers)
 	return ctx
 }
 

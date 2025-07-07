@@ -64,7 +64,7 @@ func (s *EventsService) GetByUserId(ctx context.Context, userId uuid.UUID) ([]mo
 	if err != nil {
 		return nil, err
 	}
-	headers, ok := ctx.Value("headers").(map[string]string)
+	headers, ok := ctx.Value(cp.HeadersContextKey("headers")).(map[string]string)
 	if !ok {
 		return nil, errors.New("context does not contain headers")
 	}
@@ -99,9 +99,13 @@ func (s *EventsService) setMedia(ctx context.Context, event *models.Event) error
 		return errors.New("cannot get media: event does not have mediaIds")
 	}
 
-	headers, ok := ctx.Value("headers").(map[string]string)
-	if !ok {
+	headersRaw := ctx.Value(cp.HeadersContextKey("headers"))
+	if headersRaw == nil {
 		return errors.New("context does not contain headers")
+	}
+	headers, ok := headersRaw.(map[string]string)
+	if !ok {
+		return errors.New("cannot convert headers")
 	}
 
 	s.contentProcessor.SetHeaders(headers)

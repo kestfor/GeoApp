@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+type HeadersContextKey string
+
 type Response interface {
 	GetAllMedia() ([]uuid.UUID, []map[string]any)
 	GetCoverMedia() (uuid.UUID, map[string]any)
@@ -40,7 +42,7 @@ func (c *ContentProcessorApi) SetHeaders(headers map[string]string) {
 
 func addHeaders(request *http.Request, headers map[string]string) {
 	for key, value := range headers {
-		request.Header.Set(key, value)
+		request.Header.Set(string(key), value)
 	}
 	request.Header.Set("Content-Type", "application/json")
 	//TODO add X-Forwarded-Host header

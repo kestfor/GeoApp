@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"ms_events_go/internal/api/content_processor"
 	cpMock "ms_events_go/internal/api/content_processor/mocks"
-	"ms_events_go/internal/delivery/http"
 	"ms_events_go/internal/models"
 	"ms_events_go/internal/repository/mocks"
 	"ms_events_go/internal/services"
@@ -31,7 +30,7 @@ func TestEventsService_Create(t *testing.T) {
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
+	ctx = context.WithValue(ctx, content_processor.HeadersContextKey("headers"), headers)
 
 	eventID := uuid.New()
 
@@ -60,7 +59,7 @@ func TestEventsService_Update(t *testing.T) {
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
+	ctx = context.WithValue(ctx, content_processor.HeadersContextKey("headers"), headers)
 	eventID := uuid.New()
 	pureEvent := models.PureEvent{
 		Id:           eventID,
@@ -87,7 +86,7 @@ func TestEventsService_Delete(t *testing.T) {
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
+	ctx = context.WithValue(ctx, content_processor.HeadersContextKey("headers"), headers)
 	eventID := uuid.New()
 
 	mockRepo.EXPECT().Delete(ctx, eventID).Return(nil)
@@ -103,7 +102,7 @@ func TestEventsService_GetByUserId(t *testing.T) {
 	mockCont := cpMock.NewMockContentProcessor(ctrl)
 	service := services.NewEventsService(mockRepo, mockCont)
 	ctx := context.Background()
-	ctx = context.WithValue(ctx, http.HeadersKey("headers"), headers)
+	ctx = context.WithValue(ctx, content_processor.HeadersContextKey("headers"), headers)
 	eventID := uuid.New()
 	ownerId := uuid.New()
 	pureEvent := models.PureEvent{
