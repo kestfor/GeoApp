@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      By default, cleartext is blocked. We create a “domain-config” that
+      explicitly allows http for your video host.
+    -->
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- replace with your actual domain, e.g. example.com or IP -->
+        <domain includeSubdomains="false">138.124.50.226</domain>
+    </domain-config>
+    <!-- All other domains (not listed above) stay under the default (cleartext not permitted) -->
+</network-security-config>
