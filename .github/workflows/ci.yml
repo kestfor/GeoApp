@@ -25,17 +25,18 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
+      - name: Generate mocks
+        run: make build_mocks
+
       - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v8
         with:
           version: latest
           working-directory: ./ms_events_go
 
-      - name: Run golangci-lint
-        run: golangci-lint run ./...
+#      - name: Run golangci-lint
+#        run: golangci-lint run ./...
 
-      - name: Generate mocks
-        run: make build_mocks
 
       - name: Run tests
         run: make test
