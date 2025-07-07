@@ -6,22 +6,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log/slog"
-	. "ms_events_go/internal/models"
-	. "ms_events_go/internal/services"
-	. "ms_events_go/pkg/logger"
+	"ms_events_go/internal/api/content_processor"
+	"ms_events_go/internal/models"
+	"ms_events_go/internal/services"
+	"ms_events_go/pkg/logger"
 	"net/http"
 	"os"
 )
 
 type EventsHandler struct {
-	eventsService EventsService
-	logger        Logger
+	eventsService services.EventsService
+	logger        logger.Logger
 }
 
-func NewEventsHandler(router *gin.RouterGroup, service EventsService) *EventsHandler {
+func NewEventsHandler(router *gin.RouterGroup, service services.EventsService) *EventsHandler {
 	res := &EventsHandler{
 		eventsService: service,
-		logger:        NewDefaultLogger("EventsHandler", os.Stdout, slog.LevelDebug),
+		logger:        logger.NewDefaultLogger("EventsHandler", os.Stdout, slog.LevelDebug),
 	}
 	res.registerRoutes(router)
 	return res
@@ -30,7 +31,7 @@ func NewEventsHandler(router *gin.RouterGroup, service EventsService) *EventsHan
 func setForwardedHost(c *gin.Context) context.Context {
 	headers := make(map[string]string)
 	headers["X-Forwarded-Host"] = c.Request.Host
-	ctx := context.WithValue(c.Request.Context(), "headers", headers)
+	ctx := context.WithValue(c.Request.Context(), content_processor.HeadersContextKey("headers"), headers)
 	return ctx
 }
 
@@ -120,7 +121,7 @@ func (h *EventsHandler) getDetailed(c *gin.Context) {
 // @Router       /events [post]
 func (h *EventsHandler) createEvent(c *gin.Context) {
 	ctx := setForwardedHost(c)
-	var event Event
+	var event models.Event
 	if err := c.ShouldBindJSON(&event); err != nil {
 		h.logger.Error("Failed to bind JSON: " + err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
@@ -159,7 +160,7 @@ func (h *EventsHandler) updateEvent(c *gin.Context) {
 		return
 	}
 
-	var event Event
+	var event models.Event
 	if err := c.ShouldBindJSON(&event); err != nil {
 		h.logger.Error("Failed to bind JSON: " + err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})

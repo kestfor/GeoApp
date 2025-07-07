@@ -26,13 +26,20 @@ jobs:
         run: go mod tidy
 
       - name: Generate mocks
-        run: |
-          go tool mockgen -source=internal/repository/comments_repository.go \
-                  -destination=internal/repository/mocks/comments_repository_mock.go \
-                  -package=mocks
+        run: make build_mocks
+
+      - name: Install golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+          working-directory: ./ms_events_go
+
+#      - name: Run golangci-lint
+#        run: golangci-lint run ./...
+
 
       - name: Run tests
-        run: go test -v ./...
+        run: make test
 
   content-processor:
     runs-on: ubuntu-latest

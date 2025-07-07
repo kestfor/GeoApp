@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
-	. "ms_events_go/internal/models"
+	"ms_events_go/internal/models"
 )
 
 type EventsRepository struct {
@@ -30,7 +30,7 @@ func (r *EventsRepository) Close() {
 	}
 }
 
-func argsFromEvent(event *Event) pgx.NamedArgs {
+func argsFromEvent(event *models.Event) pgx.NamedArgs {
 	return pgx.NamedArgs{
 		"id":           event.Id,
 		"owner_id":     event.OwnerId,
@@ -53,7 +53,7 @@ func rollbackUnlessCommitted(ctx context.Context, tx pgx.Tx) {
 	}
 }
 
-func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, error) {
+func (r *EventsRepository) Create(ctx context.Context, event *models.Event) (*models.Event, error) {
 	queryEvent := `INSERT INTO event (owner_id, name, description, latitude, longitude, created_at)
 		VALUES (@owner_id, @name, @description, @latitude, @longitude, now())
 			  RETURNING id`
@@ -114,7 +114,7 @@ func (r *EventsRepository) Create(ctx context.Context, event *Event) (*Event, er
 	return event, tx.Commit(ctx)
 }
 
-func (r *EventsRepository) Update(ctx context.Context, event *Event) (*Event, error) {
+func (r *EventsRepository) Update(ctx context.Context, event *models.Event) (*models.Event, error) {
 	query := `UPDATE event SET owner_id = @owner_id, name = @name, description = @description, latitude = @latitude, longitude = @longitude, updated_at = now() WHERE id = @id`
 
 	tx, err := r.db.Begin(ctx)
@@ -193,7 +193,7 @@ func (r *EventsRepository) Delete(ctx context.Context, eventId uuid.UUID) error 
 	return tx.Commit(ctx)
 }
 
-func (r *EventsRepository) GetDetailed(ctx context.Context, eventId uuid.UUID) (*Event, error) {
+func (r *EventsRepository) GetDetailed(ctx context.Context, eventId uuid.UUID) (*models.Event, error) {
 	query := `SELECT id, owner_id, name, description, latitude, longitude, created_at, updated_at FROM event WHERE id = @id`
 	args := pgx.NamedArgs{"id": eventId}
 
@@ -205,7 +205,7 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId uuid.UUID) (
 
 	row := tx.QueryRow(ctx, query, args)
 
-	var event Event
+	var event models.Event
 	err = row.Scan(&event.Id, &event.OwnerId, &event.Name, &event.Description,
 		&event.Latitude, &event.Longitude, &event.CreatedAt, &event.UpdatedAt)
 
@@ -251,7 +251,7 @@ func (r *EventsRepository) GetDetailed(ctx context.Context, eventId uuid.UUID) (
 	return &event, tx.Commit(ctx)
 }
 
-func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([]PureEvent, error) {
+func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([]models.PureEvent, error) {
 	args := pgx.NamedArgs{"user_id": userId}
 	eventsWhereUserIsParticipant :=
 		`SELECT e.id,
@@ -289,12 +289,12 @@ func (r *EventsRepository) GetByUserId(ctx context.Context, userId uuid.UUID) ([
 	}
 
 	defer rows.Close()
-	events := make([]PureEvent, 0)
-	scanEvent := PureEvent{}
+	events := make([]models.PureEvent, 0)
+	scanEvent := models.PureEvent{}
 	var coverMediaJSON []byte
 	var participantsJSON []byte
 	_, err = pgx.ForEachRow(rows, []any{&scanEvent.Id, &scanEvent.OwnerId, &scanEvent.Name, &scanEvent.Description, &coverMediaJSON, &scanEvent.Latitude, &scanEvent.Longitude, &scanEvent.CreatedAt, &participantsJSON}, func() error {
-		event := PureEvent{
+		event := models.PureEvent{
 			Id:          scanEvent.Id,
 			OwnerId:     scanEvent.OwnerId,
 			Name:        scanEvent.Name,

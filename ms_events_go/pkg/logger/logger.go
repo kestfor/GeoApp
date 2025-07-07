@@ -21,8 +21,6 @@ const (
 	colorGreen  = "\x1b[32m"
 	colorYellow = "\x1b[33m"
 	colorBlue   = "\x1b[34m"
-	colorPurple = "\x1b[35m"
-	colorCyan   = "\x1b[36m"
 	colorWhite  = "\x1b[37m"
 )
 
@@ -65,9 +63,8 @@ func (logger *DefaultLogger) Log(level slog.Level, message string) {
 	}
 	color := getColor(level)
 	time := time2.Now()
-	time.Format("2006-01-02 15:04:05")
 	// Prefix from l.logger will include date/time and any custom prefix
-	logger.logger.Printf("%s[%s][%s][%s] %s%s", color, logger.prefix, time.String(), level.String(), message, colorReset)
+	logger.logger.Printf("%s[%s][%s][%s] %s%s", color, logger.prefix, time.Format("2006-01-02 15:04:05"), level.String(), message, colorReset)
 }
 
 func (logger *DefaultLogger) Info(message string) {

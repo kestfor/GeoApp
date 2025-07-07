@@ -1,8 +1,9 @@
-package services
+package services_test
 
 import (
 	"context"
 	"errors"
+	"ms_events_go/internal/services"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,7 +19,7 @@ func TestCommentsService_GetByEventId(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	eventID := uuid.New()
@@ -42,7 +43,7 @@ func TestCommentsService_Create(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	comment := &models.Comment{Id: uuid.New(), Text: "Test create"}
@@ -63,7 +64,7 @@ func TestCommentsService_Update(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	comment := &models.Comment{Id: uuid.New(), Text: "Updated"}
@@ -84,7 +85,7 @@ func TestCommentsService_Delete(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	commentID := uuid.New()
@@ -104,7 +105,7 @@ func TestCommentsService_GetById(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	commentID := uuid.New()
@@ -126,7 +127,7 @@ func TestCommentsService_GetById_Error(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockCommentsRepository(ctrl)
-	service := NewCommentsService(mockRepo)
+	service := services.NewCommentsService(mockRepo)
 
 	ctx := context.Background()
 	commentID := uuid.New()

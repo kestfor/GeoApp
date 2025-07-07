@@ -7,9 +7,10 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"ms_events_go/docs"
+	"ms_events_go/internal/api/content_processor"
 	"ms_events_go/internal/delivery/http"
-	. "ms_events_go/internal/repository/postgres"
-	. "ms_events_go/internal/services"
+	"ms_events_go/internal/repository/postgres"
+	"ms_events_go/internal/services"
 	net "net/http"
 	"os"
 )
@@ -24,25 +25,27 @@ func Run(configPath string) {
 		panic("Error loading .env file: " + err.Error())
 	}
 
-	user, password, db_name := os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")
+	user, password, dbName := os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD"), os.Getenv("POSTGRES_DB")
 	postgresHost, postgresPort := os.Getenv("POSTGRES_HOST"), os.Getenv("POSTGRES_PORT")
+	cpApi := os.Getenv("CONTENT_PROCESSOR_URL")
 
-	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, db_name)
+	connStringPostgres := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, password, postgresHost, postgresPort, dbName)
 	var err error
 
-	eventsRepository, err := NewEventsRepository(connStringPostgres)
+	eventsRepository, err := postgres.NewEventsRepository(connStringPostgres)
 	if err != nil {
 		panic("Error initializing events repository: " + err.Error())
 	}
 
-	commentsRepository, err := NewCommentsRepository(connStringPostgres)
+	commentsRepository, err := postgres.NewCommentsRepository(connStringPostgres)
 	if err != nil {
 		panic("Error initializing comments repository: " + err.Error())
 	}
 
 	// Initialize services
-	eventsService := NewEventsService(eventsRepository)
-	commentsService := NewCommentsService(commentsRepository)
+	contentProcessor := content_processor.NewContentProcessorApi(cpApi)
+	eventsService := services.NewEventsService(eventsRepository, contentProcessor)
+	commentsService := services.NewCommentsService(commentsRepository)
 
 	router := gin.Default()
 	api := router.Group(basePath)
