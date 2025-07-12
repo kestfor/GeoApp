@@ -46,36 +46,45 @@ API Gateway служит единой точкой входа для всех к
 
 #### Основные экраны приложения:
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: start;">
-    <div>
-        <p><strong>Экран входа</strong></p>
-        <img src=".github/readme_images/login.png" height="500">
-    </div>
-    <div>
-        <p><strong>Профиль пользователя</strong></p>
-        <img src=".github/readme_images/profile.png" height="500">
-    </div>
-    <div>
-        <p><strong>Карта контента</strong></p>
-        <img src=".github/readme_images/map.png" height="500">
-    </div>
-    <div>
-        <p><strong>Выбор медиа-контента</strong></p>
-        <img src=".github/readme_images/media_pick.png" height="500">
-    </div>
-    <div>
-        <p><strong>Уведомления</strong></p>
-        <img src=".github/readme_images/notification.png" height="500">
-    </div>
-    <div>
-        <p><strong>Список общих созданных событий</strong></p>
-        <img src=".github/readme_images/events_list.png" height="500">
-    </div>
-    <div>
-        <p><strong>Экран события</strong></p>
-        <img src=".github/readme_images/detailed_event.png" height="500">
-    </div>
-</div>
+<table>
+  <tr>
+    <td align="center">
+      <p><strong>Экран входа</strong></p>
+      <img src=".github/readme_images/login.png" height="500">
+    </td>
+    <td align="center">
+      <p><strong>Профиль пользователя</strong></p>
+      <img src=".github/readme_images/profile.png" height="500">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <p><strong>Карта контента</strong></p>
+      <img src=".github/readme_images/map.png" height="500">
+    </td>
+    <td align="center">
+      <p><strong>Выбор медиа-контента</strong></p>
+      <img src=".github/readme_images/media_pick.png" height="500">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <p><strong>Уведомления</strong></p>
+      <img src=".github/readme_images/notification.png" height="500">
+    </td>
+    <td align="center">
+      <p><strong>Список созданных событий</strong></p>
+      <img src=".github/readme_images/events_list.png" height="500">
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <p><strong>Экран события</strong></p>
+      <img src=".github/readme_images/detailed_event.png" height="500">
+    </td>
+    <td></td>
+  </tr>
+</table>
 
 ### Микросервисы
 
