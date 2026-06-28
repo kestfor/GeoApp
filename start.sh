@@ -14,6 +14,7 @@ fi
 services=(
   gateway
   content_processor
+  #ms_events replaced by golang implementation
   ms_events_go
   ms_users
   notification_backend
